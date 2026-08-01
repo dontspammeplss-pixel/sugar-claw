@@ -1,24 +1,24 @@
-import { Canvas } from '@react-three/fiber'
-
-function BootstrapScene() {
-  return (
-    <>
-      <ambientLight intensity={1.5} />
-      <directionalLight position={[2, 3, 4]} intensity={2} />
-      <mesh rotation={[0.25, 0.5, 0]}>
-        <boxGeometry args={[1.5, 1.5, 1.5]} />
-        <meshStandardMaterial color="#7dd3fc" />
-      </mesh>
-    </>
-  )
-}
+import { useState } from 'react'
+import type { RuntimeSceneReport } from './scene/report'
+import { N3Canvas } from './scene/N3Canvas'
 
 export default function App() {
+  const [runtimeReport, setRuntimeReport] = useState<RuntimeSceneReport | null>(
+    null,
+  )
+  const runtimeStatus = runtimeReport
+    ? runtimeReport.validation.length === 0
+      ? 'pass'
+      : 'fail'
+    : 'pending'
+
   return (
-    <main className="app-shell">
-      <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-        <BootstrapScene />
-      </Canvas>
+    <main
+      className="app-shell"
+      data-n3-runtime={runtimeStatus}
+      data-n3-runtime-errors={runtimeReport?.validation.join('|') ?? ''}
+    >
+      <N3Canvas onRuntimeReport={setRuntimeReport} />
     </main>
   )
 }

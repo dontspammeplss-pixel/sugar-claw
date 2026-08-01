@@ -12,7 +12,9 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gate:n1a": "node scripts/gate.mjs n1a",
+    "scenario:n1a": "vitest run src/bootstrap.test.ts"
   },
   "dependencies": {
     "@react-three/fiber": "8.17.10",

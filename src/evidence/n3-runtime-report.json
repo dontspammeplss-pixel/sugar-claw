@@ -1,0 +1,71 @@
+{
+  "node": "N3",
+  "baseline": "gate-1-approved + gate-2-design-approved",
+  "capturedAt": "2026-08-01",
+  "devServer": "http://127.0.0.1:5174/",
+  "viewport": {
+    "width": 1440,
+    "height": 1000,
+    "canvasWidth": 1440,
+    "canvasHeight": 913
+  },
+  "runtimePolicy": "static scene; no physics, state, gameplay animation, or per-frame transform writer",
+  "cameraAuthority": "Canvas-owned perspective camera configured by CameraRig from the ReviewCamera preset",
+  "screenshot": {
+    "path": "records/evidence/n3-review-camera.png",
+    "sha256": "8df0864a8b25a270d953af6bda2319694e9dbe008db63b0959452840bdf6c728",
+    "renderer": "Chrome headless with SwiftShader WebGL fallback"
+  },
+  "refreshRemount": {
+    "method": "two independent fresh browser loads of the dev-server URL",
+    "initial": {
+      "status": "pass",
+      "reportSha256": "e43eba5a38aaa34881dd86032a0555f4999dd512070b607fbe6bcc43fa685e5f",
+      "hierarchyCount": 56,
+      "missingHierarchy": [],
+      "validation": [],
+      "transforms": {
+        "machineRoot": { "position": [0, 0, 0], "scale": [1, 1, 1] },
+        "clawMount": { "position": [0, 0, 0], "scale": [1, 1, 1] },
+        "clawSystemWorldPosition": [0, 2.85, 0.1],
+        "headRootWorldPosition": [0, 2.85, 0.1],
+        "gripCenterWorldPosition": [0, 2.6, 0.1]
+      },
+      "activeCamera": {
+        "name": "ReviewCamera",
+        "position": [6.3, 4.35, 7.8],
+        "fov": 38,
+        "near": 0.05,
+        "far": 100
+      }
+    },
+    "refresh": {
+      "status": "pass",
+      "reportSha256": "e43eba5a38aaa34881dd86032a0555f4999dd512070b607fbe6bcc43fa685e5f",
+      "hierarchyCount": 56,
+      "missingHierarchy": [],
+      "validation": [],
+      "transforms": {
+        "machineRoot": { "position": [0, 0, 0], "scale": [1, 1, 1] },
+        "clawMount": { "position": [0, 0, 0], "scale": [1, 1, 1] },
+        "clawSystemWorldPosition": [0, 2.85, 0.1],
+        "headRootWorldPosition": [0, 2.85, 0.1],
+        "gripCenterWorldPosition": [0, 2.6, 0.1]
+      },
+      "activeCamera": {
+        "name": "ReviewCamera",
+        "position": [6.3, 4.35, 7.8],
+        "fov": 38,
+        "near": 0.05,
+        "far": 100
+      }
+    },
+    "comparison": {
+      "reportHashesMatch": true,
+      "hierarchyCountsMatch": true,
+      "transformsMatch": true,
+      "activeCameraMatch": true,
+      "duplicateSceneRootObserved": false
+    }
+  }
+}
