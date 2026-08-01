@@ -34,6 +34,7 @@ export const N6_PHYSICS_CONFIG = Object.freeze({
   resetTravelPosition: Object.freeze([0.8, 2.4, 0.4]) as Vec3,
   carrySettleSteps: 10,
   carryLiftSteps: 120,
+  maxRetainedStepRecords: 1024,
   prizePosition: Object.freeze([0, 0.18, 0]) as Vec3,
   clawHalfExtents: Object.freeze([0.3, 0.12, 0.3]) as Vec3,
   floorHalfExtents: Object.freeze([3, 0.1, 2]) as Vec3,

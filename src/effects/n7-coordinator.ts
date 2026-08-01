@@ -210,7 +210,9 @@ export class N7EffectCoordinator {
           break
       }
     } catch (error) {
-      this.emitInvariantFailure(error)
+      // Side effects failed after the command was accepted; return the
+      // controller's post-failure snapshot instead of the stale pre-failure one.
+      return this.emitInvariantFailure(error)
     }
     return result
   }
@@ -239,10 +241,28 @@ export class N7EffectCoordinator {
       return this.runtimeReport
     }
 
-    this.physicsAccumulatorMs += deltaMs
     const fixedStepMs = this.physics.config.dt * 1000
-    while (this.physicsAccumulatorMs >= fixedStepMs) {
+    if (!Number.isFinite(fixedStepMs) || fixedStepMs <= 0) {
+      this.emitInvariantFailure(
+        new Error('N7 integration: configured fixed step must be positive and finite'),
+      )
+      return this.runtimeReport
+    }
+    // Bound the catch-up window so a long frame (tab switch, hiccup) cannot
+    // spiral into unbounded stepping. Excess time is discarded while every
+    // executed step still uses the deterministic fixed dt.
+    this.physicsAccumulatorMs = Math.min(
+      this.physicsAccumulatorMs + deltaMs,
+      MAX_CATCH_UP_MS,
+    )
+    const maxStepsPerTick = Math.floor(MAX_CATCH_UP_MS / fixedStepMs)
+    let stepsThisTick = 0
+    while (
+      this.physicsAccumulatorMs >= fixedStepMs &&
+      stepsThisTick < maxStepsPerTick
+    ) {
       this.physicsAccumulatorMs -= fixedStepMs
+      stepsThisTick += 1
       this.physics.step()
       if (this.animator.state.active) this.animator.advance(fixedStepMs)
       this.syncVisuals()
@@ -421,17 +441,16 @@ export class N7EffectCoordinator {
     return this.physics.currentRunId === this.snapshot.runId
   }
 
-  private emitInvariantFailure(error: unknown): void {
+  private emitInvariantFailure(error: unknown): DispatchResult {
     const state = this.snapshot
     if (state.state === 'resetting') {
-      this.controller.dispatch({
+      return this.controller.dispatch({
         type: 'resetFailed',
         error: errorMessage(error),
         runId: state.runId,
       })
-      return
     }
-    this.controller.dispatch({
+    return this.controller.dispatch({
       type: 'invariantFailure',
       error: errorMessage(error),
       runId: state.runId,
@@ -487,9 +506,26 @@ export interface N7RuntimeProps {
   readonly onSnapshot?: (report: N7RuntimeReport) => void
 }
 
+const MAX_CATCH_UP_MS = 250
+const INITIAL_SIGNATURE = ''
+
+export function reportSignature(report: N7RuntimeReport): string {
+  return [
+    report.state.state,
+    report.state.runId,
+    report.state.aim.x,
+    report.state.aim.z,
+    report.physicsRunId,
+    report.sync?.clawSynchronized === true,
+    report.sync?.prizeSynchronized === true,
+    JSON.stringify(report.state.outcome ?? null),
+  ].join('|')
+}
+
 export function N7Runtime({ onReady, onSnapshot }: N7RuntimeProps) {
   const coordinatorRef = useRef<N7EffectCoordinator | null>(null)
   const callbacks = useRef({ onReady, onSnapshot })
+  const lastSignatureRef = useRef(INITIAL_SIGNATURE)
   callbacks.current = { onReady, onSnapshot }
   const { scene } = useThree()
 
@@ -507,6 +543,7 @@ export function N7Runtime({ onReady, onSnapshot }: N7RuntimeProps) {
         coordinatorRef.current = coordinator
         callbacks.current.onReady?.(coordinator)
         publishRuntimeReport(coordinator.runtimeReport)
+        lastSignatureRef.current = reportSignature(coordinator.runtimeReport)
         callbacks.current.onSnapshot?.(coordinator.runtimeReport)
       })
       .catch((error: unknown) => {
@@ -525,6 +562,9 @@ export function N7Runtime({ onReady, onSnapshot }: N7RuntimeProps) {
     const coordinator = coordinatorRef.current
     if (!coordinator) return
     const report = coordinator.tick(delta * 1000)
+    const signature = reportSignature(report)
+    if (signature === lastSignatureRef.current) return
+    lastSignatureRef.current = signature
     publishRuntimeReport(report)
     callbacks.current.onSnapshot?.(report)
   })
@@ -532,19 +572,30 @@ export function N7Runtime({ onReady, onSnapshot }: N7RuntimeProps) {
   return null
 }
 
+let cachedShell: HTMLElement | null = null
+
+function appShell(): HTMLElement | null {
+  if (cachedShell?.isConnected) return cachedShell
+  cachedShell = document.querySelector<HTMLElement>('.app-shell')
+  return cachedShell
+}
+
 function publishRuntimeReport(report: N7RuntimeReport): void {
   const windowWithReport = window as Window & {
     __N7_RUNTIME_REPORT__?: N7RuntimeReport
   }
   windowWithReport.__N7_RUNTIME_REPORT__ = report
-  const shell = document.querySelector<HTMLElement>('.app-shell')
-  shell?.setAttribute('data-n7-state', report.state.state)
-  shell?.setAttribute(
-    'data-n7-sync',
-    report.sync && report.sync.clawSynchronized && report.sync.prizeSynchronized
-      ? 'pass'
-      : 'pending',
-  )
+  const shell = appShell()
+  if (!shell) return
+  const sync = report.sync && report.sync.clawSynchronized && report.sync.prizeSynchronized
+    ? 'pass'
+    : 'pending'
+  if (shell.getAttribute('data-n7-state') !== report.state.state) {
+    shell.setAttribute('data-n7-state', report.state.state)
+  }
+  if (shell.getAttribute('data-n7-sync') !== sync) {
+    shell.setAttribute('data-n7-sync', sync)
+  }
 }
 
 function publishRuntimeError(error: unknown): void {

@@ -82,7 +82,7 @@ async function runSuccessfulCarry() {
     stateAfterRelease: adapter.state,
     constraintRemovedAtRunId: removedAtRunId,
     jointRemoved: !afterRelease.jointActive,
-    totalSteps: adapter.logs.length,
+    totalSteps: adapter.retainedStepRecords,
     logs: trimLogs(adapter.logs),
   }
   adapter.dispose()
@@ -107,7 +107,7 @@ export async function createN6Evidence() {
       maxPositionDelta(idleTail, 'prize') <= N6_PHYSICS_CONFIG.tolerances.idlePosition &&
       Math.max(...idleAdapter.velocity('prize').map(Math.abs)) <=
         N6_PHYSICS_CONFIG.tolerances.idleVelocity,
-    totalSteps: idleAdapter.logs.length,
+    totalSteps: idleAdapter.retainedStepRecords,
     logs: trimLogs(idleAdapter.logs),
   }
   idleAdapter.dispose()
@@ -164,16 +164,24 @@ export async function createN6Evidence() {
   overlapAdapter.moveClaw(N6_PHYSICS_CONFIG.failedLiftPosition)
   const failedCarryRecords = overlapAdapter.stepMany(60)
   const failedCarryFinal = failedCarryRecords.at(-1)!.prize
+  // Independent of the floor check: the prize must never track the claw's
+  // lift height, so its highest recorded position stays below the claw's
+  // failedLiftPosition by at least the carry tolerance.
+  const prizeMaxHeight = Math.max(
+    ...failedCarryRecords.map((record) => record.prize.position[1]),
+  )
   const failedCarry = {
     observation: overlapObservation,
     grip: failedGrip,
     state: overlapAdapter.state,
     jointNeverCreated: failedCarryRecords.every((record) => !record.jointActive),
-    prizeRemainsRapierOwned: failedCarryFinal.position[1] <=
-      failedCarryBaseline.position[1] + N6_PHYSICS_CONFIG.tolerances.idlePosition,
+    prizeRemainsRapierOwned:
+      prizeMaxHeight <=
+      N6_PHYSICS_CONFIG.failedLiftPosition[1] -
+        N6_PHYSICS_CONFIG.tolerances.carryPosition,
     prizeSettledNearFloor: failedCarryFinal.position[1] <=
       failedCarryBaseline.position[1] + N6_PHYSICS_CONFIG.tolerances.idlePosition,
-    totalSteps: overlapAdapter.logs.length,
+    totalSteps: overlapAdapter.retainedStepRecords,
     logs: trimLogs(overlapAdapter.logs),
   }
   overlapAdapter.dispose()

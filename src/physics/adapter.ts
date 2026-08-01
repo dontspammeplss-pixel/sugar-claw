@@ -130,9 +130,11 @@ export class N6PhysicsAdapter {
   private readonly baseline: Readonly<Record<PhysicsBodyId, BodyBaseline>>
   private readonly stepRecords: PhysicsStepRecord[] = []
   private carryJoint: RAPIER.ImpulseJoint | null = null
+  private constraintRunId: number | null = null
   private stepNumber = 0
   private runId = 0
   private logicalState: PhysicsRunState = 'ready'
+  private disposed = false
 
   private constructor(options: N6PhysicsAdapterOptions = {}) {
     const prizePosition = options.prizePosition ?? this.config.prizePosition
@@ -265,8 +267,14 @@ export class N6PhysicsAdapter {
     }))
   }
 
+  /** Cheap count of retained records, independent of the cloned `logs` view. */
+  get retainedStepRecords(): number {
+    return this.stepRecords.length
+  }
+
   /** Sets a kinematic target; all bounds and body writes remain adapter-owned. */
   moveClaw(position: Vec3): boolean {
+    this.assertNotDisposed()
     const { min, max } = this.config.travelBounds
     const inBounds = position.every(
       (value, index) => value >= min[['x', 'y', 'z'][index] as keyof typeof min] &&
@@ -279,6 +287,7 @@ export class N6PhysicsAdapter {
 
   /** Advances exactly one configured fixed step and records the resulting pose. */
   step(): PhysicsStepRecord {
+    this.assertNotDisposed()
     this.world.step()
     this.stepNumber += 1
     const observation = this.observeGrip()
@@ -293,10 +302,15 @@ export class N6PhysicsAdapter {
       jointActive: this.carryJoint !== null,
     }
     this.stepRecords.push(record)
+    const maxRetained = this.config.maxRetainedStepRecords
+    if (this.stepRecords.length > maxRetained) {
+      this.stepRecords.splice(0, this.stepRecords.length - maxRetained)
+    }
     return record
   }
 
   stepMany(count: number): readonly PhysicsStepRecord[] {
+    this.assertNotDisposed()
     if (!Number.isInteger(count) || count < 0) {
       throw new Error('N6PhysicsAdapter.stepMany: count must be a non-negative integer')
     }
@@ -305,6 +319,7 @@ export class N6PhysicsAdapter {
 
   /** Reports Rapier sensor/solver observations separately from the visual envelope. */
   observeGrip(): GripObservation {
+    this.assertNotDisposed()
     const physicalContact = this.world.intersectionPair(
       this.sensorCollider,
       this.prizeCollider,
@@ -328,6 +343,7 @@ export class N6PhysicsAdapter {
 
   /** Creates the approved explicit carry constraint only after contact approval. */
   attemptGrip(): GripAttempt {
+    this.assertNotDisposed()
     const observation = this.observeGrip()
     if (!observation.gripApproved) {
       this.logicalState = 'failed'
@@ -339,7 +355,8 @@ export class N6PhysicsAdapter {
         constraintCreatedAtRunId: null,
       }
     }
-    if (this.carryJoint === null) {
+    const createdNow = this.carryJoint === null
+    if (createdNow) {
       this.carryJoint = this.world.createImpulseJoint(
         RAPIER.JointData.fixed(
           rapierVector(this.config.sensorOffset),
@@ -351,24 +368,27 @@ export class N6PhysicsAdapter {
         this.prizeBody,
         true,
       )
+      this.constraintRunId = this.runId
     }
     this.logicalState = 'carrying'
     return {
       accepted: true,
       reason: 'contact-approved',
-      jointCreated: true,
+      jointCreated: createdNow,
       runId: this.runId,
-      constraintCreatedAtRunId: this.runId,
+      constraintCreatedAtRunId: createdNow ? this.runId : this.constraintRunId,
     }
   }
 
   releaseGrip(): number | null {
+    this.assertNotDisposed()
     const removedAtRunId = this.carryJoint ? this.runId : null
     if (this.carryJoint) {
       this.world.removeImpulseJoint(this.carryJoint, true)
       this.carryJoint = null
+      this.constraintRunId = null
+      this.logicalState = 'released'
     }
-    this.logicalState = 'released'
     return removedAtRunId
   }
 
@@ -399,34 +419,31 @@ export class N6PhysicsAdapter {
 
   /** Removes the carry joint and restores body, velocity, contact, and logical state. */
   reset(): void {
+    this.assertNotDisposed()
     if (this.carryJoint) {
       this.world.removeImpulseJoint(this.carryJoint, true)
       this.carryJoint = null
     }
-    this.restoreBody(this.clawBody, this.baseline.claw)
-    this.restoreBody(this.prizeBody, this.baseline.prize)
-    this.restoreBody(this.environmentBody, this.baseline.environment)
-    this.clawBody.setNextKinematicTranslation(vector(this.baseline.claw.position))
-    this.clawBody.setNextKinematicRotation(rotation(this.baseline.claw.quaternion))
+    this.restoreBaselinePose()
     this.stepNumber = 0
     this.runId += 1
     this.logicalState = 'ready'
     this.stepRecords.length = 0
+    this.constraintRunId = null
     this.world.propagateModifiedBodyPositionsToColliders()
     this.world.updateSceneQueries()
     // Rapier's narrow phase is refreshed by a world step; this step is part of
     // reset bookkeeping and is intentionally not exposed as a gameplay step.
     this.world.step()
-    this.restoreBody(this.clawBody, this.baseline.claw)
-    this.restoreBody(this.prizeBody, this.baseline.prize)
-    this.restoreBody(this.environmentBody, this.baseline.environment)
-    this.clawBody.setNextKinematicTranslation(vector(this.baseline.claw.position))
-    this.clawBody.setNextKinematicRotation(rotation(this.baseline.claw.quaternion))
+    this.restoreBaselinePose()
     this.world.propagateModifiedBodyPositionsToColliders()
     this.world.updateSceneQueries()
   }
 
+  /** Idempotent: frees the Rapier world at most once. */
   dispose(): void {
+    if (this.disposed) return
+    this.disposed = true
     this.world.free()
   }
 
@@ -435,6 +452,21 @@ export class N6PhysicsAdapter {
       position: tuple(body.translation()),
       quaternion: quaternionTuple(body.rotation()),
       sleeping: body.isSleeping(),
+    }
+  }
+
+  /** Restores bodies and the kinematic claw pose from the recorded baseline. */
+  private restoreBaselinePose(): void {
+    this.restoreBody(this.clawBody, this.baseline.claw)
+    this.restoreBody(this.prizeBody, this.baseline.prize)
+    this.restoreBody(this.environmentBody, this.baseline.environment)
+    this.clawBody.setNextKinematicTranslation(vector(this.baseline.claw.position))
+    this.clawBody.setNextKinematicRotation(rotation(this.baseline.claw.quaternion))
+  }
+
+  private assertNotDisposed(): void {
+    if (this.disposed) {
+      throw new Error('N6PhysicsAdapter: operation rejected after disposal')
     }
   }
 

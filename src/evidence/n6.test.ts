@@ -184,4 +184,81 @@ describe('N6 minimal Rapier physics scenario', () => {
     expect(evidence.failedCarry.logs.length).toBeGreaterThan(0)
     expect(evidence.idle.logs.length).toBeGreaterThan(0)
   })
+
+  it('is idempotent and rejects every operation after disposal', async () => {
+    const adapter = await N6PhysicsAdapter.create()
+    adapter.dispose()
+    expect(() => adapter.dispose()).not.toThrow()
+    expect(() => adapter.step()).toThrow(/dispos/)
+    expect(() => adapter.stepMany(1)).toThrow(/dispos/)
+    expect(() => adapter.moveClaw([0, 2, 0])).toThrow(/dispos/)
+    expect(() => adapter.attemptGrip()).toThrow(/dispos/)
+    expect(() => adapter.releaseGrip()).toThrow(/dispos/)
+    expect(() => adapter.reset()).toThrow(/dispos/)
+    expect(() => adapter.observeGrip()).toThrow(/dispos/)
+  })
+
+  it('keeps the failed state when releaseGrip finds no active joint', async () => {
+    const adapter = await N6PhysicsAdapter.create()
+    adapter.moveClaw(N6_PHYSICS_CONFIG.overlapPosition)
+    adapter.stepMany(3)
+    expect(adapter.attemptGrip().accepted).toBe(false)
+    expect(adapter.state).toBe('failed')
+    expect(adapter.releaseGrip()).toBeNull()
+    expect(adapter.state).toBe('failed')
+    expect(adapter.carryConstraintActive).toBe(false)
+    adapter.dispose()
+  })
+
+  it('reports constraint creation only for the creating call', async () => {
+    const adapter = await N6PhysicsAdapter.create()
+    adapter.moveClaw(N6_PHYSICS_CONFIG.gripPosition)
+    adapter.stepMany(3)
+    const created = adapter.attemptGrip()
+    expect(created).toMatchObject({ accepted: true, jointCreated: true })
+    expect(created.constraintCreatedAtRunId).toBe(0)
+
+    const repeated = adapter.attemptGrip()
+    expect(repeated).toMatchObject({
+      accepted: true,
+      jointCreated: false,
+      constraintCreatedAtRunId: 0,
+    })
+
+    expect(adapter.releaseGrip()).toBe(0)
+    adapter.moveClaw(N6_PHYSICS_CONFIG.gripPosition)
+    adapter.stepMany(3)
+    const recreated = adapter.attemptGrip()
+    expect(recreated).toMatchObject({ accepted: true, jointCreated: true })
+    expect(recreated.constraintCreatedAtRunId).toBe(0)
+    adapter.dispose()
+  })
+
+  it('clears constraint creation state on reset', async () => {
+    const adapter = await N6PhysicsAdapter.create()
+    adapter.moveClaw(N6_PHYSICS_CONFIG.gripPosition)
+    adapter.stepMany(3)
+    expect(adapter.attemptGrip().constraintCreatedAtRunId).toBe(0)
+    adapter.reset()
+    adapter.moveClaw(N6_PHYSICS_CONFIG.gripPosition)
+    adapter.stepMany(3)
+    const afterReset = adapter.attemptGrip()
+    expect(afterReset).toMatchObject({ accepted: true, jointCreated: true })
+    expect(afterReset.constraintCreatedAtRunId).toBe(1)
+    adapter.dispose()
+  })
+
+  it('retains only the newest bounded step records', async () => {
+    const adapter = await N6PhysicsAdapter.create()
+    const total = N6_PHYSICS_CONFIG.maxRetainedStepRecords + 25
+    adapter.stepMany(total)
+    expect(adapter.retainedStepRecords).toBe(
+      N6_PHYSICS_CONFIG.maxRetainedStepRecords,
+    )
+    expect(adapter.logs.length).toBe(N6_PHYSICS_CONFIG.maxRetainedStepRecords)
+    expect(adapter.logs[0].step).toBe(total - N6_PHYSICS_CONFIG.maxRetainedStepRecords + 1)
+    expect(adapter.logs.at(-1)!.step).toBe(total)
+    expect(adapter.steps).toBe(total)
+    adapter.dispose()
+  })
 })

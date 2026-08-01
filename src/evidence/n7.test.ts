@@ -3,6 +3,7 @@ import { Group } from 'three'
 import { DEFAULT_CLAW_RIG, PIVOT_NAMES } from '../claw/rig'
 import {
   N7EffectCoordinator,
+  reportSignature,
   resolveN7SceneBindings,
 } from '../effects/n7-coordinator'
 import { N6_PHYSICS_CONFIG } from '../physics/config'
@@ -215,5 +216,67 @@ describe('N7 integrated effect coordinator', () => {
     evidence.behavior.loweredClawPosition.forEach((value, axis) => {
       expect(value).toBeCloseTo(evidence.behavior.loweredTarget[axis], 5)
     })
+  })
+
+  it('returns the post-failure snapshot when a command side effect fails', async () => {
+    const coordinator = await N7EffectCoordinator.create(createFixture())
+    try {
+      coordinator.dispatch({ type: 'beginAim' })
+      coordinator.dispatch({ type: 'moveAim', axis: 'x', value: 0.2 })
+      ;(coordinator as unknown as { beginLowering: () => void }).beginLowering =
+        () => {
+          throw new Error('boom')
+        }
+      const result = coordinator.dispatch({ type: 'confirmDrop' })
+      expect(result.accepted).toBe(true)
+      expect(result.snapshot.state).toBe('error')
+      expect(result.snapshot.errorKind).toBe('invariant')
+      expect(coordinator.snapshot.state).toBe('error')
+      expect(coordinator.snapshot.transitions.at(-1)?.to).toBe('error')
+    } finally {
+      coordinator.dispose()
+    }
+  })
+
+  it('bounds catch-up work per tick and rejects invalid deltas', async () => {
+    const coordinator = await N7EffectCoordinator.create(createFixture())
+    try {
+      coordinator.dispatch({ type: 'beginAim' })
+      coordinator.dispatch({ type: 'moveAim', axis: 'x', value: 0.2 })
+      coordinator.dispatch({ type: 'confirmDrop' })
+      const stepsBefore = coordinator.physics.steps
+      const report = coordinator.tick(10000)
+      const stepsAfter = coordinator.physics.steps
+      const maxStepsPerTick = Math.floor(
+        250 / (N6_PHYSICS_CONFIG.dt * 1000),
+      )
+      expect(stepsAfter - stepsBefore).toBeLessThanOrEqual(maxStepsPerTick)
+      expect(report.physicsRunId).toBe(coordinator.physics.currentRunId)
+
+      coordinator.tick(-1)
+      expect(coordinator.snapshot.state).toBe('error')
+      expect(coordinator.snapshot.errorKind).toBe('invariant')
+    } finally {
+      coordinator.dispose()
+    }
+  })
+
+  it('publishes unchanged reports only once via a stable signature', async () => {
+    const coordinator = await N7EffectCoordinator.create(createFixture())
+    try {
+      const first = coordinator.runtimeReport
+      const identical = coordinator.runtimeReport
+      expect(reportSignature(first)).toBe(reportSignature(identical))
+
+      coordinator.dispatch({ type: 'beginAim' })
+      const aiming = coordinator.runtimeReport
+      expect(reportSignature(aiming)).not.toBe(reportSignature(first))
+
+      coordinator.dispatch({ type: 'moveAim', axis: 'x', value: 0.35 })
+      const reAimed = coordinator.runtimeReport
+      expect(reportSignature(reAimed)).not.toBe(reportSignature(aiming))
+    } finally {
+      coordinator.dispose()
+    }
   })
 })
