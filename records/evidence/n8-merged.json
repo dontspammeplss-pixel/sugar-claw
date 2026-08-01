@@ -1,0 +1,72 @@
+{
+  "node": "N8",
+  "baselineDeclared": "gate-6-integration",
+  "baselineResolved": {
+    "gitRefPresent": false,
+    "checkout": "884038358cbc9a5de9e1487e576d4e4a214145e2",
+    "implementationWorktreeUnchanged": true
+  },
+  "fanOut": ["visual", "state", "assets", "physics", "regression", "performance"],
+  "deduplicationRule": "Same semantic subsystem, trigger, failed assertion, and contract impact share one ID; timestamps, verifier context, and repeated rounds do not create duplicates.",
+  "findings": [
+    {
+      "id": "N8-F-001",
+      "sources": ["visual"],
+      "severity": "medium",
+      "classification": "evidence-gap",
+      "title": "Browser visual interaction proof unavailable",
+      "detail": "Two browser-use attempts returned no structured report. Vite returned HTTP 200 and deterministic N7 sync/reset tests passed, but no screenshot, DOM interaction trace, or browser console capture exists.",
+      "routing": "escalate",
+      "route": "N9 human gate: rerun visual verification with functioning browser capture",
+      "status": "unresolved"
+    },
+    {
+      "id": "N8-F-002",
+      "sources": ["state"],
+      "severity": "low",
+      "classification": "verifier-false-positive",
+      "title": "Exact reset equality rejected a valid tolerance result",
+      "detail": "The temporary adversarial probe observed [0, 2.799999952316284, 0] versus [0, 2.8, 0]. The difference is within repeatPosition tolerance 0.0005. Corrected tolerance-based probes passed all boundaries in two independent clean rounds.",
+      "routing": "reject",
+      "route": "Discard exact-equality hypothesis; retain approved tolerance-based contract",
+      "status": "resolved-rejected"
+    },
+    {
+      "id": "N8-F-003",
+      "sources": ["performance", "visual"],
+      "severity": "medium",
+      "classification": "evidence-gap",
+      "title": "Browser FPS/frame-budget/physics-step metrics unmeasured",
+      "detail": "Headless test wall time and RSS do not prove sustained FPS, p95 frame time, sustained >33 ms frames, or average Rapier step cost. No browser Performance trace was captured.",
+      "routing": "escalate",
+      "route": "N9 human gate: obtain Chrome performance trace before claiming performance thresholds pass",
+      "status": "unresolved"
+    },
+    {
+      "id": "N8-F-004",
+      "sources": ["performance"],
+      "severity": "low",
+      "classification": "performance-warning",
+      "title": "Production bundle exceeds Vite default warning size",
+      "detail": "Build succeeds, but the minified JS chunk is 3057.72 kB (gzip 1039.78 kB), triggering Vite's >500 kB warning. This is not an approved contract threshold.",
+      "routing": "escalate",
+      "route": "N9 human gate: decide whether to request a separately approved bundle-budget requirement; do not silently alter thresholds",
+      "status": "unresolved"
+    },
+  ],
+  "preconditions": [
+    {"id":"N8-P-001","type":"baseline-integrity-gap","severity":"medium","detail":"Declared gate-6-integration ref is absent; verification ran against checkout 884038358cbc9a5de9e1487e576d4e4a214145e2.","routing":"escalate","route":"N9 human gate: confirm or create the authoritative Gate 6 baseline before promotion","status":"unresolved"}
+  ],
+  "deduplicatedFindingCount": 4,
+  "cleanRoundPolicy": {"required": 2, "noNewFindingRoundsAchieved": true, "proofComplete": false, "rounds": ["boundary-A", "boundary-B", "full-round-2", "full-round-3"]},
+  "verifierOutcomes": {
+    "visual": "attempted-with-evidence-gap",
+    "state": "clean-after-rejecting-false-positive",
+    "assets": "clean",
+    "physics": "clean",
+    "regression": "clean",
+    "performance": "attempted-with-escalated-evidence-gaps"
+  },
+  "promotionRecommendation": "BLOCKED_PENDING_N9",
+  "recordedAt": "2026-08-01T13:17:25Z"
+}

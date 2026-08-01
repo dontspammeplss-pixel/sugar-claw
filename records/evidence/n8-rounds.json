@@ -1,0 +1,19 @@
+{
+  "node": "N8",
+  "loopType": "fan-out of goal-based nodes (parallel, independent)",
+  "baselineDeclared": "gate-6-integration",
+  "baselineResolved": {"gitRefPresent":false,"checkout":"884038358cbc9a5de9e1487e576d4e4a214145e2","worktreeImplementationUnchanged":true},
+  "verifiers": ["visual","state","assets","physics","regression","performance"],
+  "fanOut": {"independentContexts":6,"round1Executed":true,"round2Executed":true,"round3Executed":true},
+  "convergence": {
+    "defaultCleanRoundsRequired":2,
+    "cleanRoundsAfterRouting": ["boundary-round-A","boundary-round-B","full-round-2","full-round-3"],
+    "newFindingsAfterFullRound2": [],
+    "newFindingsAfterFullRound3": [],
+    "status": "no-new-findings-converged; proof-incomplete",
+    "noNewFindingRounds": true,
+    "proofComplete": false
+  },
+  "operationalAttempts": {"browserVerifierAttempts":2,"browserStructuredReports":0,"viteHttpStatus":200},
+  "recordedAt": "2026-08-01T13:17:25Z"
+}

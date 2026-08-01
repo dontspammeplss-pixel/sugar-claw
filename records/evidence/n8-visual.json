@@ -1,0 +1,33 @@
+{
+  "node": "N8",
+  "verifier": "visual",
+  "context": "fresh-independent-basher-round-1 plus browser retry",
+  "baselineDeclared": "gate-6-integration",
+  "baselineResolved": {
+    "gitRefPresent": false,
+    "checkout": "884038358cbc9a5de9e1487e576d4e4a214145e2",
+    "note": "The declared gate-6-integration ref is absent; no tag was fabricated."
+  },
+  "objective": "Disprove transform drift and visual/physics synchronization after reset and repeated integration runs.",
+  "attempt": {
+    "commands": ["npm test -- --run src/evidence/n7.test.ts", "curl -sS -I http://127.0.0.1:5176/"],
+    "results": ["4 N7 tests passed", "HTTP 200 from Vite"],
+    "scenarios": ["command-driven integration run", "claw/prize synchronization", "reset baseline restoration", "pose reset drift", "runtime server availability"]
+  },
+  "findings": [
+    {
+      "id": "N8-F-001",
+      "type": "evidence-gap",
+      "severity": "medium",
+      "title": "Browser visual interaction proof was unavailable",
+      "detail": "The browser-use verifier returned no structured result on two attempts. Deterministic N7 synchronization/reset assertions passed and Vite served HTTP 200, but no screenshot, DOM interaction trace, console report, or browser FPS observation was captured.",
+      "routing": "escalate",
+      "routeTo": "N9 human gate / rerun visual verifier with a functioning browser capture channel",
+      "status": "unresolved"
+    }
+  ],
+  "noNewFindingRounds": true,
+  "proofComplete": false,
+  "clean": false,
+  "limitations": ["Headless tests prove transform synchronization within the fixture; they do not substitute for browser visual evidence."]
+}

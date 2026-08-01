@@ -1,0 +1,20 @@
+{
+  "node": "N8",
+  "verifier": "assets",
+  "context": "fresh independent contexts, rounds 1-3",
+  "baselineDeclared": "gate-6-integration",
+  "baselineResolved": {"gitRefPresent": false, "checkout": "884038358cbc9a5de9e1487e576d4e4a214145e2", "note": "The declared ref is absent; no tag was fabricated."},
+  "objective": "Disprove asset and scene integrity through hierarchy validation, manifest validation, deduplication, remount/disposal, failure paths, and runtime availability.",
+  "attempts": [
+    {"command":"npm test -- --run src/evidence/n3.test.ts src/bootstrap.test.ts", "result":"2 files, 11 tests passed"},
+    {"command":"npm test -- --run src/evidence/n3.test.ts src/bootstrap.test.ts (round 2)", "result":"2 files, 11 tests passed"},
+    {"command":"npm test -- --run src/evidence/n3.test.ts src/bootstrap.test.ts (round 3)", "result":"2 files, 11 tests passed"}
+  ],
+  "scenarios": ["contract-shaped hierarchy traversal", "asset manifest validation", "concurrent canonical-request deduplication", "clone-key stability", "disposal/remount", "required-asset failure", "bootstrap smoke"],
+  "findings": [],
+  "noNewFindingRounds": true,
+  "proofComplete": true,
+  "cleanRounds": ["round-2", "round-3"],
+  "clean": true,
+  "limitations": ["No browser network panel trace was captured; deterministic registry and bootstrap tests were the available asset evidence."]
+}

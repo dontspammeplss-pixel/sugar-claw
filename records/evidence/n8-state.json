@@ -1,0 +1,25 @@
+{
+  "node": "N8",
+  "verifier": "state",
+  "context": "fresh independent contexts, rounds 1-3 plus ephemeral boundary probe",
+  "baselineDeclared": "gate-6-integration",
+  "baselineResolved": {"gitRefPresent": false, "checkout": "884038358cbc9a5de9e1487e576d4e4a214145e2", "note": "The declared ref is absent; no tag was fabricated."},
+  "objective": "Break the controller and integrated coordinator at every state boundary, including stale callbacks and reset races.",
+  "attempts": [
+    {"command":"npm test -- --run src/evidence/n5.test.ts", "result":"13 tests passed"},
+    {"command":"npm test -- --run src/evidence/n5.test.ts src/evidence/n7.test.ts", "result":"17 tests passed"},
+    {"command":"temporary .n8-boundaries.test.ts", "result":"1 of 2 tests passed; exact-equality assertion failed and was routed as verifier false positive"},
+    {"command":"temporary tolerance-based clean boundary round A", "result":"2 tests passed"},
+    {"command":"temporary tolerance-based clean boundary round B", "result":"2 tests passed"},
+    {"command":"npm test -- --run src/evidence/n5.test.ts src/evidence/n7.test.ts (round 3)", "result":"17 tests passed"}
+  ],
+  "scenarios": ["aiming", "lowering", "aligning", "gripping", "lifting", "returning", "releasing", "result", "reset epoch increment", "controller/physics epoch synchronization", "carry constraint removal", "pose reset drift", "stale completion rejection", "coalesced reset and error recovery"],
+  "findings": [
+    {"id":"N8-F-002", "type":"verifier-false-positive", "severity":"low", "title":"Exact reset position assertion rejected a valid tolerance-based result", "detail":"Temporary probe compared [0, 2.799999952316284, 0] with exact equality to [0, 2.8, 0]. The difference is within N6_PHYSICS_CONFIG.tolerances.repeatPosition (0.0005). The corrected probe passed all boundary cases.", "routing":"reject", "routeTo":"discard exact-equality hypothesis; retain tolerance-based contract", "status":"resolved-rejected"}
+  ],
+  "noNewFindingRounds": true,
+  "proofComplete": true,
+  "cleanRounds": ["round-A", "round-B", "full-round-3 state verifier"],
+  "clean": true,
+  "limitations": ["Ephemeral boundary test was not retained as implementation evidence because N8 is an execution record; its result is preserved here."]
+}

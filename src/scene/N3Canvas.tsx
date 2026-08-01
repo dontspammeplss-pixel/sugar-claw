@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import type { ReactNode } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import type { RuntimeSceneReport } from './report'
 import { captureRuntimeSceneReport } from './report'
@@ -55,9 +56,11 @@ function RuntimeEvidenceProbe({ onReport }: RuntimeEvidenceProbeProps) {
 
 export interface N3CanvasProps {
   readonly onRuntimeReport?: (report: RuntimeSceneReport) => void
+  /** Optional in-Canvas integration seam; scene ownership remains here. */
+  readonly children?: ReactNode
 }
 
-export function N3Canvas({ onRuntimeReport }: N3CanvasProps) {
+export function N3Canvas({ onRuntimeReport, children }: N3CanvasProps) {
   return (
     <Canvas
       shadows
@@ -77,6 +80,7 @@ export function N3Canvas({ onRuntimeReport }: N3CanvasProps) {
     >
       <StaticScene />
       <RuntimeEvidenceProbe onReport={onRuntimeReport} />
+      {children}
     </Canvas>
   )
 }

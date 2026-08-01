@@ -1,0 +1,24 @@
+{
+  "node": "N8",
+  "verifier": "performance",
+  "context": "fresh independent contexts, rounds 1-3",
+  "baselineDeclared": "gate-6-integration",
+  "baselineResolved": {"gitRefPresent": false, "checkout": "884038358cbc9a5de9e1487e576d4e4a214145e2", "note": "The declared ref is absent; no tag was fabricated."},
+  "objective": "Disprove fixed-step, build, runtime, and performance claims against the approved thresholds without silently changing the contract.",
+  "thresholds": {"sustainedFpsMin":50,"p95FrameMsMax":20,"sustainedFrameMsMax":33,"physicsStepAvgMsMax":2,"memory":"no unbounded growth across repeated runs/resets"},
+  "attempts": [
+    {"command":"npm run build && /usr/bin/time -f 'elapsed_seconds=%e max_rss_kb=%M' npm test -- --run src/evidence/n6.test.ts src/evidence/n7.test.ts", "result":"build passed; 10 tests passed; elapsed_seconds=4.62; max_rss_kb=155996; Vite warned a 3057.72 kB minified JS chunk exceeds 500 kB"},
+    {"command":"same build/timing probe (round 2)", "result":"build passed; 10 tests passed; elapsed_seconds=4.84; max_rss_kb=146484; same chunk warning"},
+    {"command":"same build/timing probe (round 3)", "result":"build passed; 10 tests passed; elapsed_seconds=5.14; max_rss_kb=143052; same chunk warning"}
+  ],
+  "fixedStepEvidence": {"revision":"fixed-step-rev1","dt":0.016666666666666666,"accumulatorObserved":true},
+  "findings": [
+    {"id":"N8-F-003","type":"evidence-gap","severity":"medium","title":"Browser FPS and frame-budget thresholds remain unmeasured","detail":"Headless Vitest wall time and RSS are not frame timing, sustained FPS, p95 frame time, or physics-step cost. No browser profiling trace was captured.","routing":"escalate","routeTo":"N9 human gate / obtain Chrome performance trace before claiming threshold pass","status":"unresolved"},
+    {"id":"N8-F-004","type":"performance-warning","severity":"low","title":"Production bundle exceeds Vite default 500 kB warning threshold","detail":"The build succeeds, but the minified JS chunk is 3057.72 kB (gzip 1039.78 kB). This is not one of the approved performance contract thresholds, so it is evidence for review rather than an automatic contract failure.","routing":"escalate","routeTo":"N9 human gate / decide whether a separately approved bundle-budget requirement is needed","status":"unresolved"}
+  ],
+  "noNewFindingRounds": true,
+  "proofComplete": false,
+  "cleanRounds": ["round-2-no-new-findings", "round-3-no-new-findings"],
+  "clean": false,
+  "limitations": ["No browser Performance trace, sustained FPS sample, p95 frame distribution, or isolated Rapier step timing was produced by the available non-browser verifier."]
+}
