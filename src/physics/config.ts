@@ -27,20 +27,24 @@ export const N6_PHYSICS_CONFIG = Object.freeze({
     max: Object.freeze({ x: 1.25, y: 2.8, z: 0.55 }),
   }),
   clawPosition: Object.freeze([0, 2.8, 0]) as Vec3,
-  gripPosition: Object.freeze([0, 0.83, 0]) as Vec3,
-  overlapPosition: Object.freeze([0.5, 0.83, 0]) as Vec3,
+  // Grip descends to the playfield prize height: sensorOffset -0.65 lands the
+  // sensor exactly on the resting prize center so contact approval is reachable.
+  gripPosition: Object.freeze([0, 1.85, 0]) as Vec3,
+  overlapPosition: Object.freeze([0.5, 1.5, 0]) as Vec3,
   liftPosition: Object.freeze([0, 2.8, 0]) as Vec3,
   failedLiftPosition: Object.freeze([0.5, 2.8, 0]) as Vec3,
   resetTravelPosition: Object.freeze([0.8, 2.4, 0.4]) as Vec3,
   carrySettleSteps: 10,
   carryLiftSteps: 120,
   maxRetainedStepRecords: 1024,
-  prizePosition: Object.freeze([0, 0.18, 0]) as Vec3,
+  // Aligned with the visual playfield: floor top at 0.89 and the prize resting
+  // on it at y = 1.2 (floor top + prize radius), visible through the glass.
+  prizePosition: Object.freeze([0, 1.2, 0]) as Vec3,
   clawHalfExtents: Object.freeze([0.3, 0.12, 0.3]) as Vec3,
   floorHalfExtents: Object.freeze([3, 0.1, 2]) as Vec3,
-  floorPosition: Object.freeze([0, -0.1, 0]) as Vec3,
+  floorPosition: Object.freeze([0, 0.79, 0]) as Vec3,
   visualEnvelopeHalfExtents: Object.freeze({ x: 0.55, y: 0.75, z: 0.55 }),
-  prizeRadius: 0.18,
+  prizeRadius: 0.31,
   sensorRadius: 0.24,
   sensorOffset: Object.freeze({ x: 0, y: -0.65, z: 0 }),
 })

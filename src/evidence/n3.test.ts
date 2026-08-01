@@ -35,7 +35,7 @@ describe('N3 static scene evidence', () => {
 
     const camera = new PerspectiveCamera(38, 1, 0.05, 100)
     camera.name = 'ReviewCamera'
-    camera.position.set(6.3, 4.35, 7.8)
+    camera.position.set(0, 2.3, 7)
     camera.up.set(0, 1, 0)
     camera.lookAt(0, 2.05, 0)
     camera.updateProjectionMatrix()

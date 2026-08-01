@@ -129,6 +129,13 @@ export class N7EffectCoordinator {
   private lastGrip: N7RuntimeReport['grip'] = null
   private lastSync: N7SyncReport | null = null
   private disposed = false
+  /** Active kinematic claw travel between two absolute positions. */
+  private travel: {
+    readonly start: Vec3
+    readonly target: Vec3
+    readonly durationMs: number
+    elapsedMs: number
+  } | null = null
 
   private constructor(
     bindings: N7SceneBindings,
@@ -200,6 +207,11 @@ export class N7EffectCoordinator {
 
     try {
       switch (command.type) {
+        case 'moveAim':
+          if (result.snapshot.state === 'aiming') {
+            this.previewAim(result.snapshot.aim)
+          }
+          break
         case 'confirmDrop':
           this.beginLowering(result.snapshot.aim)
           break
@@ -263,6 +275,7 @@ export class N7EffectCoordinator {
     ) {
       this.physicsAccumulatorMs -= fixedStepMs
       stepsThisTick += 1
+      if (this.travel) this.advanceTravel(fixedStepMs)
       this.physics.step()
       if (this.animator.state.active) this.animator.advance(fixedStepMs)
       this.syncVisuals()
@@ -284,6 +297,19 @@ export class N7EffectCoordinator {
     this.physics.dispose()
   }
 
+  private previewAim(aim: StateSnapshot['aim']): void {
+    const target: Vec3 = [
+      aim.x * 1.25,
+      N6_PHYSICS_CONFIG.clawPosition[1],
+      aim.z * 0.35,
+    ]
+    if (!this.physics.moveClaw(target)) {
+      throw new Error(`N7 integration: aim preview target is out of bounds`)
+    }
+    this.target = target
+    this.startTravel(target, TRAVEL_AIM_MS)
+  }
+
   private beginLowering(aim: StateSnapshot['aim']): void {
     const target: Vec3 = [aim.x * 1.25, N6_PHYSICS_CONFIG.gripPosition[1], aim.z * 0.35]
     if (!this.physics.moveClaw(target)) {
@@ -293,6 +319,7 @@ export class N7EffectCoordinator {
     this.alignmentSteps = 0
     this.gripAttempted = false
     this.animator.start('lowered', 0)
+    this.startTravel(target, TRAVEL_LOWERING_MS)
   }
 
   private beginLift(): void {
@@ -302,6 +329,7 @@ export class N7EffectCoordinator {
       throw new Error(`N7 integration: derived lifting target is out of bounds`)
     }
     this.target = target
+    this.startTravel(target, TRAVEL_LIFT_MS)
   }
 
   private beginReturn(): void {
@@ -311,6 +339,41 @@ export class N7EffectCoordinator {
     }
     this.target = target
     this.animator.start('open', 120)
+    this.startTravel(target, TRAVEL_RETURN_MS)
+  }
+
+  /** Starts kinematic claw travel from the current pose to an absolute target. */
+  private startTravel(target: Vec3, durationMs: number): void {
+    const start = this.physics.transform('claw').position
+    this.travel = { start: [...start] as Vec3, target, durationMs, elapsedMs: 0 }
+  }
+
+  /** Advances the active travel by a fixed step; snaps exactly on completion. */
+  private advanceTravel(deltaMs: number): void {
+    if (!this.travel) return
+    if (this.travel.durationMs <= 0) {
+      // Degenerate duration: snap to the target exactly instead of dividing.
+      this.physics.moveClaw(this.travel.target)
+      this.travel = null
+      return
+    }
+    this.travel.elapsedMs += deltaMs
+    const t = Math.min(1, this.travel.elapsedMs / this.travel.durationMs)
+    const eased = easeInOutCubic(t)
+    const position: Vec3 = [
+      this.travel.start[0] + (this.travel.target[0] - this.travel.start[0]) * eased,
+      this.travel.start[1] + (this.travel.target[1] - this.travel.start[1]) * eased,
+      this.travel.start[2] + (this.travel.target[2] - this.travel.start[2]) * eased,
+    ]
+    const reached = t >= 1
+    const next = reached ? this.travel.target : position
+    // Interpolation of two in-bounds points stays in-bounds, but snap to the
+    // validated target if a degenerate position were ever rejected so travel
+    // can never stall silently.
+    if (!this.physics.moveClaw(next)) {
+      this.physics.moveClaw(this.travel.target)
+    }
+    if (reached) this.travel = null
   }
 
   private advanceEffects(): void {
@@ -419,6 +482,7 @@ export class N7EffectCoordinator {
     this.physics.reset()
     this.pose.restoreBaseline()
     this.target = null
+    this.travel = null
     this.alignmentSteps = 0
     this.physicsAccumulatorMs = 0
     this.gripAttempted = false
@@ -508,6 +572,15 @@ export interface N7RuntimeProps {
 
 const MAX_CATCH_UP_MS = 250
 const INITIAL_SIGNATURE = ''
+const TRAVEL_AIM_MS = 350
+const TRAVEL_LOWERING_MS = 800
+const TRAVEL_LIFT_MS = 700
+const TRAVEL_RETURN_MS = 700
+
+/** Smoothstep ease so kinematic travel accelerates and decelerates. */
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+}
 
 export function reportSignature(report: N7RuntimeReport): string {
   return [

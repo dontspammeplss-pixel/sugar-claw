@@ -369,7 +369,7 @@ function MachineRoot() {
 
 function PrizeRoot() {
   return (
-    <group name="PrizeRoot" position={[-0.55, 1.18, 0.16]}>
+    <group name="PrizeRoot" position={[0, 1.2, 0]}>
       <mesh name="PrizeBody" castShadow>
         <sphereGeometry args={[0.31, 24, 16]} />
         <meshStandardMaterial

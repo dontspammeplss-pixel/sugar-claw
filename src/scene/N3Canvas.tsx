@@ -68,7 +68,7 @@ export function N3Canvas({ onRuntimeReport, children }: N3CanvasProps) {
       gl={{ antialias: true, alpha: false }}
       camera={{
         name: 'ReviewCamera',
-        position: [6.3, 4.35, 7.8],
+        position: [0, 2.3, 7],
         fov: 38,
         near: 0.05,
         far: 100,

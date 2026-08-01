@@ -15,7 +15,7 @@ export const MATERIALS = {
 
 export const REVIEW_CAMERA = {
   name: 'ReviewCamera',
-  position: [6.3, 4.35, 7.8] as Vec3,
+  position: [0, 2.3, 7] as Vec3,
   target: [0, 2.05, 0] as Vec3,
   up: [0, 1, 0] as Vec3,
   fovVerticalDeg: 38,
