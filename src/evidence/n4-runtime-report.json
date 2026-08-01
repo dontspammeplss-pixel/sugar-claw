@@ -1,0 +1,98 @@
+{
+  "node": "N4",
+  "baseline": "gate-2-design-approved",
+  "implementation": {
+    "rigDefinition": "src/claw/rig.ts",
+    "poseAdapter": "src/claw/pose-adapter.ts",
+    "poseAnimator": "src/animation/pose-animation.ts",
+    "fullEvidenceGenerator": "src/evidence/n4-evidence.ts",
+    "tests": "src/evidence/n4.test.ts"
+  },
+  "controlledPivots": [
+    "FingerPivot_0",
+    "FingerPivot_1",
+    "FingerPivot_2"
+  ],
+  "poses": [
+    "home",
+    "raised",
+    "lowered",
+    "open",
+    "closed",
+    "reset"
+  ],
+  "poseCaptures": {
+    "home": {
+      "FingerPivot_0": { "position": [0.16, -0.05, 0], "quaternion": [0, 0, 0, 1] },
+      "FingerPivot_1": { "position": [-0.07999999999999996, -0.05, 0.13856406460551018], "quaternion": [0, -0.8660254037844386, 0, 0.5000000000000001] },
+      "FingerPivot_2": { "position": [-0.08000000000000007, -0.05, -0.13856406460551016], "quaternion": [0, -0.8660254037844387, 0, -0.4999999999999998] }
+    },
+    "raised": {
+      "FingerPivot_0": { "position": [0.16, -0.05, 0], "quaternion": [0, 0, 0, 1] },
+      "FingerPivot_1": { "position": [-0.07999999999999996, -0.05, 0.13856406460551018], "quaternion": [0, -0.8660254037844386, 0, 0.5000000000000001] },
+      "FingerPivot_2": { "position": [-0.08000000000000007, -0.05, -0.13856406460551016], "quaternion": [0, -0.8660254037844387, 0, -0.4999999999999998] }
+    },
+    "lowered": {
+      "FingerPivot_0": { "position": [0.16, -0.05, 0], "quaternion": [0, 0, 0, 1] },
+      "FingerPivot_1": { "position": [-0.07999999999999996, -0.05, 0.13856406460551018], "quaternion": [0, -0.8660254037844386, 0, 0.5000000000000001] },
+      "FingerPivot_2": { "position": [-0.08000000000000007, -0.05, -0.13856406460551016], "quaternion": [0, -0.8660254037844387, 0, -0.4999999999999998] }
+    },
+    "open": {
+      "FingerPivot_0": { "position": [0.16, -0.05, 0], "quaternion": [0.17902957342582418, 0, 0, 0.9838436927881214] },
+      "FingerPivot_1": { "position": [-0.07999999999999996, -0.05, 0.13856406460551018], "quaternion": [0.0895147867129121, -0.852033631307606, 0.15504415861545517, 0.49192184639406084] },
+      "FingerPivot_2": { "position": [-0.08000000000000007, -0.05, -0.13856406460551016], "quaternion": [-0.08951478671291205, -0.8520336313076061, 0.1550441586154552, -0.4919218463940605] }
+    },
+    "closed": {
+      "FingerPivot_0": { "position": [0.16, -0.05, 0], "quaternion": [-0.10977830083717481, 0, 0, 0.9939560979566968] },
+      "FingerPivot_1": { "position": [-0.07999999999999996, -0.05, 0.13856406460551018], "quaternion": [-0.05488915041858742, -0.8607912310769533, -0.09507079730928389, 0.4969780489783485] },
+      "FingerPivot_2": { "position": [-0.08000000000000007, -0.05, -0.13856406460551016], "quaternion": [0.05488915041858738, -0.8607912310769534, -0.0950707973092839, -0.4969780489783482] }
+    },
+    "reset": {
+      "FingerPivot_0": { "position": [0.16, -0.05, 0], "quaternion": [0, 0, 0, 1] },
+      "FingerPivot_1": { "position": [-0.07999999999999996, -0.05, 0.13856406460551018], "quaternion": [0, -0.8660254037844386, 0, 0.5000000000000001] },
+      "FingerPivot_2": { "position": [-0.08000000000000007, -0.05, -0.13856406460551016], "quaternion": [0, -0.8660254037844387, 0, -0.4999999999999998] }
+    }
+  },
+  "posePolicy": {
+    "targets": "absolute local position and quaternion targets",
+    "raisedAndLowered": "finger-neutral; rigid-head travel remains outside N4",
+    "reset": "explicit reset target derived from immutable baseline",
+    "inverseTransformReset": false
+  },
+  "verificationScenarios": {
+    "eachPoseCaptured": true,
+    "repeatedOpenCloseCycles": {
+      "cycles": 8,
+      "sequence": ["open", "closed", "open", "closed"],
+      "snapshotsMatch": true,
+      "driftDetected": false
+    },
+    "interruptedCycle": {
+      "sequence": ["home", "closed@40%", "open"],
+      "staleGenerationIgnored": true,
+      "finalTargetExact": true,
+      "driftDetected": false
+    },
+    "resetFromInterruptedCycle": {
+      "explicitBaselineRestored": true,
+      "staleAnimatorCannotOverwrite": true,
+      "driftDetected": false
+    },
+    "refreshAndRemount": {
+      "freshSceneInstances": true,
+      "baselineSnapshotsMatch": true,
+      "cumulativeDrift": false
+    },
+    "deliberateDriftProbe": {
+      "namedPivotReported": true,
+      "driftThreshold": 0.000001
+    }
+  },
+  "runtimeBoundaries": {
+    "physics": "not used",
+    "statePromotion": "not used",
+    "newDependencies": "none",
+    "liveSceneIntegration": "deferred to N7 integration; N4 fixtures mirror the approved named-pivot hierarchy"
+  },
+  "verificationCommand": "npm test -- --run src/evidence/n4.test.ts"
+}
