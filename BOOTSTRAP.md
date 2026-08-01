@@ -84,8 +84,8 @@ The production build currently emits a Vite chunk-size warning because Three.js 
 - [x] Production build works (`npm run build`)
 - [x] Typechecking works (`npm run typecheck`)
 - [x] Linting and formatting defined (`npm run lint`, `npm run format`, `npm run format:check`)
-- [x] Minimal scene renders in the browser (headless Chrome smoke test; human visual confirmation pending)
+- [x] Minimal scene renders in the browser (headless Chrome smoke test and human visual confirmation)
 - [x] Chosen dependencies and versions recorded (this document, exact-pinned)
 - [x] No gameplay added prematurely
 - [x] Intentional baseline commit created (baseline policy approved; tagged `gate-0-baseline`)
-- [ ] Human opens the running app and confirms it renders (required before Gate 0 approval)
+- [x] Human opened the running app and confirmed it renders (Gate 0 approved 2026-08-01)
