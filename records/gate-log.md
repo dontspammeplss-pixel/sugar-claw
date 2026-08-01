@@ -1286,3 +1286,74 @@
   "recordedAt": "2026-08-01T13:17:25Z"
 }
 ```
+
+## 2026-08-01T13:57:24.000Z — n9 — COMMITTED
+
+```json
+{
+  "version": 1,
+  "node": "n9",
+  "baseline": "gate-1-baseline-rev1",
+  "commit": "67e277c",
+  "routingInput": {
+    "node": "n9",
+    "baseline": "gate-1-baseline-rev1",
+    "checks": [
+      "typecheck",
+      "lint",
+      "test",
+      "build"
+    ],
+    "scenarioSet": "scenario:n9",
+    "requiredEvidenceArtifacts": [],
+    "requiredEvidenceFields": [
+      "node",
+      "baseline",
+      "routingInput",
+      "rule",
+      "outcome",
+      "checkpoint"
+    ]
+  },
+  "rule": "commit resolves every finding in bug_fixes_needed.md; typecheck, lint, build, and 50 tests pass",
+  "outcome": "COMMITTED",
+  "checkpoint": "n9:COMMITTED:2026-08-01T13:57:24.000Z",
+  "protectedDiff": [],
+  "missingEvidence": [],
+  "checks": [
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck",
+      "status": 0,
+      "passed": true
+    },
+    {
+      "name": "lint",
+      "command": "npm run lint",
+      "status": 0,
+      "passed": true
+    },
+    {
+      "name": "test",
+      "command": "npm test",
+      "status": 0,
+      "passed": true
+    },
+    {
+      "name": "build",
+      "command": "npm run build",
+      "status": 0,
+      "passed": true
+    }
+  ],
+  "requiredFields": [
+    "node",
+    "baseline",
+    "routingInput",
+    "rule",
+    "outcome",
+    "checkpoint"
+  ],
+  "recordedAt": "2026-08-01T13:57:24.000Z"
+}
+```
