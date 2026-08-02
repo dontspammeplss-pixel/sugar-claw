@@ -39,7 +39,16 @@ export interface ClawRigDefinition {
   readonly poses: Readonly<Record<ClawPoseName, ClawPose>>
 }
 
-/** Articulation is local to each named pivot; it never changes HeadRoot. */
+/** Radius of the finger-pivot ring around the claw axis (head-relative). */
+export const FINGER_RING_RADIUS = 0.28
+
+/**
+ * Articulation is local to each named pivot; it never changes HeadRoot.
+ * N22: values retuned for the grip-wrap geometry (ring 0.28, blades 0.50)
+ * so closed tips land on the prize surface instead of sinking to the axis.
+ * The hinge stays on the tangential local Z axis (N17) — open flares blades
+ * radially outward, closed folds them in just past vertical.
+ */
 export const POSE_ARTICULATION_RADIANS: Readonly<
   Record<ClawPoseName, number>
 > = Object.freeze({
@@ -48,8 +57,8 @@ export const POSE_ARTICULATION_RADIANS: Readonly<
   home: 0,
   raised: 0,
   lowered: 0,
-  open: 0.36,
-  closed: -0.22,
+  open: 0.1,
+  closed: -0.05,
   reset: 0,
 })
 
@@ -78,7 +87,11 @@ function baselineTarget(index: number): ClawTransformTarget {
     new Euler(0, -angle, 0, 'XYZ'),
   )
   return {
-    position: [Math.cos(angle) * 0.16, -0.05, Math.sin(angle) * 0.16],
+    position: [
+      Math.cos(angle) * FINGER_RING_RADIUS,
+      -0.05,
+      Math.sin(angle) * FINGER_RING_RADIUS,
+    ],
     quaternion: quaternion.toArray() as Quat,
   }
 }

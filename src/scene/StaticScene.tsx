@@ -266,7 +266,10 @@ function ClawFinger({ index, angle }: { index: number; angle: number }) {
       rotation={[0, -angle, 0]}
       userData={{ baseline: 0, pose: 'home' }}
     >
-      <group name={`FingerMesh_${index}`} rotation={[0.25, 0, 0]}>
+      {/* N22: no static tilt — the old [0.25, 0, 0] leaned every blade
+          tangentially (the pinwheel look). Blades now hang straight and the
+          rig's tangential-axis articulation (N17) sweeps them radially. */}
+      <group name={`FingerMesh_${index}`}>
         <Box
           name={`FingerBlade_${index}`}
           size={[0.1, CLAW.fingerLength, 0.12]}
@@ -275,12 +278,14 @@ function ClawFinger({ index, angle }: { index: number; angle: number }) {
           metalness={0.92}
           roughness={0.24}
         />
+        {/* Hook cylinder axis runs radially (local X) so the tip curls
+            inward toward the prize, matching the approved design. */}
         <Cylinder
           name={`FingerHook_${index}`}
-          radius={0.065}
-          height={0.16}
-          position={[0, -CLAW.fingerLength, 0.035]}
-          rotation={[Math.PI / 2, 0, 0]}
+          radius={CLAW.hookRadius}
+          height={CLAW.hookLength}
+          position={[CLAW.hookInset, -CLAW.fingerLength, 0]}
+          rotation={[0, 0, Math.PI / 2]}
           color={MATERIALS.clawSteel}
           metalness={0.92}
           roughness={0.24}
@@ -326,7 +331,7 @@ function ClawSystem() {
         <group name="HeadRoot" position={[0, 0, 0]}>
           <Cylinder
             name="HeadMesh"
-            radius={0.22}
+            radius={CLAW.headRadius}
             height={0.28}
             rotation={[Math.PI / 2, 0, 0]}
             color={MATERIALS.clawSteel}
@@ -335,7 +340,7 @@ function ClawSystem() {
           />
           <Cylinder
             name="HeadAccentRing"
-            radius={0.1}
+            radius={CLAW.headAccentRadius}
             height={0.02}
             position={[0, 0.15, 0]}
             color={MATERIALS.clawCyanAccent}

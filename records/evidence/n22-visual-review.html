@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>N22 — Claw Hands Visual Review (before/after)</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #0f1417; color: #dfe7ea; font: 14px/1.5 system-ui, sans-serif; }
+  header { padding: 24px 32px 8px; }
+  h1 { margin: 0 0 4px; font-size: 20px; }
+  .sub { color: #8fa3ab; margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 32px 32px; }
+  .panel { background: #161d21; border: 1px solid #243036; border-radius: 10px; overflow: hidden; }
+  .panel.full { grid-column: 1 / -1; }
+  .panel h3 { margin: 0; padding: 10px 14px; font-size: 13px; color: #b7c7cd; background: #1a2226; border-bottom: 1px solid #243036; }
+  .panel img { display: block; width: 100%; }
+  .note { padding: 10px 14px; color: #93a6ad; font-size: 12.5px; border-top: 1px solid #243036; }
+  .fixed { color: #7fe0c0; font-weight: 600; }
+  .tag { display: inline-block; background: #24343b; color: #9fd6e0; border-radius: 20px; padding: 2px 10px; font-size: 11px; margin-left: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>N22 — Claw Hands Visual Fix <span class="tag">before → after</span></h1>
+  <div class="sub">De-twisted fingers, inward-pointing hooks, wider grip ring so the claw wraps the prize instead of sinking into it. Screenshots from the running app (headless Chrome, SwiftShader).</div>
+</header>
+
+<div class="grid">
+  <div class="panel full">
+    <h3>Parked (open) — default orbit view · BEFORE vs AFTER</h3>
+    <div class="grid" style="grid-template-columns:1fr 1fr; padding:0">
+      <div><img src="n22-before-orbit.png" alt="before orbit" /><div class="note">Before: blades lean tangentially in one direction (pinwheel), tips hooks run sideways, head is narrow (r 0.22).</div></div>
+      <div><img src="n22-after-orbit.png" alt="after orbit" /><div class="note">After: blades hang straight and flare radially, hooks point inward, head widened (r 0.30) to cover the new ring.</div></div>
+    </div>
+  </div>
+
+  <div class="panel full">
+    <h3>Parked — top view · BEFORE vs AFTER</h3>
+    <div class="grid" style="grid-template-columns:1fr 1fr; padding:0">
+      <div><img src="n22-before-top.png" alt="before top" /><div class="note">Before: each blade and its hook is rotated tangentially around the circle — a swirl, not a symmetric claw.</div></div>
+      <div><img src="n22-after-top.png" alt="after top" /><div class="note">After: three blades spaced 120° with hooks curling inward toward the axis; symmetric.</div></div>
+    </div>
+  </div>
+
+  <div class="panel full">
+    <h3>Parked — side view · BEFORE vs AFTER</h3>
+    <div class="grid" style="grid-template-columns:1fr 1fr; padding:0">
+      <div><img src="n22-before-side.png" alt="before side" /><div class="note">Before: visible tangential lean of the blades (all leaning the same rotational way).</div></div>
+      <div><img src="n22-after-side.png" alt="after side" /><div class="note">After: blades hang straight; the far blades read symmetric with the near one.</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>After — closed around the prize (gripping)</h3>
+    <img src="n22-after-closed.png" alt="after closed" />
+    <div class="note">Closed tips land on the prize surface (blades hug the upper sides; the small hook presses in). Previously the blades sank ~0.22 units inside the prize sphere.</div>
+  </div>
+  <div class="panel">
+    <h3>After — release at the top (open)</h3>
+    <img src="n22-after-release.png" alt="after release" />
+    <div class="note">Fingers open only at the top, classic arcade release. Full drop cycle completes with <span class="fixed">grip approved</span> (contact-approved, joint created, released).</div>
+  </div>
+</div>
+</body>
+</html>

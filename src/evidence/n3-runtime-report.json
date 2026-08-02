@@ -1,13 +1,13 @@
 {
   "node": "N3",
   "baseline": "gate-1-approved + gate-2-design-approved",
-  "capturedAt": "2026-08-01",
-  "devServer": "http://127.0.0.1:5174/",
+  "capturedAt": "2026-08-02",
+  "devServer": "http://127.0.0.1:5175/",
   "viewport": {
-    "width": 1440,
-    "height": 1000,
-    "canvasWidth": 1440,
-    "canvasHeight": 913
+    "width": 1280,
+    "height": 900,
+    "canvasWidth": 1280,
+    "canvasHeight": 757
   },
   "runtimePolicy": "static scene; no physics, state, gameplay animation, or per-frame transform writer",
   "cameraAuthority": "Canvas-owned perspective camera configured by CameraRig from the ReviewCamera preset",
@@ -20,8 +20,8 @@
     "method": "two independent fresh browser loads of the dev-server URL",
     "initial": {
       "status": "pass",
-      "reportSha256": "e43eba5a38aaa34881dd86032a0555f4999dd512070b607fbe6bcc43fa685e5f",
-      "hierarchyCount": 56,
+      "reportSha256": "90258dee40c98b1a123833c8794bcab2f3d19cb31e300db1c7782b81837446c8",
+      "hierarchyCount": 58,
       "missingHierarchy": [],
       "validation": [],
       "transforms": {
@@ -29,11 +29,11 @@
         "clawMount": { "position": [0, 0, 0], "scale": [1, 1, 1] },
         "clawSystemWorldPosition": [0, 2.85, 0.1],
         "headRootWorldPosition": [0, 2.85, 0.1],
-        "gripCenterWorldPosition": [0, 2.6, 0.1]
+        "gripCenterWorldPosition": [0, 2.3200000000000003, 0.1]
       },
       "activeCamera": {
         "name": "ReviewCamera",
-        "position": [6.3, 4.35, 7.8],
+        "position": [0, 2.3, 7],
         "fov": 38,
         "near": 0.05,
         "far": 100
@@ -41,8 +41,8 @@
     },
     "refresh": {
       "status": "pass",
-      "reportSha256": "e43eba5a38aaa34881dd86032a0555f4999dd512070b607fbe6bcc43fa685e5f",
-      "hierarchyCount": 56,
+      "reportSha256": "90258dee40c98b1a123833c8794bcab2f3d19cb31e300db1c7782b81837446c8",
+      "hierarchyCount": 58,
       "missingHierarchy": [],
       "validation": [],
       "transforms": {
@@ -50,11 +50,11 @@
         "clawMount": { "position": [0, 0, 0], "scale": [1, 1, 1] },
         "clawSystemWorldPosition": [0, 2.85, 0.1],
         "headRootWorldPosition": [0, 2.85, 0.1],
-        "gripCenterWorldPosition": [0, 2.6, 0.1]
+        "gripCenterWorldPosition": [0, 2.3200000000000003, 0.1]
       },
       "activeCamera": {
         "name": "ReviewCamera",
-        "position": [6.3, 4.35, 7.8],
+        "position": [0, 2.3, 7],
         "fov": 38,
         "near": 0.05,
         "far": 100
