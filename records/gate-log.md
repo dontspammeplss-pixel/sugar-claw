@@ -1652,3 +1652,57 @@
   "recordedAt": "2026-08-02T07:36:40.972Z"
 }
 ```
+
+## 2026-08-02T07:36:51.810Z — n1a — DRY_RUN_PASS
+
+```json
+{
+  "version": 1,
+  "node": "n1a",
+  "baseline": "m1-archive",
+  "routingInput": {
+    "node": "n1a",
+    "baseline": "m1-archive",
+    "requestedBaseline": "m1-archive",
+    "checks": [
+      "typecheck",
+      "lint",
+      "test",
+      "build"
+    ],
+    "scenarioSet": "scenario:n1a",
+    "baselineUntracked": [],
+    "requiredEvidenceArtifacts": [
+      "records/approvals/gate-1-baseline-rev1.md",
+      "records/contracts/attachment-primitive.md",
+      "records/contracts/collision-matrix.md",
+      "records/contracts/fixed-step-policy.md",
+      "records/contracts/performance-thresholds.md"
+    ],
+    "requiredEvidenceFields": [
+      "node",
+      "baseline",
+      "routingInput",
+      "rule",
+      "outcome",
+      "checkpoint"
+    ],
+    "dryRun": true
+  },
+  "rule": "all required gate rules passed; gate-log.md is gate-owned output",
+  "outcome": "DRY_RUN_PASS",
+  "checkpoint": "n1a:DRY_RUN_PASS:2026-08-02T07:36:51.779Z",
+  "protectedDiff": [],
+  "missingEvidence": [],
+  "checks": [],
+  "requiredFields": [
+    "node",
+    "baseline",
+    "routingInput",
+    "rule",
+    "outcome",
+    "checkpoint"
+  ],
+  "recordedAt": "2026-08-02T07:36:51.810Z"
+}
+```
