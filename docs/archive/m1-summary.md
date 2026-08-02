@@ -82,6 +82,6 @@ scene) are the durable evidence layer and were **not** moved.
 
 1. Read `META_PROMPT.md` §9 for the immediate next action (finish V1 open items → optimization → V2).
 2. Source of truth for the current frontier: `git tag` + `records/approvals/` + `records/task-packets/`.
-3. The archive ratchet tag `m1-archive` exists (commit `46a1a7f`) and `scripts/gate.mjs`
+3. The archive ratchet tag `m1-archive` exists (created 2026-08-02) and `scripts/gate.mjs`
    `defaultBaseline` points at it. Before the next optimization node, **tag a fresh baseline from
    `m1-archive`** so the deterministic gate enforces that node against the archived state.
