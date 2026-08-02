@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url'
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 const gateLogPath = join(repoRoot, 'records', 'gate-log.md')
-const defaultBaseline = 'm1-archive'
+const defaultBaseline = 'opt-baseline-2'
 const defaultChecks = ['typecheck', 'lint', 'test', 'build']
 const defaultScenarioScript = 'scenario:n1a'
 // Gate-owned output is the only records/ exception to the implementation allowlist.
