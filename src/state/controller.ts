@@ -185,9 +185,31 @@ export const LEGAL_TRANSITIONS: readonly LegalTransition[] = [
     guard: 'same active reset epoch',
   },
   { from: 'error', event: 'requestReset', to: 'resetting' },
-  { from: 'error', event: 'retryLoad', to: 'booting' },
+  { from: 'error', event: 'retryLoad', to: 'booting', guard: 'errorKind=asset-load' },
   { from: '*', event: 'invariantFailure', to: 'error', guard: 'except resetting' },
 ]
+
+/**
+ * Resolve the approved transition entry for (from, event), preferring an exact
+ * state match over the '*' wildcard. Callers may filter by guard to select
+ * among multiple entries for the same (from, event) pair.
+ */
+function findLegalTransition(
+  from: GameState,
+  event: ActionType,
+  guardMatches: (guard: string | undefined) => boolean = () => true,
+): LegalTransition | undefined {
+  const candidates = LEGAL_TRANSITIONS.filter(
+    (entry) =>
+      entry.event === event &&
+      (entry.from === from || entry.from === '*') &&
+      guardMatches(entry.guard),
+  )
+  return (
+    candidates.find((entry) => entry.from === from) ??
+    candidates.find((entry) => entry.from === '*')
+  )
+}
 
 const CALLBACK_EVENTS = new Set<ActionType>([
   'poseReached',
@@ -367,9 +389,9 @@ export class StateController {
         }
         return this.rejectEvent(action, 'bootRequested is only meaningful during booting')
       case 'assetsReady':
-        return this.transitionFrom(['booting'], action, 'ready')
+        return this.transitionViaTable(action)
       case 'assetLoadFailed':
-        return this.transitionFrom(['booting'], action, 'error', () => {
+        return this.transitionViaTable(action, () => {
           this.current = {
             ...this.current,
             lastError: errorMessage(action.error),
@@ -377,36 +399,28 @@ export class StateController {
           }
         })
       case 'beginAim':
-        return this.transitionFrom(['ready'], action, 'aiming')
+        return this.transitionViaTable(action)
       case 'moveAim':
-        if (this.current.state !== 'aiming') {
-          return this.rejectCommand(action, 'moveAim requires aiming')
-        }
-        if (!isAimAxis(action.axis)) {
-          return this.rejectCommand(action, 'moveAim axis must be x or z')
-        }
-        if (!Number.isFinite(action.value)) {
-          return this.rejectCommand(action, 'moveAim value must be finite')
-        }
-        this.current = {
-          ...this.current,
-          aim: {
-            ...this.current.aim,
-            [action.axis]: clamp(action.value, this.bounds[action.axis]),
-          },
-        }
-        return this.recordTransition('aiming', action.type, 'aiming')
+        return this.transitionViaTable(action, () => {
+          this.current = {
+            ...this.current,
+            aim: {
+              ...this.current.aim,
+              [action.axis]: clamp(action.value, this.bounds[action.axis]),
+            },
+          }
+        })
       case 'confirmDrop':
-        return this.transitionFrom(['aiming'], action, 'lowering')
+        return this.transitionViaTable(action)
       case 'poseReached':
         if (action.pose !== 'lowered') {
           return this.rejectEvent(action, 'only poseReached(lowered) is legal in v1')
         }
-        return this.transitionFrom(['lowering'], action, 'aligning')
+        return this.transitionViaTable(action)
       case 'alignmentSettled':
-        return this.transitionFrom(['aligning'], action, 'gripping')
+        return this.transitionViaTable(action)
       case 'gripEvaluated':
-        return this.transitionFrom(['gripping'], action, 'lifting', () => {
+        return this.transitionViaTable(action, () => {
           const outcome = cloneOutcome(action.outcome)
           this.current = {
             ...this.current,
@@ -415,11 +429,11 @@ export class StateController {
           }
         })
       case 'liftReached':
-        return this.transitionFrom(['lifting'], action, 'returning')
+        return this.transitionViaTable(action)
       case 'returnReached':
-        return this.transitionFrom(['returning'], action, 'releasing')
+        return this.transitionViaTable(action)
       case 'releaseComplete':
-        return this.transitionFrom(['releasing'], action, 'result', () => {
+        return this.transitionViaTable(action, () => {
           const outcome = cloneOutcome(action.outcome)
           this.current = {
             ...this.current,
@@ -428,10 +442,8 @@ export class StateController {
           }
         })
       case 'baselineRestored':
-        return this.transitionFrom(
-          ['resetting'],
+        return this.transitionViaTable(
           action,
-          action.status === 'ready' ? 'ready' : 'booting',
           () => {
             this.current = {
               ...this.current,
@@ -443,9 +455,10 @@ export class StateController {
               errorKind: null,
             }
           },
+          (guard) => guard === `status=${action.status}`,
         )
       case 'resetFailed':
-        return this.transitionFrom(['resetting'], action, 'error', () => {
+        return this.transitionViaTable(action, () => {
           this.current = {
             ...this.current,
             lastError: errorMessage(action.error),
@@ -453,13 +466,13 @@ export class StateController {
           }
         })
       case 'retryLoad':
-        if (this.current.state !== 'error' || this.current.errorKind !== 'asset-load') {
+        if (this.current.errorKind !== 'asset-load') {
           return this.rejectCommand(
             action,
             'retryLoad requires a recoverable asset-load error',
           )
         }
-        return this.transitionFrom(['error'], action, 'booting', () => {
+        return this.transitionViaTable(action, () => {
           this.current = { ...this.current, lastError: null, errorKind: null }
         })
       case 'invariantFailure':
@@ -469,7 +482,7 @@ export class StateController {
             'invariantFailure is not the reset failure event during resetting',
           )
         }
-        return this.transitionFrom(['booting', ...GAME_STATES.slice(1)], action, 'error', () => {
+        return this.transitionViaTable(action, () => {
           this.current = {
             ...this.current,
             lastError: errorMessage(action.error),
@@ -484,7 +497,8 @@ export class StateController {
   }
 
   private requestReset(): DispatchResult {
-    if (this.current.state === 'resetting') {
+    const entry = findLegalTransition(this.current.state, 'requestReset')
+    if (entry?.to === 'resetting(coalesced)') {
       return this.diagnose('coalesced-reset', { type: 'requestReset' }, 'reset already active')
     }
 
@@ -502,19 +516,28 @@ export class StateController {
     return this.recordTransition(from, 'requestReset', 'resetting')
   }
 
-  private transitionFrom(
-    allowedStates: readonly GameState[],
+  /**
+   * Execute the approved table entry for (current state, action type) when one
+   * exists; otherwise reject with the standard not-legal diagnostic. Guards
+   * that select among multiple entries for the same (from, event) pair (e.g.
+   * baselineRestored status) are handled by the caller-provided guardMatches.
+   */
+  private transitionViaTable(
     action: ControllerAction,
-    to: GameState,
     mutate?: () => void,
+    guardMatches: (guard: string | undefined) => boolean = () => true,
   ): DispatchResult {
-    if (!allowedStates.includes(this.current.state)) {
+    const entry = findLegalTransition(this.current.state, action.type, guardMatches)
+    if (!entry) {
       return this.isCommand(action)
         ? this.rejectCommand(action, `${action.type} is not legal from ${this.current.state}`)
         : this.rejectEvent(action, `${action.type} is not legal from ${this.current.state}`)
     }
+    if (entry.to === 'resetting(coalesced)') {
+      return this.diagnose('coalesced-reset', action, 'reset already active')
+    }
     mutate?.()
-    return this.recordTransition(this.current.state, action.type, to)
+    return this.recordTransition(this.current.state, action.type, entry.to)
   }
 
   private recordTransition(from: GameState, event: ActionType, to: GameState): DispatchResult {

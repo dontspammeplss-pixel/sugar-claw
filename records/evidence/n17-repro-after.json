@@ -1,0 +1,204 @@
+{
+  "node": "N17-repro-after-fix",
+  "bladeLength": 0.44,
+  "tips": {
+    "home": {
+      "FingerPivot_0": [
+        0.16,
+        -0.49,
+        0
+      ],
+      "FingerPivot_1": [
+        -0.07999999999999996,
+        -0.49,
+        0.13856406460551018
+      ],
+      "FingerPivot_2": [
+        -0.08000000000000007,
+        -0.49,
+        -0.13856406460551016
+      ]
+    },
+    "open": {
+      "FingerPivot_0": [
+        0.3150006626410396,
+        -0.46179460241829134,
+        0
+      ],
+      "FingerPivot_1": [
+        -0.15750033132051972,
+        -0.46179460241829134,
+        0.27279857605607205
+      ],
+      "FingerPivot_2": [
+        -0.1575003313205199,
+        -0.46179460241829134,
+        -0.27279857605607194
+      ]
+    },
+    "closed": {
+      "FingerPivot_0": [
+        0.0639789658444175,
+        -0.4793948777054664,
+        0
+      ],
+      "FingerPivot_1": [
+        -0.03198948292220874,
+        -0.4793948777054664,
+        0.05540740972912246
+      ],
+      "FingerPivot_2": [
+        -0.03198948292220878,
+        -0.4793948777054664,
+        -0.055407409729122475
+      ]
+    }
+  },
+  "sweep": {
+    "open": [
+      {
+        "pivot": "FingerPivot_0",
+        "tipAtHome": [
+          0.16,
+          -0.49,
+          0
+        ],
+        "tipAtTarget": [
+          0.3150006626410396,
+          -0.46179460241829134,
+          0
+        ],
+        "displacement": [
+          0.1550006626410396,
+          0.028205397581708647,
+          0
+        ],
+        "radialComponent": 0.1550006626410396,
+        "tangentialComponent": 0,
+        "ratioTangentialOverRadial": 0
+      },
+      {
+        "pivot": "FingerPivot_1",
+        "tipAtHome": [
+          -0.07999999999999996,
+          -0.49,
+          0.13856406460551018
+        ],
+        "tipAtTarget": [
+          -0.15750033132051972,
+          -0.46179460241829134,
+          0.27279857605607205
+        ],
+        "displacement": [
+          -0.07750033132051976,
+          0.028205397581708647,
+          0.13423451145056187
+        ],
+        "radialComponent": 0.15500066264103957,
+        "tangentialComponent": 0,
+        "ratioTangentialOverRadial": 0
+      },
+      {
+        "pivot": "FingerPivot_2",
+        "tipAtHome": [
+          -0.08000000000000007,
+          -0.49,
+          -0.13856406460551016
+        ],
+        "tipAtTarget": [
+          -0.1575003313205199,
+          -0.46179460241829134,
+          -0.27279857605607194
+        ],
+        "displacement": [
+          -0.07750033132051984,
+          0.028205397581708647,
+          -0.13423451145056178
+        ],
+        "radialComponent": 0.15500066264103957,
+        "tangentialComponent": 3.1031676915590914e-17,
+        "ratioTangentialOverRadial": 2.0020351130663263e-16
+      }
+    ],
+    "closed": [
+      {
+        "pivot": "FingerPivot_0",
+        "tipAtHome": [
+          0.16,
+          -0.49,
+          0
+        ],
+        "tipAtTarget": [
+          0.0639789658444175,
+          -0.4793948777054664,
+          0
+        ],
+        "displacement": [
+          -0.0960210341555825,
+          0.010605122294533587,
+          0
+        ],
+        "radialComponent": -0.0960210341555825,
+        "tangentialComponent": 0,
+        "ratioTangentialOverRadial": 0
+      },
+      {
+        "pivot": "FingerPivot_1",
+        "tipAtHome": [
+          -0.07999999999999996,
+          -0.49,
+          0.13856406460551018
+        ],
+        "tipAtTarget": [
+          -0.03198948292220874,
+          -0.4793948777054664,
+          0.05540740972912246
+        ],
+        "displacement": [
+          0.04801051707779122,
+          0.010605122294533587,
+          -0.08315665487638772
+        ],
+        "radialComponent": -0.0960210341555825,
+        "tangentialComponent": 1.3877787807814457e-17,
+        "ratioTangentialOverRadial": 1.4452862260708765e-16
+      },
+      {
+        "pivot": "FingerPivot_2",
+        "tipAtHome": [
+          -0.08000000000000007,
+          -0.49,
+          -0.13856406460551016
+        ],
+        "tipAtTarget": [
+          -0.03198948292220878,
+          -0.4793948777054664,
+          -0.055407409729122475
+        ],
+        "displacement": [
+          0.04801051707779129,
+          0.010605122294533587,
+          0.08315665487638768
+        ],
+        "radialComponent": -0.0960210341555825,
+        "tangentialComponent": 1.3877787807814457e-17,
+        "ratioTangentialOverRadial": 1.4452862260708765e-16
+      }
+    ]
+  },
+  "closedEnclosure": [
+    {
+      "pivot": "FingerPivot_0",
+      "radialDistanceFromAxis": 0.0639789658444175
+    },
+    {
+      "pivot": "FingerPivot_1",
+      "radialDistanceFromAxis": 0.06397896584441748
+    },
+    {
+      "pivot": "FingerPivot_2",
+      "radialDistanceFromAxis": 0.0639789658444175
+    }
+  ],
+  "articulationAxis": "local Z (tangential) — applied N17 fix"
+}

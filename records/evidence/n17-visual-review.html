@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>N17 visual gate — before vs after fix</title>
+    <style>
+      body {
+        margin: 0;
+        background: #0d1215;
+        font-family: ui-monospace, monospace;
+        color: #cfe3e8;
+        padding: 16px;
+      }
+      h1 {
+        font-size: 15px;
+        margin: 0 0 4px;
+      }
+      p.note {
+        font-size: 12px;
+        opacity: 0.75;
+        margin: 0 0 14px;
+        max-width: 1100px;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .panel {
+        flex: 1;
+      }
+      .panel h2 {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin: 0 0 6px;
+        opacity: 0.9;
+      }
+      .panel.before h2 {
+        color: #e8a05a;
+      }
+      .panel.after h2 {
+        color: #5ae8b0;
+      }
+      img {
+        width: 100%;
+        height: auto;
+        border: 1px solid #263038;
+        border-radius: 6px;
+        background: #0d1215;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>N17 — finger articulation hinge fix (radial → tangential axis)</h1>
+    <p class="note">
+      Each row shows home / open / closed for the same real rig + StaticScene finger meshes, with the
+      translucent prize sphere at the grip center. Before: blades sweep tangentially (twisted, no
+      enclosure). After: blades swing radially — open flares symmetrically outward, closed converges
+      around the prize.
+    </p>
+    <div class="row">
+      <div class="panel before">
+        <h2>Before (radial-axis hinge)</h2>
+        <img src="n17-before-fix.png" alt="before fix" />
+      </div>
+      <div class="panel after">
+        <h2>After (tangential-axis hinge)</h2>
+        <img src="n17-after-fix.png" alt="after fix" />
+      </div>
+    </div>
+  </body>
+</html>

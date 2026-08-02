@@ -8,9 +8,8 @@ import {
   PIVOT_NAMES,
   type ClawPose,
   type ClawPoseName,
-  type Quat,
-  type Vec3,
 } from '../claw/rig'
+import type { Quat, Vec3 } from '../types/geometry'
 
 export interface PoseAnimationState {
   readonly active: boolean

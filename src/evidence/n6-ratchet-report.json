@@ -1,0 +1,72 @@
+{
+  "node": "N18",
+  "baseline": "gate-1-baseline-rev1 (config fixed-step-rev1)",
+  "task": "Ratchet Rapier solver iterations / friction / restitution inside N6_PHYSICS_CONFIG only; run the full N6 scenario set each change; keep-or-revert.",
+  "objective": "Measurable improvement in carry stability and jitter without violating fixed-step policy or performance thresholds.",
+  "method": "One parameter change at a time; full n6.test.ts scenario set (11 tests covering idle, travel, open/close contact, carry, failed carry, reset, repeated run, disposal, constraint lifetime) run after each change; deterministic carry deviation and idle jitter measured per probe from createN6Evidence; wall-clock step cost measured as a headless proxy.",
+  "stopped": "all probes reverted — no configuration change kept",
+  "verdict": "The approved fixed-step-rev1 parameters (solverIterations 8, additionalFrictionIterations 2, friction 0.7, restitution 0) are already the local optimum for this fixture; every guide-suggested raise regressed the objective metric or was inert. Re-verified 2026-08-02 by a fresh ratchet run.",
+  "probes": [
+    {
+      "probe": "solverIterations 8 → 16",
+      "scenarios": "11/11 pass",
+      "idleJitter": 0,
+      "carryDeviation": 0.0074218273162842685,
+      "baselineCarryDeviation": 0.006927108764648526,
+      "verdict": "REVERT — carry deviation regressed (0.00693 → 0.00742, +7.1%)",
+      "note": "More solver iterations converged the fixed impulse joint to a slightly looser carry pose in this fixture."
+    },
+    {
+      "probe": "solverIterations 8 → 12 (intermediate)",
+      "scenarios": "11/11 pass",
+      "idleJitter": 0,
+      "carryDeviation": 0.007256841659545987,
+      "baselineCarryDeviation": 0.006927108764648526,
+      "verdict": "REVERT — carry deviation still regressed (0.00693 → 0.00726, +4.8%)",
+      "note": "Confirms the 16-probe result was not a threshold artifact; any raise worsens carry stability here."
+    },
+    {
+      "probe": "friction 0.7 → 0.9",
+      "scenarios": "11/11 pass",
+      "idleJitter": 0,
+      "carryDeviation": 0.006927108764648526,
+      "baselineCarryDeviation": 0.006927108764648526,
+      "verdict": "REVERT — byte-identical outcomes, no measurable improvement",
+      "note": "The approved carry is an explicit fixed impulse joint (A-03); surface friction is inert during the jointed carry and does not alter idle settling."
+    },
+    {
+      "probe": "restitution 0 → 0.1",
+      "scenarios": "11/11 pass",
+      "idleJitter": 0,
+      "carryDeviation": 0.006927108764648526,
+      "baselineCarryDeviation": 0.006927108764648526,
+      "verdict": "REVERT — byte-identical outcomes, no measurable improvement",
+      "note": "restitution 0 is the approved non-bouncy floor contact; raising it adds unmeasured post-release bounce risk with zero fixture benefit."
+    },
+    {
+      "probe": "additionalFrictionIterations 2 → 4 (extra probe)",
+      "scenarios": "11/11 pass",
+      "idleJitter": 0,
+      "carryDeviation": 0.006927108764648526,
+      "baselineCarryDeviation": 0.006927108764648526,
+      "verdict": "REVERT — byte-identical outcomes, higher step cost",
+      "note": "Pure cost: idle step cost rose to ~1.7× baseline in the headless proxy with no change to any fixture outcome."
+    }
+  ],
+  "performance": {
+    "threshold": "physics step cost ≤ 2 ms average (records/contracts/performance-thresholds.md rev 1)",
+    "baselineMeasuredStepMs": { "idle": 0.1057, "carryLift": 0.1232 },
+    "worstProbeStepMs": { "idle": 0.1788, "carryLift": 0.2175 },
+    "budgetHeadroom": "measured costs ~9x (worst probe) to ~19x (baseline) below the 2 ms threshold; fixed 1/60 s step unchanged; no threshold revision required",
+    "caveat": "headless Vitest wall-clock proxy, same limitation N8 recorded (browser frame timing is N9 territory); deterministic physics results are the decisive evidence"
+  },
+  "evidenceFiles": [
+    "src/evidence/n6.test.ts (11 scenarios, unchanged, green — re-run after each of 5 probes)",
+    "src/evidence/n6-ratchet-report.json (this record, refreshed 2026-08-02)",
+    "src/physics/config.ts (unchanged from approved baseline; only the pre-existing N13 type-import diff remains)",
+    "records/task-packets/N18-physics-ratchet.md (task packet with full probe table)"
+  ],
+  "stopConditionsMet": false,
+  "stopClarification": "No test scenario ever failed and the per-frame budget was never exceeded, so the node did not halt. The solver-iteration probes did regress the objective carry-stability metric, which triggered the designed ratchet revert of that arm rather than a node stop.",
+  "contract": "N18 — Tune Rapier parameters within existing config (ratchet), PLAN-node-contracts.md §4"
+}

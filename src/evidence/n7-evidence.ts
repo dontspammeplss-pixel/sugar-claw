@@ -145,7 +145,8 @@ export async function createN7Evidence() {
         syncRestored:
           reset.sync?.clawSynchronized === true &&
           reset.sync.prizeSynchronized === true,
-        poseRestored: coordinator.pose.detectDrift('reset').matches,
+        // Reset restores the baseline rig, then presents the parked-open pose.
+        poseRestored: coordinator.pose.detectDrift('open').matches,
         physicsStateReady: coordinator.physics.state === 'ready',
         noCarryConstraint: !coordinator.physics.carryConstraintActive,
       },

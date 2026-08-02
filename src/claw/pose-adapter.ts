@@ -7,9 +7,8 @@ import {
   type ClawRigDefinition,
   type ClawTransformTarget,
   type PivotName,
-  type Quat,
-  type Vec3,
 } from './rig'
+import type { Quat, Vec3 } from '../types/geometry'
 
 export type PivotSnapshot = ClawTransformTarget
 

@@ -7,12 +7,7 @@ import type { RuntimeSceneReport } from './report'
 import { captureRuntimeSceneReport } from './report'
 import { StaticScene } from './StaticScene'
 import { CAMERA_VIEWS, type CameraViewName } from './config'
-
-declare global {
-  interface Window {
-    __N3_RUNTIME_REPORT__?: RuntimeSceneReport
-  }
-}
+import { clearN3RuntimeReport, publishN3RuntimeReport } from '../evidence/publish'
 
 interface RuntimeEvidenceProbeProps {
   onReport?: (report: RuntimeSceneReport) => void
@@ -22,7 +17,7 @@ function RuntimeEvidenceProbe({ onReport }: RuntimeEvidenceProbeProps) {
   const { scene, camera } = useThree()
 
   useEffect(() => {
-    delete window.__N3_RUNTIME_REPORT__
+    clearN3RuntimeReport()
   }, [])
   const captured = useRef(false)
   const lastReport = useRef('')
@@ -36,16 +31,7 @@ function RuntimeEvidenceProbe({ onReport }: RuntimeEvidenceProbeProps) {
     const serializedReport = JSON.stringify(report)
     if (serializedReport !== lastReport.current) {
       lastReport.current = serializedReport
-      window.__N3_RUNTIME_REPORT__ = report
-      const appShell = document.querySelector<HTMLElement>('.app-shell')
-      appShell?.setAttribute(
-        'data-n3-runtime',
-        report.validation.length === 0 ? 'pass' : 'fail',
-      )
-      appShell?.setAttribute(
-        'data-n3-runtime-errors',
-        report.validation.join('|'),
-      )
+      publishN3RuntimeReport(report)
       onReport?.(report)
     }
     if (report.missingHierarchy.length > 0 || report.validation.length > 0)

@@ -1,4 +1,5 @@
-export type Vec3 = readonly [number, number, number]
+import type { Vec3 } from '../types/geometry'
+export type { Vec3 } from '../types/geometry'
 /**
  * N6 physics policy: one fixed-step configuration is shared by every adapter
  * and evidence fixture. Render timing never enters this simulation.

@@ -129,7 +129,9 @@ describe('N7 integrated effect coordinator', () => {
       expect(coordinator.snapshot.outcome).toBeNull()
       expect(coordinator.physics.state).toBe('ready')
       expect(coordinator.physics.carryConstraintActive).toBe(false)
-      expect(coordinator.pose.detectDrift('reset').matches).toBe(true)
+      // Reset restores the baseline rig, then presents the parked-open pose.
+      expect(coordinator.pose.detectDrift('open').matches).toBe(true)
+      expect(coordinator.pose.currentPose).toBe('open')
       expect(coordinator.runtimeReport.sync).toMatchObject({
         clawSynchronized: true,
         prizeSynchronized: true,
@@ -146,6 +148,50 @@ describe('N7 integrated effect coordinator', () => {
         kind: 'stale-callback',
         callbackRunId: oldControllerRunId,
       })
+    } finally {
+      coordinator.dispose()
+    }
+  })
+
+  it('presents the classic arcade cycle: parked open, descend open, close at the bottom, stay closed through lift/return, open at release', async () => {
+    const coordinator = await N7EffectCoordinator.create(createFixture())
+    try {
+      // Parked open at boot.
+      expect(coordinator.pose.currentPose).toBe('open')
+
+      coordinator.dispatch({ type: 'beginAim' })
+      coordinator.dispatch({ type: 'moveAim', axis: 'x', value: 0.2 })
+      coordinator.dispatch({ type: 'confirmDrop' })
+      expect(coordinator.snapshot.state).toBe('lowering')
+      coordinator.tick(1000 / 60)
+      // Descend phase: fingers stay open.
+      expect(coordinator.pose.currentPose).toBe('open')
+
+      let sawLifting = false
+      let sawReturning = false
+      let sawReleasing = false
+      for (let tick = 0; tick < 220; tick += 1) {
+        coordinator.tick(1000 / 60)
+        const state = coordinator.snapshot.state
+        if (state === 'lifting') {
+          sawLifting = true
+          // Fingers must stay closed while carrying the prize upward.
+          expect(coordinator.pose.currentPose).toBe('closed')
+        } else if (state === 'returning') {
+          sawReturning = true
+          // Fingers stay closed during the return leg too.
+          expect(coordinator.pose.currentPose).toBe('closed')
+        } else if (state === 'releasing') {
+          sawReleasing = true
+        }
+        if (state === 'result') break
+      }
+      expect(sawLifting).toBe(true)
+      expect(sawReturning).toBe(true)
+      expect(sawReleasing).toBe(true)
+      expect(coordinator.snapshot.state).toBe('result')
+      // Released at the top: fingers back to open.
+      expect(coordinator.pose.currentPose).toBe('open')
     } finally {
       coordinator.dispose()
     }

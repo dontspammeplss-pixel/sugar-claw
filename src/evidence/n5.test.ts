@@ -3,6 +3,8 @@ import {
   createStateController,
   createStateStore,
   GAME_STATES,
+  LEGAL_TRANSITIONS,
+  type ActionType,
   type Command,
   type ControllerAction,
   type GameState,
@@ -52,6 +54,45 @@ function actionForCommand(command: Command): Command {
   if (command.type === 'moveAim') return { ...command, value: 0.5 }
   if (command.type === 'retryLoad') return command
   return command
+}
+
+function actionForEvent(event: ActionType, runId: number): ControllerAction {
+  switch (event) {
+    case 'assetsReady':
+      return { type: 'assetsReady' }
+    case 'assetLoadFailed':
+      return { type: 'assetLoadFailed', error: 'asset unavailable' }
+    case 'beginAim':
+      return { type: 'beginAim' }
+    case 'moveAim':
+      return { type: 'moveAim', axis: 'x', value: 0.5 }
+    case 'confirmDrop':
+      return { type: 'confirmDrop' }
+    case 'poseReached':
+      return { type: 'poseReached', pose: 'lowered', runId }
+    case 'alignmentSettled':
+      return { type: 'alignmentSettled', runId }
+    case 'gripEvaluated':
+      return { type: 'gripEvaluated', outcome: 'success', runId }
+    case 'liftReached':
+      return { type: 'liftReached', runId }
+    case 'returnReached':
+      return { type: 'returnReached', runId }
+    case 'releaseComplete':
+      return { type: 'releaseComplete', outcome: 'success', runId }
+    case 'baselineRestored':
+      return { type: 'baselineRestored', status: 'ready', runId }
+    case 'resetFailed':
+      return { type: 'resetFailed', error: 'reset failed', runId }
+    case 'requestReset':
+      return { type: 'requestReset' }
+    case 'retryLoad':
+      return { type: 'retryLoad' }
+    case 'invariantFailure':
+      return { type: 'invariantFailure', error: 'invariant violated', runId }
+    case 'bootRequested':
+      return { type: 'bootRequested' }
+  }
 }
 
 function commandExpected(state: GameState, command: Command): boolean {
@@ -342,5 +383,67 @@ describe('N5 typed state controller', () => {
     expect(evidence.interruptedAction.staleAccepted).toBe(false)
     expect(evidence.interruptedAction.diagnostic?.kind).toBe('stale-callback')
     expect(evidence.errorRecovery.state).toBe('booting')
+  })
+
+  it('keeps dispatch legality derived from LEGAL_TRANSITIONS (switch ≡ table)', () => {
+    const events: ActionType[] = [
+      ...new Set<ActionType>([
+        ...LEGAL_TRANSITIONS.map((entry) => entry.event),
+        'bootRequested',
+      ]),
+    ]
+    const coveredFrom = (state: GameState, event: ActionType) =>
+      LEGAL_TRANSITIONS.some(
+        (entry) =>
+          entry.event === event &&
+          (entry.from === state || entry.from === '*') &&
+          !(
+            entry.from === '*' &&
+            entry.guard === 'except resetting' &&
+            state === 'resetting'
+          ),
+      )
+
+    for (const entry of LEGAL_TRANSITIONS) {
+      if (entry.from === '*') continue
+      const controller = createStateController()
+      enterState(controller, entry.from)
+      const runId = controller.snapshot().runId
+      const action =
+        entry.event === 'baselineRestored' && entry.guard === 'status=needsLoad'
+          ? ({ type: 'baselineRestored', status: 'needsLoad', runId } as const)
+          : actionForEvent(entry.event, runId)
+      const result = controller.dispatch(action)
+      if (entry.to === 'resetting(coalesced)') {
+        expect(result.accepted, `${entry.from} + ${entry.event} coalesces`).toBe(false)
+        expect(result.snapshot.state).toBe('resetting')
+        expect(result.snapshot.diagnostics.at(-1)?.kind).toBe('coalesced-reset')
+        continue
+      }
+      expect(result.accepted, `${entry.from} + ${entry.event} must be legal`).toBe(true)
+      expect(
+        result.snapshot.state,
+        `${entry.from} + ${entry.event} → ${entry.to}`,
+      ).toBe(entry.to)
+    }
+
+    for (const state of GAME_STATES) {
+      for (const event of events) {
+        const controller = createStateController()
+        enterState(controller, state)
+        const result = controller.dispatch(
+          actionForEvent(event, controller.snapshot().runId),
+        )
+        if (event === 'requestReset' && state === 'resetting') {
+          expect(result.accepted).toBe(false)
+          expect(result.snapshot.diagnostics.at(-1)?.kind).toBe('coalesced-reset')
+        } else if (event === 'invariantFailure' && coveredFrom(state, event)) {
+          expect(result.accepted, `invariantFailure from ${state}`).toBe(true)
+          expect(result.snapshot.state, `invariantFailure from ${state} → error`).toBe('error')
+        } else {
+          expect(result.accepted, `${event} from ${state}`).toBe(coveredFrom(state, event))
+        }
+      }
+    }
   })
 })

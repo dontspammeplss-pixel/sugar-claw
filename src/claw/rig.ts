@@ -1,4 +1,9 @@
 import { Euler, Quaternion, Vector3 } from 'three'
+import type { Quat, Vec3 } from '../types/geometry'
+// N13: canonical tuple types live in src/types/geometry.ts. Re-exported here
+// so the rig module keeps its historical public type surface for consumers
+// (e.g. scene/evidence) that import Vec3/Quat through the rig.
+export type { Quat, Vec3 } from '../types/geometry'
 
 export const PIVOT_NAMES = [
   'FingerPivot_0',
@@ -18,8 +23,6 @@ export const POSE_NAMES = [
 ] as const
 
 export type ClawPoseName = (typeof POSE_NAMES)[number]
-export type Vec3 = readonly [number, number, number]
-export type Quat = readonly [number, number, number, number]
 
 export interface ClawTransformTarget {
   readonly position: Vec3
@@ -85,8 +88,16 @@ function poseTarget(
   articulation: number,
 ): ClawTransformTarget {
   const base = new Quaternion().fromArray([...baseline.quaternion])
+  // N17: the baseline Euler (0, -angle, 0) orients each pivot so its local X
+  // is the RADIAL axis (outward from the claw axis) and its local Z is the
+  // TANGENTIAL axis (along the claw's circle). Articulating about the radial
+  // axis swept the hanging blade (-Y) tangentially, so the fingers could never
+  // flare around a prize ("twisted" appearance, no enclosure). The correct
+  // hinge for a hanging claw finger is the tangential axis: the blade then
+  // swings in the radial plane, flaring outward on open and converging on the
+  // claw axis on closed.
   const localArticulation = new Quaternion().setFromAxisAngle(
-    new Vector3(1, 0, 0),
+    new Vector3(0, 0, 1),
     articulation,
   )
   return {

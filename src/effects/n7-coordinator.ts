@@ -10,6 +10,10 @@ import type {
 } from '../state/controller'
 import { createStateController, type StateController } from '../state/controller'
 import { createClawPoseAnimator, type ClawPoseAnimator } from '../animation/pose-animation'
+import {
+  createClawTravelAnimator,
+  type ClawTravelAnimator,
+} from '../animation/travel-animator'
 import { ClawPoseAdapter } from '../claw/pose-adapter'
 import {
   N6PhysicsAdapter,
@@ -19,6 +23,11 @@ import {
   type PhysicsTransform,
 } from '../physics/adapter'
 import { N6_PHYSICS_CONFIG, type Vec3 } from '../physics/config'
+import {
+  errorMessage,
+  publishN7RuntimeError,
+  publishN7RuntimeReport,
+} from '../evidence/publish'
 
 export interface N7SceneBindings {
   readonly sceneRoot: Object3D
@@ -79,10 +88,6 @@ function quaternionTuple(
   return quaternion.toArray() as readonly [number, number, number, number]
 }
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
-}
-
 function findRequired(root: Object3D, name: string): Object3D {
   const object = root.getObjectByName(name)
   if (!object) throw new Error(`N7 integration: missing scene object ${name}`)
@@ -126,16 +131,13 @@ export class N7EffectCoordinator {
   private alignmentSteps = 0
   private physicsAccumulatorMs = 0
   private gripAttempted = false
+  /** Whether the releasing-state open animation has started this run. */
+  private releaseOpened = false
   private lastGrip: N7RuntimeReport['grip'] = null
   private lastSync: N7SyncReport | null = null
   private disposed = false
-  /** Active kinematic claw travel between two absolute positions. */
-  private travel: {
-    readonly start: Vec3
-    readonly target: Vec3
-    readonly durationMs: number
-    elapsedMs: number
-  } | null = null
+  /** Kinematic claw travel between two absolute positions (see travel-animator). */
+  private readonly travel: ClawTravelAnimator = createClawTravelAnimator()
 
   private constructor(
     bindings: N7SceneBindings,
@@ -153,6 +155,9 @@ export class N7EffectCoordinator {
     this.animator = createClawPoseAnimator(this.pose)
 
     this.pose.restoreBaseline()
+    // Parked-open presentation (classic arcade rest pose) layered on the
+    // restored baseline rig transforms.
+    this.pose.applyPoseTarget('open')
     this.syncVisuals()
     const assetsReady = this.controller.dispatch({ type: 'assetsReady' })
     if (!assetsReady.accepted) {
@@ -275,7 +280,15 @@ export class N7EffectCoordinator {
     ) {
       this.physicsAccumulatorMs -= fixedStepMs
       stepsThisTick += 1
-      if (this.travel) this.advanceTravel(fixedStepMs)
+      if (this.travel.state.active) {
+        const next = this.travel.advance(fixedStepMs)
+        if (next && !this.physics.moveClaw(next)) {
+          // Interpolation of two in-bounds points stays in-bounds, but snap
+          // to the validated target if a degenerate position were ever
+          // rejected so travel can never stall silently.
+          this.physics.moveClaw(this.target!)
+        }
+      }
       this.physics.step()
       if (this.animator.state.active) this.animator.advance(fixedStepMs)
       this.syncVisuals()
@@ -307,7 +320,7 @@ export class N7EffectCoordinator {
       throw new Error(`N7 integration: aim preview target is out of bounds`)
     }
     this.target = target
-    this.startTravel(target, TRAVEL_AIM_MS)
+    this.travel.start(this.physics.transform('claw').position, target, TRAVEL_AIM_MS)
   }
 
   private beginLowering(aim: StateSnapshot['aim']): void {
@@ -318,8 +331,10 @@ export class N7EffectCoordinator {
     this.target = target
     this.alignmentSteps = 0
     this.gripAttempted = false
-    this.animator.start('lowered', 0)
-    this.startTravel(target, TRAVEL_LOWERING_MS)
+    this.releaseOpened = false
+    // Classic arcade: descend with fingers open.
+    this.animator.start('open', 0)
+    this.travel.start(this.physics.transform('claw').position, target, TRAVEL_LOWERING_MS)
   }
 
   private beginLift(): void {
@@ -329,7 +344,7 @@ export class N7EffectCoordinator {
       throw new Error(`N7 integration: derived lifting target is out of bounds`)
     }
     this.target = target
-    this.startTravel(target, TRAVEL_LIFT_MS)
+    this.travel.start(this.physics.transform('claw').position, target, TRAVEL_LIFT_MS)
   }
 
   private beginReturn(): void {
@@ -338,42 +353,9 @@ export class N7EffectCoordinator {
       throw new Error(`N7 integration: return target is out of bounds`)
     }
     this.target = target
-    this.animator.start('open', 120)
-    this.startTravel(target, TRAVEL_RETURN_MS)
-  }
-
-  /** Starts kinematic claw travel from the current pose to an absolute target. */
-  private startTravel(target: Vec3, durationMs: number): void {
-    const start = this.physics.transform('claw').position
-    this.travel = { start: [...start] as Vec3, target, durationMs, elapsedMs: 0 }
-  }
-
-  /** Advances the active travel by a fixed step; snaps exactly on completion. */
-  private advanceTravel(deltaMs: number): void {
-    if (!this.travel) return
-    if (this.travel.durationMs <= 0) {
-      // Degenerate duration: snap to the target exactly instead of dividing.
-      this.physics.moveClaw(this.travel.target)
-      this.travel = null
-      return
-    }
-    this.travel.elapsedMs += deltaMs
-    const t = Math.min(1, this.travel.elapsedMs / this.travel.durationMs)
-    const eased = easeInOutCubic(t)
-    const position: Vec3 = [
-      this.travel.start[0] + (this.travel.target[0] - this.travel.start[0]) * eased,
-      this.travel.start[1] + (this.travel.target[1] - this.travel.start[1]) * eased,
-      this.travel.start[2] + (this.travel.target[2] - this.travel.start[2]) * eased,
-    ]
-    const reached = t >= 1
-    const next = reached ? this.travel.target : position
-    // Interpolation of two in-bounds points stays in-bounds, but snap to the
-    // validated target if a degenerate position were ever rejected so travel
-    // can never stall silently.
-    if (!this.physics.moveClaw(next)) {
-      this.physics.moveClaw(this.travel.target)
-    }
-    if (reached) this.travel = null
+    // Classic arcade: keep fingers closed while carrying the prize home; the
+    // open (release) pose happens in the releasing state, not during return.
+    this.travel.start(this.physics.transform('claw').position, target, TRAVEL_RETURN_MS)
   }
 
   private advanceEffects(): void {
@@ -446,7 +428,12 @@ export class N7EffectCoordinator {
         }
         break
       case 'releasing':
-        if (!this.animator.state.active) {
+        // Classic arcade: open the fingers first so the prize drops visually,
+        // then remove the carry constraint once the open pose completes.
+        if (!this.releaseOpened) {
+          this.releaseOpened = true
+          this.animator.start('open', RELEASE_OPEN_MS)
+        } else if (!this.animator.state.active) {
           const removedAtRunId = this.physics.releaseGrip()
           const outcome: Outcome = {
             ...(this.snapshot.outcome && typeof this.snapshot.outcome !== 'string'
@@ -481,11 +468,14 @@ export class N7EffectCoordinator {
     this.animator.cancel()
     this.physics.reset()
     this.pose.restoreBaseline()
+    // Parked-open presentation after every reset.
+    this.pose.applyPoseTarget('open')
     this.target = null
-    this.travel = null
+    this.travel.cancel()
     this.alignmentSteps = 0
     this.physicsAccumulatorMs = 0
     this.gripAttempted = false
+    this.releaseOpened = false
     this.lastGrip = null
     this.syncVisuals()
     const runId = this.snapshot.runId
@@ -571,16 +561,13 @@ export interface N7RuntimeProps {
 }
 
 const MAX_CATCH_UP_MS = 250
+/** How long the releasing-state finger-open animation runs before release. */
+const RELEASE_OPEN_MS = 250
 const INITIAL_SIGNATURE = ''
 const TRAVEL_AIM_MS = 350
 const TRAVEL_LOWERING_MS = 800
 const TRAVEL_LIFT_MS = 700
 const TRAVEL_RETURN_MS = 700
-
-/** Smoothstep ease so kinematic travel accelerates and decelerates. */
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
-}
 
 export function reportSignature(report: N7RuntimeReport): string {
   return [
@@ -615,12 +602,12 @@ export function N7Runtime({ onReady, onSnapshot }: N7RuntimeProps) {
         pending = coordinator
         coordinatorRef.current = coordinator
         callbacks.current.onReady?.(coordinator)
-        publishRuntimeReport(coordinator.runtimeReport)
+        publishN7RuntimeReport(coordinator.runtimeReport)
         lastSignatureRef.current = reportSignature(coordinator.runtimeReport)
         callbacks.current.onSnapshot?.(coordinator.runtimeReport)
       })
       .catch((error: unknown) => {
-        publishRuntimeError(error)
+        publishN7RuntimeError(error)
       })
 
     return () => {
@@ -638,41 +625,9 @@ export function N7Runtime({ onReady, onSnapshot }: N7RuntimeProps) {
     const signature = reportSignature(report)
     if (signature === lastSignatureRef.current) return
     lastSignatureRef.current = signature
-    publishRuntimeReport(report)
+    publishN7RuntimeReport(report)
     callbacks.current.onSnapshot?.(report)
   })
 
   return null
-}
-
-let cachedShell: HTMLElement | null = null
-
-function appShell(): HTMLElement | null {
-  if (cachedShell?.isConnected) return cachedShell
-  cachedShell = document.querySelector<HTMLElement>('.app-shell')
-  return cachedShell
-}
-
-function publishRuntimeReport(report: N7RuntimeReport): void {
-  const windowWithReport = window as Window & {
-    __N7_RUNTIME_REPORT__?: N7RuntimeReport
-  }
-  windowWithReport.__N7_RUNTIME_REPORT__ = report
-  const shell = appShell()
-  if (!shell) return
-  const sync = report.sync && report.sync.clawSynchronized && report.sync.prizeSynchronized
-    ? 'pass'
-    : 'pending'
-  if (shell.getAttribute('data-n7-state') !== report.state.state) {
-    shell.setAttribute('data-n7-state', report.state.state)
-  }
-  if (shell.getAttribute('data-n7-sync') !== sync) {
-    shell.setAttribute('data-n7-sync', sync)
-  }
-}
-
-function publishRuntimeError(error: unknown): void {
-  const shell = document.querySelector<HTMLElement>('.app-shell')
-  shell?.setAttribute('data-n7-state', 'error')
-  shell?.setAttribute('data-n7-error', errorMessage(error))
 }
