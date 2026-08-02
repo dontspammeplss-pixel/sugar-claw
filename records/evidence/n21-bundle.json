@@ -19,7 +19,7 @@
       { "file": "dist/assets/react-CFM6CdCM.js", "minifiedKB": 141.78, "gzipKB": 45.41, "note": "react + react-dom" },
       { "file": "dist/assets/r3f-4-AJBOM9.js", "minifiedKB": 130.39, "gzipKB": 42.45, "note": "@react-three/fiber" },
       { "file": "dist/assets/three-Dnweohdy.js", "minifiedKB": 681.09, "gzipKB": 175.38, "note": "three + three-stdlib" },
-      { "file": "dist/assets/rapier-D3Mqfikn.js", "minifiedKB": 2056.36, "gzipKB": 761.10, "note": "@react-three/rapier + @dimforge/rapier3d-compat glue; still >500 kB — evidence, not hidden" }
+      { "file": "dist/assets/rapier-D3Mqfikn.js", "minifiedKB": 2056.36, "gzipKB": 761.10, "note": "@dimforge/rapier3d-compat WASM glue; @react-three/rapier wrapper JS lands in the r3f chunk because the '@react-three' manualChunks check runs first; still >500 kB — evidence, not hidden" }
     ],
     "totalMinifiedKB": 3063.47,
     "totalGzipKB": 1039.45

@@ -94,5 +94,6 @@
     "Failed to load resource: the server responded with a status of 404 (Not Found)"
   ],
   "recordedAt": "2026-08-02T08:51:46.360Z",
-  "note": "Software-GL headless sample is indicative, not the reference desktop target (perf contract measures on the reference device)."
+  "thresholdPassClaimed": false,
+  "note": "Software-GL headless sample is indicative, not the reference desktop target (perf contract measures on the reference device). No performance-threshold pass is claimed by this sample; the binding >=50 fps / p95 <=20 ms measurement remains pending a human/GPU run on the reference device."
 }

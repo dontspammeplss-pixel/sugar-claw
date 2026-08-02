@@ -11,10 +11,12 @@
 > **Node findings (recorded 2026-08-02):** F-001 — `gsap` and `zustand` are declared in
 > `package.json` but not installed and not imported anywhere in `src/`; bundle does not contain
 > them. Dependency edits are protected (charter §1.4 stack boundary), so no change was made; a
-> future charter decision can remove or restore them. F-002 — rapier WASM glue dominates the
-> bundle (2,056 kB min / 761 kB gzip). F-003 — first in-browser frame-timing evidence captured
-> (closes N8-F-003); headless software-GL ~3 fps is indicative only; binding thresholds are
-> measured on the reference desktop GPU. F-004 — one 404 for `/favicon.ico` (no favicon link in
+> future charter decision can remove or restore them. F-002 — rapier3d-compat WASM glue dominates the
+> bundle (2,056 kB min / 761 kB gzip); the @react-three/rapier wrapper JS sits in the r3f
+> chunk (the '@react-three' manualChunks check runs before the rapier check). F-003 — first in-browser frame-timing evidence captured
+> (evidence gap partially closed; N8-F-003's binding threshold measurement still pending a
+> human/GPU run on the reference desktop device); headless software-GL ~3 fps is indicative
+> only, and no threshold pass is claimed (`thresholdPassClaimed: false` in n21-browser.json). F-004 — one 404 for `/favicon.ico` (no favicon link in
 > `index.html`); cosmetic.
 
 ---
