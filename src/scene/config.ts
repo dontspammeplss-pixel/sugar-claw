@@ -11,6 +11,7 @@ export const MATERIALS = {
   playfieldWarm: '#88745C',
   rubberDark: '#151719',
   prizeIvory: '#F5E2B8',
+  backdropAccent: '#1D2A33',
 } as const
 
 export const REVIEW_CAMERA = {
@@ -23,6 +24,45 @@ export const REVIEW_CAMERA = {
   farClip: 100,
   framingMargin: 0.08,
 } as const
+
+export type CameraViewName = 'orbit' | 'top' | 'side'
+
+export interface CameraViewPreset {
+  readonly name: string
+  readonly position: Vec3
+  readonly target: Vec3
+  readonly up: Vec3
+  readonly fovVerticalDeg: number
+}
+
+/** Selectable viewport camera angles (Free Orbit / Top / Side). */
+export const CAMERA_VIEWS: Readonly<Record<CameraViewName, CameraViewPreset>> =
+  {
+    // Only the front glass is transparent; the top cap and side frames are solid.
+    // Cameras therefore live in front of the glass (z > 1.2) at steep angles so
+    // their sightline enters the chamber through the glass.
+    orbit: {
+      name: 'Free Orbit',
+      position: [0, 2.3, 7],
+      target: [0, 2.05, 0],
+      up: [0, 1, 0],
+      fovVerticalDeg: 38,
+    },
+    top: {
+      name: 'Top View',
+      position: [0, 5.5, 4.5],
+      target: [0, 0.9, 0],
+      up: [0, 0, -1],
+      fovVerticalDeg: 40,
+    },
+    side: {
+      name: 'Side View',
+      position: [5.5, 2.15, 4.5],
+      target: [0, 2.05, 0],
+      up: [0, 1, 0],
+      fovVerticalDeg: 36,
+    },
+  }
 
 export const MACHINE = {
   envelope: [3.6, 4.2, 2] as Vec3,
@@ -74,13 +114,19 @@ export const CLAW = {
 } as const
 
 export const LIGHTS = {
-  key: { color: '#FFD8A3', intensity: 3.2, position: [-3.5, 6, 4.5] as Vec3 },
-  fill: { color: '#9CCBDB', intensity: 1.5, position: [4, 3, 3] as Vec3 },
-  rim: { color: '#4FE5F2', intensity: 2, position: [-2.5, 4.5, -3] as Vec3 },
-  interior: { color: '#FFC06B', intensity: 2.2, position: [0, 3.1, 0] as Vec3 },
+  ambient: { color: '#A9C4CB', intensity: 0.65 },
+  hemisphere: {
+    skyColor: '#CBE3EA',
+    groundColor: '#263038',
+    intensity: 0.8,
+  },
+  key: { color: '#FFD8A3', intensity: 4.2, position: [-3.5, 6, 4.5] as Vec3 },
+  fill: { color: '#9CCBDB', intensity: 2.4, position: [4, 3, 3] as Vec3 },
+  rim: { color: '#4FE5F2', intensity: 2.8, position: [-2.5, 4.5, -3] as Vec3 },
+  interior: { color: '#FFC06B', intensity: 3.2, position: [0, 3.1, 0] as Vec3 },
   floorBounce: {
     color: '#D8B789',
-    intensity: 0.45,
+    intensity: 0.9,
     position: [0, 0.4, 1.5] as Vec3,
   },
 } as const

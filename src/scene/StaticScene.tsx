@@ -77,8 +77,14 @@ function LightingRoot() {
     <group name="LightingRoot">
       <ambientLight
         name="AmbientEnvironment"
-        color="#8FA9B0"
-        intensity={0.25}
+        color={LIGHTS.ambient.color}
+        intensity={LIGHTS.ambient.intensity}
+      />
+      <hemisphereLight
+        name="HemisphereSkyFill"
+        color={LIGHTS.hemisphere.skyColor}
+        groundColor={LIGHTS.hemisphere.groundColor}
+        intensity={LIGHTS.hemisphere.intensity}
       />
       <directionalLight
         name="KeyLight"
@@ -86,7 +92,13 @@ function LightingRoot() {
         intensity={LIGHTS.key.intensity}
         position={LIGHTS.key.position}
         castShadow
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={[2048, 2048]}
+        shadow-camera-near={0.5}
+        shadow-camera-far={20}
+        shadow-camera-left={-6}
+        shadow-camera-right={6}
+        shadow-camera-top={6}
+        shadow-camera-bottom={-6}
       />
       <pointLight
         name="FillLight"
@@ -142,6 +154,14 @@ function CameraRig() {
 function MachineVisuals() {
   return (
     <group name="MachineVisuals">
+      <Box
+        name="BackdropAccent"
+        size={[7.5, 4.8, 0.12]}
+        position={[0, 2.4, -1.65]}
+        color={MATERIALS.backdropAccent}
+        metalness={0.12}
+        roughness={0.9}
+      />
       <Box
         name="LowerPlinth"
         size={MACHINE.plinth.size}
