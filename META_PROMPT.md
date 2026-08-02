@@ -1,9 +1,14 @@
 # META-PROMPT — Claw Machine 3D Graph-of-Loops Execution Driver
 
 > **What this is:** A reusable meta-prompt (operating directive) for driving the Claw Machine 3D
-> project to V1 completion. It encodes the graph-of-loops execution model from `fb_plan_graph.md`
-> into a single repeatable prompt. Use it as the system directive for every agent dispatch in this
-> project — or paste it into a fresh session to resume work.
+> project through V1, optimization, and V2. It encodes the graph-of-loops execution model (archived
+> at `docs/archive/m1/fb_plan_graph.md`) into a single repeatable prompt. Use it as the system
+> directive for every agent dispatch in this project — or paste it into a fresh session to resume work.
+>
+> **Purpose:** This file is the project's operating program, not a plan of record. Plans live in
+> `docs/archive/m1/` (historical) and in task packets under `records/task-packets/` (active). This
+> file tells the next session how to dispatch, verify, and route work; update it only when the
+> operating procedure changes, never for individual node results.
 >
 > **The human is the router and the promotion gate.** No agent promotes itself. Every gate decision
 > belongs to the human; this prompt is the machinery the human uses to dispatch, verify, and route.
@@ -49,10 +54,11 @@
 - **Gate 1 contracts (N1): APPROVED** on 2026-08-01 as baseline revision 1 (A-01…A-40 subject
   to binding refinements). Records: `records/approvals/gate-1-baseline-rev1.md`; versioned
   contracts in `records/contracts/`; ledger `docs/contracts/open-decisions.md`. Tag
-  `gate-1-baseline-rev1` pending.
-- **N1a Gate script: NOT STARTED.** Deterministic gate enforcement does not exist yet.
-- **Missing dirs to create as nodes approve them:** `scripts/`, `src/scene/`, `src/claw/`,
-  `src/assets/`, `src/animation/`, `src/physics/`, `src/effects/`, `src/evidence/`.
+  `gate-1-baseline-rev1` created 2026-08-01.
+- **N1a Gate script: DONE.** Deterministic gate enforcement exists at `scripts/gate.mjs`; gate
+  evaluations are recorded in `records/gate-log.md` (PASS entries 2026-08-01).
+- **Subsystem dirs: all created and populated** (`scripts/`, `src/scene/`, `src/claw/`,
+  `src/assets/`, `src/animation/`, `src/physics/`, `src/effects/`, `src/evidence/`).
 - **Commands:** `npm run dev|build|typecheck|lint|format|format:check|test|preview`.
 
 ### Gate ↔ node binding (charter Gate 0–7)
@@ -70,7 +76,10 @@
 
 ---
 
-## 2. The graph (remaining work, in dependency order)
+## 2. The graph (executed through N9; archived 2026-08-02)
+
+> This graph drove V1 from contracts through the N9 human gate. All nodes below are executed and
+> archived; see `docs/archive/m1-summary.md`. V2 work is planned as new nodes against this shape.
 
 ```text
 N1 Contracts ──► N1a Gate script          (L1 — current frontier)
@@ -110,6 +119,8 @@ Required output: diagnosis, minimal implementation, files changed,
 
 > Baselines below are the **expected post-approval tags** (e.g. `gate-2-design-approved`). Before
 > each dispatch, confirm the actual current tag from `git tag` + `records/approvals/`.
+> **Status 2026-08-02:** N1–N9 are EXECUTED and archived. The contracts below remain as the dispatch
+> record and as templates for V2 nodes; confirm the current tag before reuse.
 
 #### N1 — Implementation contracts (turn-based)
 
@@ -121,7 +132,7 @@ Objective:       One reviewable `docs/contracts/` set the human can approve, plu
                  every unresolved decision requiring human approval (A-01…A-40).
 Current baseline: gate-0-baseline
 Allowed files:   docs/contracts/**
-Protected files: src/**, package.json, fb_plan*.md, any gameplay
+Protected files: src/**, package.json, docs/archive/m1/, any gameplay
 Loop type:       turn-based — stop and report; the human decides "done".
 Required proof:  The contract documents + the open-decision list.
 Stop if:         you need to touch src/, add a dependency, or change the authority model.
@@ -160,7 +171,7 @@ Task:            Produce the approved visual design: machine proportions, claw l
 Objective:       A design doc the human approves before any scene/asset build.
 Current baseline: gate-1-approved
 Allowed files:   docs/design/**
-Protected files: src/**, package.json, fb_plan*.md
+Protected files: src/**, package.json, docs/archive/m1/
 Loop type:       turn-based — aesthetics require human approval.
 Required proof:  Design document + review-camera description + proportion/hierarchy sketches
                  mapped to contract names (ClawSystem, MachineRoot, etc.).
@@ -373,12 +384,25 @@ Escalate from loop → graph only when a single loop demonstrably fails.
 
 ## 9. Immediate next action
 
-1. [DONE] Contracts extracted to `docs/contracts/` and approved 2026-08-01 as Gate 1 baseline
-   revision 1 (A-01…A-40 subject to binding refinements).
-2. [DONE] Approval recorded in `records/approvals/gate-1-baseline-rev1.md`; versioned
-   contracts in `records/contracts/`. Next: tag `gate-1-baseline-rev1`.
-3. Dispatch N1a (gate script) with the §3 contract; verify it blocks on a synthetic
-   protected-file violation; tag `gate-1-approved`.
-4. Then N2 (design, turn-based) ∥ N5 (state, parallel-safe) before any scene/claw/physics build.
+1. [DONE 2026-08-02] V1 executed through N9 and archived — `docs/archive/m1-summary.md`.
+2. Finish V1: close the open decisions in `docs/contracts/open-decisions.md`, review task packets
+   N18–N20 in `records/task-packets/`, and resolve the N8 escalations (browser visual proof,
+   performance metrics, bundle size) recorded in `records/gate-log.md`.
+3. Begin optimization as a bounded node against a fresh baseline tag (see §3 template).
+4. Plan V2 features as new nodes in dependency order (same graph shape, new tags).
 
-**Do not build the claw or add gameplay until Gate 1 (N1 + N1a) is approved and enforced.**
+**Current frontier source of truth:** `git tag` + `records/approvals/` + `records/task-packets/`.
+Tag a new baseline (e.g. `m1-archive`) before the next optimization node so the gate can enforce it.
+
+---
+
+## 10. Formatting and maintenance conventions
+
+- One node per message; a node contract is a single fenced block (template in §3) with its fields
+  in fixed order. "Do Phase 2" is invalid; "execute node N<n> with this contract" is the shape.
+- Status markers: `[DONE]` for executed steps, `[NOT STARTED]` while open; append a dated status
+  line when work completes — never retro-edit a historical claim.
+- Use tables for routing rules and gate bindings; fenced blocks for contracts and transition tables.
+- This file changes only when the operating procedure changes — never for individual node results.
+- When a node lands: tag a baseline, append to `records/gate-log.md` via the gate, and note the
+  outcome in the node's task packet. Do not edit documents under `docs/archive/`.

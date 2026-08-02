@@ -3,7 +3,18 @@
 **Status:** Approved — Gate 1 baseline revision 1 (2026-08-01); refinements recorded in `docs/contracts/open-decisions.md` and `records/`  
 **Scope:** Architecture only. This document defines boundaries and testable contracts; it does not implement gameplay, physics, assets, animation, input, scoring, or UI.
 
-This contract is subordinate to `fb_plan_graph.md` and `BOOTSTRAP.md`. Gate 0 is approved. The Gate 1 contract baseline (A-01…A-40) was approved by the human on 2026-08-01 as baseline revision 1. No gameplay implementation is approved by this document.
+This contract is subordinate to the archived execution plan at `docs/archive/m1/fb_plan_graph.md` and to `BOOTSTRAP.md`. Gate 0 is approved. The Gate 1 contract baseline (A-01…A-40) was approved by the human on 2026-08-01 as baseline revision 1. No gameplay implementation is approved by this document.
+
+> **Purpose:** The authoritative, human-approved architecture contract for the Claw Machine 3D app
+> (A-01…A-40). It defines boundaries, authority, and testable invariants; it is the reference the
+> gate machinery and every implementation node check against. Keep it as the single source of truth
+> for architecture rules — do not fold operational procedure, node logs, or milestone summaries into it.
+>
+> **Formatting:** decisions use the numbered `A-##` table format; authority lives in the §4 matrix
+> table; transitions use the fenced legal-transition table; protected files use the §10 ownership
+> table. Status columns are historical once approved — the resolved ledger
+> `docs/contracts/open-decisions.md` supersedes them. Changing a decided contract requires human
+> approval and a new baseline revision record.
 
 ## Contract rules
 
@@ -441,7 +452,7 @@ Each scenario records baseline revision, scenario ID, inputs/fixture, expected i
 
 ## 10. Protected files and subsystem ownership
 
-The current repository is still the Gate 0 bootstrap. The directories below are intended ownership boundaries; they may be created only by the phase owner approved for that subsystem.
+The directories below are the implemented subsystem ownership boundaries; they were created and populated by their owning nodes (N3–N7, archived in `docs/archive/m1-summary.md`). A task may edit only its allowed paths; this ownership table still governs every change.
 
 <!-- prettier-ignore -->
 | Path | Subsystem owner | Allowed responsibility | Protected against |
@@ -460,7 +471,7 @@ The current repository is still the Gate 0 bootstrap. The directories below are 
 | `src/evidence/**` | Verification owner | Scenario fixtures, logs, screenshots/traces, reports | Runtime authority changes |
 | `ARCHITECTURE_CONTRACTS.md` | Human/architecture owner | Approved contract and decision ledger | Silent implementation changes |
 | `BOOTSTRAP.md` | Human/bootstrap owner | Gate 0 record and foundation decisions | Dependency or scaffold changes without approval |
-| `fb_plan.md` | Human/project owner | Phase plan and operating rules | Agent-local reinterpretation |
+| `docs/archive/m1/` | Human/project owner | Archived phase plan, graph plan, and node-contract plan (immutable) | Agent-local reinterpretation |
 | `package.json`, `package-lock.json` | Human/dependency owner | Explicitly approved dependency/script changes | Silent additions/upgrades |
 | `vite.config.ts`, `tsconfig*.json`, `eslint.config.js`, Prettier files | Tooling owner | Build/test/lint/format configuration | Subsystem workarounds |
 
@@ -560,4 +571,4 @@ The human approved A-01 through A-40 on **2026-08-01** as **Gate 1 baseline revi
 
 The resolved ledger is `docs/contracts/open-decisions.md`; the approval record is `records/approvals/gate-1-baseline-rev1.md`; the mandated versioned contracts are in `records/contracts/` (attachment primitive, collision matrix, fixed-step policy, performance thresholds).
 
-Until N1a (deterministic gate enforcement) is built and `gate-1-baseline-rev1` is tagged, no gameplay implementation should be added.
+N1a (deterministic gate enforcement) was built and `gate-1-baseline-rev1` was tagged on 2026-08-01; gameplay nodes N2–N9 were executed and archived on 2026-08-02 (see `docs/archive/m1-summary.md`).

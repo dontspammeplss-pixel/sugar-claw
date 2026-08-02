@@ -1,5 +1,6 @@
 node_modules/
 dist/
+docs/archive/
 package-lock.json
 .freebuff/
 *.local

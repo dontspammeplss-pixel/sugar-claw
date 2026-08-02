@@ -10,16 +10,12 @@ import { fileURLToPath } from 'node:url'
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 const gateLogPath = join(repoRoot, 'records', 'gate-log.md')
-const defaultBaseline = 'gate-1-baseline-rev1'
+const defaultBaseline = 'm1-archive'
 const defaultChecks = ['typecheck', 'lint', 'test', 'build']
 const defaultScenarioScript = 'scenario:n1a'
 // Gate-owned output is the only records/ exception to the implementation allowlist.
-const baselineUntrackedManifest = [
-  {
-    path: 'fb_plan_graph.md',
-    sha256: '4f6b82406d32808cbc34d8ef23bdd4e0727c9bde9565bdddc0c0b1fd22d60dfc',
-  },
-]
+// fb_plan_graph.md was archived to docs/archive/m1/ on 2026-08-02; the gate no longer pins it.
+const baselineUntrackedManifest = []
 const defaultEvidenceArtifacts = [
   'records/approvals/gate-1-baseline-rev1.md',
   'records/contracts/attachment-primitive.md',

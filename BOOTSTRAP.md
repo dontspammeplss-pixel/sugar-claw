@@ -1,5 +1,16 @@
 # Claw Machine 3D — Bootstrap Record
 
+> **Purpose:** The Gate 0 foundation record — what was scaffolded, the exact-pinned dependency set,
+> the command surface, and the validation evidence that established the baseline. It is the project's
+> provenance document; later milestone records live in `records/` and `docs/archive/m1-summary.md`.
+> Update this file only when the foundation itself changes (a new pinned dependency, command, or
+> baseline policy) — never when features land.
+>
+> **Formatting:** one concern per section; versions are exact-pinned inline (no ranges); commands
+> are a single table; status is a checkbox list. The `npm audit` and chunk-size notes are deliberately
+> kept as dated caveats — read them before changing any pinned version, and never run
+> `npm audit fix --force` here.
+
 ## Approved foundation
 
 - Package manager: npm (lockfile: `package-lock.json`)
@@ -51,7 +62,7 @@ Configuration lives in `vite.config.ts`, `tsconfig.*.json`, `eslint.config.js`, 
 
 ## Bootstrap scope
 
-The application currently proves only that a minimal client-side R3F scene can mount and render a placeholder mesh. It intentionally contains no gameplay, claw behavior, physics simulation, prize logic, scoring, input handling, or presentation polish.
+At Gate 0 the application proved only that a minimal client-side R3F scene could mount and render a placeholder mesh; it contained no gameplay, claw behavior, physics simulation, prize logic, scoring, input handling, or presentation polish. That is the **Gate 0 scope record** — gameplay nodes N3–N7 landed later and are archived under `docs/archive/m1-summary.md`.
 
 The Gate 0 smoke test (`src/bootstrap.test.ts`) asserts the baseline contracts: required npm scripts exist, the lockfile is present, and every dependency is exact-pinned.
 
