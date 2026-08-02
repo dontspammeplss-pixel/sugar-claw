@@ -1706,3 +1706,88 @@
   "recordedAt": "2026-08-02T07:36:51.810Z"
 }
 ```
+
+## 2026-08-02T08:54:55.416Z — n21 — PASS
+
+```json
+{
+  "version": 1,
+  "node": "n21",
+  "baseline": "opt-baseline-2",
+  "routingInput": {
+    "node": "n21",
+    "baseline": "opt-baseline-2",
+    "requestedBaseline": "opt-baseline-2",
+    "checks": [
+      "typecheck",
+      "lint",
+      "test",
+      "build"
+    ],
+    "scenarioSet": "scenario:n21",
+    "baselineUntracked": [],
+    "requiredEvidenceArtifacts": [
+      "records/approvals/gate-1-baseline-rev1.md",
+      "records/contracts/attachment-primitive.md",
+      "records/contracts/collision-matrix.md",
+      "records/contracts/fixed-step-policy.md",
+      "records/contracts/performance-thresholds.md"
+    ],
+    "requiredEvidenceFields": [
+      "node",
+      "baseline",
+      "routingInput",
+      "rule",
+      "outcome",
+      "checkpoint"
+    ],
+    "dryRun": false
+  },
+  "rule": "all required gate rules passed; gate-log.md is gate-owned output",
+  "outcome": "PASS",
+  "checkpoint": "n21:PASS:2026-08-02T08:54:06.597Z",
+  "protectedDiff": [],
+  "missingEvidence": [],
+  "checks": [
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck",
+      "status": 0,
+      "passed": true
+    },
+    {
+      "name": "lint",
+      "command": "npm run lint",
+      "status": 0,
+      "passed": true
+    },
+    {
+      "name": "test",
+      "command": "npm run test",
+      "status": 0,
+      "passed": true
+    },
+    {
+      "name": "build",
+      "command": "npm run build",
+      "status": 0,
+      "passed": true
+    },
+    {
+      "name": "scenario-set",
+      "command": "npm run scenario:n21",
+      "status": 0,
+      "passed": true
+    }
+  ],
+  "requiredFields": [
+    "node",
+    "baseline",
+    "routingInput",
+    "rule",
+    "outcome",
+    "checkpoint"
+  ],
+  "recordedAt": "2026-08-02T08:54:55.416Z"
+}
+```
