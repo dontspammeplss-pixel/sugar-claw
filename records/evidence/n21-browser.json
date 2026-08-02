@@ -1,0 +1,98 @@
+{
+  "node": "N21",
+  "evidence": "browser-frame-timing",
+  "env": {
+    "headless": true,
+    "gpu": "swiftshader (software GL)",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.0.0 Safari/537.36"
+  },
+  "scene": {
+    "canvasPresent": true,
+    "canvasSize": "800x600",
+    "n7State": "ready",
+    "n7Sync": "pass",
+    "runtime": {
+      "state": {
+        "state": "ready",
+        "runId": 1,
+        "aim": {
+          "x": 0,
+          "z": 0
+        },
+        "gripOutcome": null,
+        "resultOutcome": null,
+        "outcome": null,
+        "lastError": null,
+        "errorKind": null,
+        "transitions": [
+          {
+            "sequence": 1,
+            "from": "booting",
+            "event": "assetsReady",
+            "to": "ready",
+            "runId": 1
+          }
+        ],
+        "diagnostics": []
+      },
+      "sync": {
+        "claw": {
+          "position": [
+            0,
+            2.799999952316284,
+            0
+          ],
+          "quaternion": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "prize": {
+          "position": [
+            0,
+            1.2000000476837158,
+            0
+          ],
+          "quaternion": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "clawVisualWorldPosition": [
+          0,
+          2.799999952316284,
+          0
+        ],
+        "prizeVisualWorldPosition": [
+          0,
+          1.2000000476837158,
+          0
+        ],
+        "clawSynchronized": true,
+        "prizeSynchronized": true
+      }
+    },
+    "bodyTextSample": "Orbit\nTop\nSide\nCOORDINATES\nX\n0.00\nZ\n0.00\nSet X 0.00\nSet Z 0.00\nACTIONS\nAim\nDrop\nReset\nReady"
+  },
+  "timing": {
+    "frames": 14,
+    "durationMs": 5000,
+    "fpsMin": 2,
+    "fpsMedian": 2.4,
+    "fpsP95": 5.5,
+    "frameMsP50": 416.7,
+    "frameMsP95": 500,
+    "frameMsMax": 500,
+    "hwConcurrency": 8,
+    "webgl2": true
+  },
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "recordedAt": "2026-08-02T08:51:46.360Z",
+  "note": "Software-GL headless sample is indicative, not the reference desktop target (perf contract measures on the reference device)."
+}

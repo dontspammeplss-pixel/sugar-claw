@@ -1,0 +1,34 @@
+{
+  "node": "N21",
+  "evidence": "bundle",
+  "objective": "Split the single 3 MB production chunk into per-vendor chunks and record the chunk table (closes the BOOTSTRAP code-splitting deferral; N8-F-004 bundle evidence)",
+  "baseline": "opt-baseline-1",
+  "recordedAt": "2026-08-02",
+  "before": {
+    "build": "pre-N21 vite.config.ts (no manualChunks)",
+    "chunks": [
+      { "file": "dist/assets/index-DjHPyxtj.js", "minifiedBytes": 3067091, "minifiedKB": 3067.09, "gzipKB": 1042.12, "note": "single application+vendor chunk; Vite warned >500 kB" }
+    ],
+    "totalMinifiedKB": 3067.09,
+    "totalGzipKB": 1042.12
+  },
+  "after": {
+    "build": "N21 vite.config.ts (per-vendor manualChunks)",
+    "chunks": [
+      { "file": "dist/assets/index-CtRWk_xY.js", "minifiedKB": 53.85, "gzipKB": 15.11, "note": "application entry (was 3,067 kB single chunk)" },
+      { "file": "dist/assets/react-CFM6CdCM.js", "minifiedKB": 141.78, "gzipKB": 45.41, "note": "react + react-dom" },
+      { "file": "dist/assets/r3f-4-AJBOM9.js", "minifiedKB": 130.39, "gzipKB": 42.45, "note": "@react-three/fiber" },
+      { "file": "dist/assets/three-Dnweohdy.js", "minifiedKB": 681.09, "gzipKB": 175.38, "note": "three + three-stdlib" },
+      { "file": "dist/assets/rapier-D3Mqfikn.js", "minifiedKB": 2056.36, "gzipKB": 761.10, "note": "@react-three/rapier + @dimforge/rapier3d-compat glue; still >500 kB — evidence, not hidden" }
+    ],
+    "totalMinifiedKB": 3063.47,
+    "totalGzipKB": 1039.45
+  },
+  "interpretation": "Code splitting makes chunks cacheable and attributes bytes; total transfer is essentially unchanged (single-canvas game needs every library at boot). rapier3d-compat WASM glue dominates (2,056 kB min / 761 kB gzip). Real byte reduction would require lazy-loading or dropping a stack dependency — not authorized by the approved stack boundary (A-33, charter §1.4).",
+  "checks": {
+    "typecheck": "pass",
+    "lint": "pass",
+    "test": "52/52 pass",
+    "build": "pass (warning now names rapier chunk)"
+  }
+}
