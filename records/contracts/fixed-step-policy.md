@@ -40,9 +40,13 @@ A claim without the configuration revision and tolerances is not repeatability e
 - **Unchanged fixed-step policy:** `dt = 1/60 s`; gravity, solver iterations,
   additional friction iterations, friction, restitution, CCD, and sleeping
   policy remain unchanged from the approved baseline.
-- **Candidate retained for bounded follow-up:** dynamic head angular damping is
-  `10.0` (baseline `0.6`), with no additional density/mass/inertia override.
-  Rapier derives the head mass and inertia from its existing colliders.
+- **Current retained N33 candidate:** dynamic head angular damping is `10.0`
+  (baseline `0.6`), with no additional density/mass/inertia override. Rapier
+  derives the head mass and inertia from its existing colliders. The bounded
+  `8.0` damping experiment was measured and failed: `R45/Rpeak = 0.2402433594`,
+  `omega60 = 0.1329630375`, and one sign reversal. It was worse than the
+  retained `10.0` candidate, so it was not promoted. Hard thresholds remain
+  unchanged and N33 remains `head-feel-failed`.
 - **Ratchet result:** damping candidates `3.0`, `5.0`, `10.0`, `12.0`,
   `15.0`, `20.0`, and `30.0` were measured; `10.0` was the best observed
   damping-only envelope but still failed the hard `R45`, `R60`, and/or

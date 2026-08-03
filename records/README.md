@@ -8,7 +8,6 @@ Per the execution plan (§12) and the project charter (§9), this directory main
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `approvals/`    | Human approval records and baseline revisions (e.g. Gate 1 baseline revision 1)                                                                            |
 | `contracts/`    | Versioned contracts mandated _before_ their implementation nodes begin (attachment primitive, collision matrix, fixed-step policy, performance thresholds) |
-| `decisions/`    | (future) Recorded architecture decisions and amendments                                                                                                    |
 | `task-packets/` | (future) Dispatched node packets per the plan's task-contract format                                                                                       |
 | `scenarios/`    | (future) Approved scenario/fixture definitions                                                                                                             |
 | `evidence/`     | (future) Verification evidence artifacts, logs, screenshots, traces                                                                                        |
@@ -21,6 +20,8 @@ Per the execution plan (§12) and the project charter (§9), this directory main
 - `contracts/collision-matrix.md` (rev 1) — resolved collision group bits and interaction matrix.
 - `contracts/fixed-step-policy.md` (rev 1) — centralized fixed-step physics configuration and tolerance evidence.
 - `contracts/performance-thresholds.md` (rev 1) — desktop performance/frame/physics/memory thresholds.
+- `task-packets/N31-N33-input-and-head-feel-fixes.md` (contract-only) — keyboard mapping, pointer drag continuity, and dynamic-head feel contracts.
+- `task-packets/N36-N40-descent-grip-collision-contracts.md` (contract-only) — descent-to-base, complete-contact grip, collision observability, mesh-to-collider derivation, and integrated verification contracts.
 
 ## Rules
 

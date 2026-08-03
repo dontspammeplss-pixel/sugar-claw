@@ -1,0 +1,717 @@
+{
+  "node": "N37",
+  "status": "pass",
+  "deterministic": true,
+  "mode": "opt-in-candidate-predicate-fixtures",
+  "evidenceScope": "pure evaluator fixtures; Rapier adapter-backed N40 integration remains pending",
+  "activeGripRule": "A-24 sensor intersection remains the runtime baseline",
+  "profile": {
+    "revision": "n37-candidate-profile-rev1",
+    "objectBodyId": "prize",
+    "captureEnvelopeOffset": [
+      0,
+      0,
+      0
+    ],
+    "captureEnvelopeHalfExtents": [
+      0.34,
+      0.34,
+      0.34
+    ],
+    "referencePoint": [
+      0,
+      0,
+      0
+    ],
+    "requiredVolumeHalfExtents": [
+      0.22,
+      0.22,
+      0.22
+    ],
+    "margin": 0.02,
+    "requiredContacts": [
+      {
+        "id": "finger-right",
+        "approachDirection": "right"
+      },
+      {
+        "id": "finger-left",
+        "approachDirection": "left"
+      },
+      {
+        "id": "finger-back",
+        "approachDirection": "back"
+      }
+    ],
+    "settlingSteps": 3
+  },
+  "fixedStepWindow": 3,
+  "fixtures": [
+    {
+      "fixture": "centered-object",
+      "evaluation": {
+        "approved": true,
+        "reason": "approved",
+        "diagnostics": {
+          "profileRevision": "n37-candidate-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [
+            "finger-right",
+            "finger-left",
+            "finger-back"
+          ],
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "prize",
+          "solverContacts": [
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-right",
+              "approachDirection": "right",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            },
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-left",
+              "approachDirection": "left",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            },
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-back",
+              "approachDirection": "back",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            }
+          ],
+          "objectBodyId": "prize",
+          "runId": 7,
+          "expectedRunId": 7,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "carryConstraintCreated": false
+    },
+    {
+      "fixture": "offset-outside-capture-envelope",
+      "evaluation": {
+        "approved": false,
+        "reason": "grip-outside-envelope",
+        "diagnostics": {
+          "profileRevision": "n37-candidate-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0.13,
+            0,
+            0
+          ],
+          "contactRegionIds": [],
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "prize",
+          "solverContacts": [],
+          "objectBodyId": "prize",
+          "runId": 7,
+          "expectedRunId": 7,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "carryConstraintCreated": false
+    },
+    {
+      "fixture": "visual-overlap-only",
+      "evaluation": {
+        "approved": false,
+        "reason": "grip-incomplete-contact",
+        "diagnostics": {
+          "profileRevision": "n37-candidate-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [],
+          "sensorIntersection": false,
+          "sensorObjectBodyId": "prize",
+          "solverContacts": [],
+          "objectBodyId": "prize",
+          "runId": 7,
+          "expectedRunId": 7,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "carryConstraintCreated": false
+    },
+    {
+      "fixture": "sensor-only-contact",
+      "evaluation": {
+        "approved": false,
+        "reason": "grip-sensor-only",
+        "diagnostics": {
+          "profileRevision": "n37-candidate-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [],
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "prize",
+          "solverContacts": [],
+          "objectBodyId": "prize",
+          "runId": 7,
+          "expectedRunId": 7,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "carryConstraintCreated": false
+    },
+    {
+      "fixture": "one-contact-region",
+      "evaluation": {
+        "approved": false,
+        "reason": "grip-incomplete-contact",
+        "diagnostics": {
+          "profileRevision": "n37-candidate-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [
+            "finger-right"
+          ],
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "prize",
+          "solverContacts": [
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-right",
+              "approachDirection": "right",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            }
+          ],
+          "objectBodyId": "prize",
+          "runId": 7,
+          "expectedRunId": 7,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "carryConstraintCreated": false
+    },
+    {
+      "fixture": "duplicate-same-side-contact",
+      "evaluation": {
+        "approved": false,
+        "reason": "grip-incomplete-contact",
+        "diagnostics": {
+          "profileRevision": "n37-candidate-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [
+            "finger-right"
+          ],
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "prize",
+          "solverContacts": [
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-right",
+              "approachDirection": "right",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            }
+          ],
+          "objectBodyId": "prize",
+          "runId": 7,
+          "expectedRunId": 7,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "carryConstraintCreated": false
+    },
+    {
+      "fixture": "wrong-body-solver-contact",
+      "evaluation": {
+        "approved": false,
+        "reason": "grip-wrong-body",
+        "diagnostics": {
+          "profileRevision": "n37-candidate-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [],
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "prize",
+          "solverContacts": [],
+          "objectBodyId": "prize",
+          "runId": 7,
+          "expectedRunId": 7,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "carryConstraintCreated": false
+    },
+    {
+      "fixture": "collision-group-ineligible",
+      "evaluation": {
+        "approved": false,
+        "reason": "collision-group-ineligible",
+        "diagnostics": {
+          "profileRevision": "n37-candidate-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [],
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "prize",
+          "solverContacts": [],
+          "objectBodyId": "prize",
+          "runId": 7,
+          "expectedRunId": 7,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "carryConstraintCreated": false
+    },
+    {
+      "fixture": "unstable-settling-window",
+      "evaluation": {
+        "approved": false,
+        "reason": "grip-unstable-contact",
+        "diagnostics": {
+          "profileRevision": "n37-candidate-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [
+            "finger-right",
+            "finger-left",
+            "finger-back"
+          ],
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "prize",
+          "solverContacts": [
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-right",
+              "approachDirection": "right",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            },
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-left",
+              "approachDirection": "left",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            },
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-back",
+              "approachDirection": "back",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            }
+          ],
+          "objectBodyId": "prize",
+          "runId": 7,
+          "expectedRunId": 7,
+          "fixedStepWindow": 2,
+          "fixedSteps": [
+            10,
+            11
+          ]
+        }
+      },
+      "carryConstraintCreated": false
+    },
+    {
+      "fixture": "stale-run-observation",
+      "evaluation": {
+        "approved": false,
+        "reason": "grip-stale-observation",
+        "diagnostics": {
+          "profileRevision": "n37-candidate-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [],
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "prize",
+          "solverContacts": [],
+          "objectBodyId": "prize",
+          "runId": 6,
+          "expectedRunId": 7,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "carryConstraintCreated": false
+    },
+    {
+      "fixture": "non-consecutive-fixed-steps",
+      "evaluation": {
+        "approved": false,
+        "reason": "grip-unstable-contact",
+        "diagnostics": {
+          "profileRevision": "n37-candidate-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [
+            "finger-right",
+            "finger-left",
+            "finger-back"
+          ],
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "prize",
+          "solverContacts": [
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-right",
+              "approachDirection": "right",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            },
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-left",
+              "approachDirection": "left",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            },
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-back",
+              "approachDirection": "back",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            }
+          ],
+          "objectBodyId": "prize",
+          "runId": 7,
+          "expectedRunId": 7,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            12,
+            13
+          ]
+        }
+      },
+      "carryConstraintCreated": false
+    },
+    {
+      "fixture": "properly-contained-multi-contact",
+      "evaluation": {
+        "approved": true,
+        "reason": "approved",
+        "diagnostics": {
+          "profileRevision": "n37-candidate-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [
+            "finger-right",
+            "finger-left",
+            "finger-back"
+          ],
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "prize",
+          "solverContacts": [
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-right",
+              "approachDirection": "right",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            },
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-left",
+              "approachDirection": "left",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            },
+            {
+              "objectBodyId": "prize",
+              "contactRegionId": "finger-back",
+              "approachDirection": "back",
+              "solverContact": true,
+              "collisionGroupEligible": true
+            }
+          ],
+          "objectBodyId": "prize",
+          "runId": 7,
+          "expectedRunId": 7,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "carryConstraintCreated": false
+    },
+    {
+      "fixture": "invalid-profile",
+      "evaluation": {
+        "approved": false,
+        "reason": "grip-collider-ambiguous",
+        "diagnostics": {
+          "profileRevision": null,
+          "captureEnvelope": null,
+          "objectReferencePoint": null,
+          "contactRegionIds": [],
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "prize",
+          "solverContacts": [],
+          "objectBodyId": "prize",
+          "runId": 7,
+          "expectedRunId": 7,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        }
+      },
+      "carryConstraintCreated": false
+    }
+  ],
+  "criticalProof": {
+    "fixture": "visual-overlap-only",
+    "sensorOrVisualOverlap": false,
+    "rejected": true,
+    "reason": "grip-incomplete-contact",
+    "carryConstraintCreated": false
+  },
+  "verificationCommands": [
+    "npm run typecheck",
+    "npm run lint",
+    "npm test",
+    "npm run build"
+  ]
+}

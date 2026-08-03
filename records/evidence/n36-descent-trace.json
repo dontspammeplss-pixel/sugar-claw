@@ -1,0 +1,1240 @@
+{
+  "node": "N36",
+  "status": "pass",
+  "deterministic": true,
+  "geometry": {
+    "basePlane": {
+      "y": 0.89,
+      "normal": [
+        0,
+        1,
+        0
+      ],
+      "halfExtents": [
+        3,
+        2
+      ],
+      "coordinateLayer": "world/ClawMount",
+      "source": "N6PhysicsAdapter floor collider top surface"
+    },
+    "clawEnvelope": {
+      "lowestPhysicalPointOffsetY": -0.4,
+      "approvedMargin": 0.02,
+      "baseInteractionY": 1.31,
+      "tolerance": 0.02,
+      "envelope": "head cuboid + three finger capsules; sensors excluded"
+    },
+    "barriers": {
+      "floorPosition": [
+        0,
+        0.79,
+        0
+      ],
+      "floorHalfExtents": [
+        3,
+        0.1,
+        2
+      ],
+      "chamberWalls": [
+        {
+          "position": [
+            0,
+            1.9,
+            0.88
+          ],
+          "halfExtents": [
+            1.7,
+            1.05,
+            0.05
+          ]
+        },
+        {
+          "position": [
+            0,
+            1.9,
+            -0.88
+          ],
+          "halfExtents": [
+            1.7,
+            1.05,
+            0.05
+          ]
+        },
+        {
+          "position": [
+            -1.7,
+            1.9,
+            0
+          ],
+          "halfExtents": [
+            0.05,
+            1.05,
+            0.83
+          ]
+        },
+        {
+          "position": [
+            1.7,
+            1.9,
+            0
+          ],
+          "halfExtents": [
+            0.05,
+            1.05,
+            0.83
+          ]
+        }
+      ]
+    },
+    "coordinateLayer": "world/ClawMount",
+    "fixedStep": {
+      "revision": "fixed-step-rev3",
+      "dt": 0.016666666666666666,
+      "tolerances": {
+        "idlePosition": 0.002,
+        "idleVelocity": 0.02,
+        "travel": 0.000001,
+        "carryPosition": 0.025,
+        "repeatPosition": 0.0005
+      }
+    }
+  },
+  "fixtures": [
+    {
+      "fixture": "center",
+      "start": {
+        "position": [
+          0,
+          2.799999952316284,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "end": {
+        "position": [
+          0,
+          1.3100000619888306,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "fixedStep": 174,
+      "lowestClawPointY": 0.9089180873822902,
+      "basePlaneDistance": 0.018918087382290172,
+      "contactPairs": [
+        {
+          "pair": [
+            "claw",
+            "prize"
+          ],
+          "colliderRole": "head",
+          "colliderHandle": 0,
+          "otherColliderHandle": 2.5e-323,
+          "otherColliderRole": "prize",
+          "normal": [
+            8.546285892264281e-18,
+            -0.999003889577506,
+            0.04462318335504656
+          ],
+          "point": [
+            -1.2191546214719995e-18,
+            1.2280477285385132,
+            -0.006374490447342396
+          ],
+          "distance": -0.07682892680168152
+        }
+      ],
+      "floorContact": false,
+      "barrierContact": false,
+      "completionReason": "base-clearance",
+      "objectDisplacement": 0.020542263984680176,
+      "objectMovedByRapier": true,
+      "prizeFinal": {
+        "position": [
+          3.3272709414728467e-19,
+          1.0466430187225342,
+          0.0017284342320635915
+        ],
+        "quaternion": [
+          0.004626356065273285,
+          7.860046279476463e-21,
+          -8.90012941689826e-19,
+          0.9999892711639404
+        ]
+      },
+      "noForbiddenPenetration": true,
+      "noAnimationOnlyEndpoint": true,
+      "trace": [
+        {
+          "step": 2,
+          "runId": 0,
+          "claw": {
+            "position": [
+              0,
+              2.791722059249878,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              0,
+              1.1942123174667358,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "physicalContact": false,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": false,
+          "contacts": [],
+          "jointActive": false
+        },
+        {
+          "step": 3,
+          "runId": 0,
+          "claw": {
+            "position": [
+              0,
+              2.7752585411071777,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              0,
+              1.187237024307251,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "physicalContact": false,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": false,
+          "contacts": [],
+          "jointActive": false
+        },
+        {
+          "step": 4,
+          "runId": 0,
+          "claw": {
+            "position": [
+              0,
+              2.750837564468384,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              0,
+              1.1775438785552979,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "physicalContact": false,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": false,
+          "contacts": [],
+          "jointActive": false
+        },
+        {
+          "step": 172,
+          "runId": 0,
+          "claw": {
+            "position": [
+              0,
+              1.3100000619888306,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              1.6436277811763555e-19,
+              1.0467793941497803,
+              0.0007653978536836803
+            ],
+            "quaternion": [
+              0.002070229733362794,
+              7.4070275691973e-21,
+              -4.431535345740059e-19,
+              0.9999978542327881
+            ]
+          },
+          "physicalContact": true,
+          "solverContact": true,
+          "floorContact": false,
+          "visualOverlap": true,
+          "contacts": [
+            {
+              "pair": [
+                "claw",
+                "prize"
+              ],
+              "colliderRole": "head",
+              "colliderHandle": 0,
+              "otherColliderHandle": 2.5e-323,
+              "otherColliderRole": "prize",
+              "normal": [
+                4.459695770119963e-18,
+                -0.9997741602008463,
+                0.021251554184448018
+              ],
+              "point": [
+                -6.454684707195225e-19,
+                1.2283272743225098,
+                -0.0030936484690755606
+              ],
+              "distance": -0.07682222127914429
+            }
+          ],
+          "jointActive": false
+        },
+        {
+          "step": 173,
+          "runId": 0,
+          "claw": {
+            "position": [
+              0,
+              1.3100000619888306,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              2.594495159760789e-19,
+              1.0467222929000854,
+              0.0013011612463742495
+            ],
+            "quaternion": [
+              0.003492180025205016,
+              7.635408582031496e-21,
+              -6.95509330562589e-19,
+              0.9999939203262329
+            ]
+          },
+          "physicalContact": true,
+          "solverContact": true,
+          "floorContact": false,
+          "visualOverlap": true,
+          "contacts": [
+            {
+              "pair": [
+                "claw",
+                "prize"
+              ],
+              "colliderRole": "head",
+              "colliderHandle": 0,
+              "otherColliderHandle": 2.5e-323,
+              "otherColliderRole": "prize",
+              "normal": [
+                6.769028663632645e-18,
+                -0.9994128978150866,
+                0.03426163706000729
+              ],
+              "point": [
+                -9.69695973880095e-19,
+                1.2281994819641113,
+                -0.004920194856822491
+              ],
+              "distance": -0.07683253288269043
+            }
+          ],
+          "jointActive": false
+        },
+        {
+          "step": 174,
+          "runId": 0,
+          "claw": {
+            "position": [
+              0,
+              1.3100000619888306,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              3.3272709414728467e-19,
+              1.0466430187225342,
+              0.0017284342320635915
+            ],
+            "quaternion": [
+              0.004626356065273285,
+              7.860046279476463e-21,
+              -8.90012941689826e-19,
+              0.9999892711639404
+            ]
+          },
+          "physicalContact": true,
+          "solverContact": true,
+          "floorContact": false,
+          "visualOverlap": true,
+          "contacts": [
+            {
+              "pair": [
+                "claw",
+                "prize"
+              ],
+              "colliderRole": "head",
+              "colliderHandle": 0,
+              "otherColliderHandle": 2.5e-323,
+              "otherColliderRole": "prize",
+              "normal": [
+                8.546285892264281e-18,
+                -0.999003889577506,
+                0.04462318335504656
+              ],
+              "point": [
+                -1.2191546214719995e-18,
+                1.2280477285385132,
+                -0.006374490447342396
+              ],
+              "distance": -0.07682892680168152
+            }
+          ],
+          "jointActive": false
+        }
+      ]
+    },
+    {
+      "fixture": "edge",
+      "start": {
+        "position": [
+          1.2000000476837158,
+          2.799999952316284,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "end": {
+        "position": [
+          1.2000000476837158,
+          1.3147951364517212,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "fixedStep": 44,
+      "lowestClawPointY": 0.9054512314881965,
+      "basePlaneDistance": 0.015451231488196493,
+      "contactPairs": [],
+      "floorContact": false,
+      "barrierContact": false,
+      "completionReason": "base-clearance",
+      "objectDisplacement": 0.020542263984680176,
+      "objectMovedByRapier": true,
+      "prizeFinal": {
+        "position": [
+          0,
+          1.1087257862091064,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "noForbiddenPenetration": true,
+      "noAnimationOnlyEndpoint": true,
+      "trace": [
+        {
+          "step": 2,
+          "runId": 0,
+          "claw": {
+            "position": [
+              1.2000000476837158,
+              2.791722059249878,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              0,
+              1.1942123174667358,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "physicalContact": false,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": false,
+          "contacts": [],
+          "jointActive": false
+        },
+        {
+          "step": 3,
+          "runId": 0,
+          "claw": {
+            "position": [
+              1.2000000476837158,
+              2.7752585411071777,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              0,
+              1.187237024307251,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "physicalContact": false,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": false,
+          "contacts": [],
+          "jointActive": false
+        },
+        {
+          "step": 4,
+          "runId": 0,
+          "claw": {
+            "position": [
+              1.2000000476837158,
+              2.750837564468384,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              0,
+              1.1775438785552979,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "physicalContact": false,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": false,
+          "contacts": [],
+          "jointActive": false
+        },
+        {
+          "step": 42,
+          "runId": 0,
+          "claw": {
+            "position": [
+              1.2000000476837158,
+              1.3182176351547241,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              0,
+              1.1087257862091064,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "physicalContact": false,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": false,
+          "contacts": [],
+          "jointActive": false
+        },
+        {
+          "step": 43,
+          "runId": 0,
+          "claw": {
+            "position": [
+              1.2000000476837158,
+              1.3163001537322998,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              0,
+              1.1087257862091064,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "physicalContact": false,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": false,
+          "contacts": [],
+          "jointActive": false
+        },
+        {
+          "step": 44,
+          "runId": 0,
+          "claw": {
+            "position": [
+              1.2000000476837158,
+              1.3147951364517212,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              0,
+              1.1087257862091064,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "physicalContact": false,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": false,
+          "contacts": [],
+          "jointActive": false
+        }
+      ]
+    },
+    {
+      "fixture": "corner",
+      "start": {
+        "position": [
+          1.2000000476837158,
+          2.799999952316284,
+          0.5
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "end": {
+        "position": [
+          1.2000000476837158,
+          2.791722059249878,
+          0.5
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "fixedStep": 2,
+      "lowestClawPointY": 2.3553243640197596,
+      "basePlaneDistance": 1.4653243640197595,
+      "contactPairs": [
+        {
+          "pair": [
+            "claw",
+            "environment"
+          ],
+          "colliderRole": "head",
+          "colliderHandle": 0,
+          "otherColliderHandle": 3.5e-323,
+          "otherColliderRole": "wall",
+          "normal": [
+            -2.0399021916084337e-9,
+            -0.243868218305737,
+            0.9698083074357478
+          ],
+          "point": [
+            1.0368914604187012,
+            2.950044631958008,
+            0.8298214077949524
+          ],
+          "distance": 0.00036801426904276013
+        }
+      ],
+      "floorContact": false,
+      "barrierContact": true,
+      "completionReason": "barrier-contact",
+      "objectDisplacement": 0,
+      "objectMovedByRapier": true,
+      "prizeFinal": {
+        "position": [
+          0,
+          1.1942123174667358,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "noForbiddenPenetration": true,
+      "noAnimationOnlyEndpoint": true,
+      "trace": [
+        {
+          "step": 2,
+          "runId": 0,
+          "claw": {
+            "position": [
+              1.2000000476837158,
+              2.791722059249878,
+              0.5
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              0,
+              1.1942123174667358,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "physicalContact": false,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": false,
+          "contacts": [
+            {
+              "pair": [
+                "claw",
+                "environment"
+              ],
+              "colliderRole": "head",
+              "colliderHandle": 0,
+              "otherColliderHandle": 3.5e-323,
+              "otherColliderRole": "wall",
+              "normal": [
+                -2.0399021916084337e-9,
+                -0.243868218305737,
+                0.9698083074357478
+              ],
+              "point": [
+                1.0368914604187012,
+                2.950044631958008,
+                0.8298214077949524
+              ],
+              "distance": 0.00036801426904276013
+            }
+          ],
+          "jointActive": false
+        }
+      ]
+    },
+    {
+      "fixture": "object-adjacent",
+      "start": {
+        "position": [
+          0.6000000238418579,
+          2.799999952316284,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "end": {
+        "position": [
+          0.6000000238418579,
+          1.3894001245498657,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "fixedStep": 32,
+      "lowestClawPointY": 0.8909189494918998,
+      "basePlaneDistance": 0.0009189494918997454,
+      "contactPairs": [
+        {
+          "pair": [
+            "claw",
+            "environment"
+          ],
+          "colliderRole": "finger",
+          "colliderHandle": 5e-324,
+          "otherColliderHandle": 3e-323,
+          "otherColliderRole": "floor",
+          "normal": [
+            -0.000002222293649323248,
+            -1.0000000096786068,
+            -0.0000016775039088800679
+          ],
+          "point": [
+            0.6185075044631958,
+            0.8904594779014587,
+            0.001858133589848876
+          ],
+          "distance": 0.0009190179407596588
+        }
+      ],
+      "floorContact": true,
+      "barrierContact": false,
+      "completionReason": "base-clearance",
+      "objectDisplacement": 0.020542263984680176,
+      "objectMovedByRapier": true,
+      "prizeFinal": {
+        "position": [
+          -0.06899770349264145,
+          1.1043379306793213,
+          -0.00011402948439354077
+        ],
+        "quaternion": [
+          -0.00027015339583158493,
+          0.00040458329021930695,
+          0.15620137751102448,
+          0.9877250790596008
+        ]
+      },
+      "noForbiddenPenetration": true,
+      "noAnimationOnlyEndpoint": true,
+      "trace": [
+        {
+          "step": 2,
+          "runId": 0,
+          "claw": {
+            "position": [
+              0.6000000238418579,
+              2.791722059249878,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              0,
+              1.1942123174667358,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "physicalContact": false,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": false,
+          "contacts": [],
+          "jointActive": false
+        },
+        {
+          "step": 3,
+          "runId": 0,
+          "claw": {
+            "position": [
+              0.6000000238418579,
+              2.7752585411071777,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              0,
+              1.187237024307251,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "physicalContact": false,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": false,
+          "contacts": [],
+          "jointActive": false
+        },
+        {
+          "step": 4,
+          "runId": 0,
+          "claw": {
+            "position": [
+              0.6000000238418579,
+              2.750837564468384,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              0,
+              1.1775438785552979,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "physicalContact": false,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": false,
+          "contacts": [],
+          "jointActive": false
+        },
+        {
+          "step": 30,
+          "runId": 0,
+          "claw": {
+            "position": [
+              0.6000000238418579,
+              1.4251036643981934,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              -0.03957648575305939,
+              1.0987781286239624,
+              -0.00006963158375583589
+            ],
+            "quaternion": [
+              -0.00016225951549131423,
+              0.00025152807938866317,
+              0.08826182037591934,
+              0.9960972666740417
+            ]
+          },
+          "physicalContact": true,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": true,
+          "contacts": [],
+          "jointActive": false
+        },
+        {
+          "step": 31,
+          "runId": 0,
+          "claw": {
+            "position": [
+              0.6000000238418579,
+              1.4059196710586548,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              -0.054265305399894714,
+              1.1027268171310425,
+              -0.00009192663128487766
+            ],
+            "quaternion": [
+              -0.00021592903067357838,
+              0.00032817578176036477,
+              0.12247226387262344,
+              0.9924718737602234
+            ]
+          },
+          "physicalContact": true,
+          "solverContact": false,
+          "floorContact": false,
+          "visualOverlap": true,
+          "contacts": [],
+          "jointActive": false
+        },
+        {
+          "step": 32,
+          "runId": 0,
+          "claw": {
+            "position": [
+              0.6000000238418579,
+              1.3894001245498657,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              -0.06899770349264145,
+              1.1043379306793213,
+              -0.00011402948439354077
+            ],
+            "quaternion": [
+              -0.00027015339583158493,
+              0.00040458329021930695,
+              0.15620137751102448,
+              0.9877250790596008
+            ]
+          },
+          "physicalContact": true,
+          "solverContact": false,
+          "floorContact": true,
+          "visualOverlap": true,
+          "contacts": [
+            {
+              "pair": [
+                "claw",
+                "environment"
+              ],
+              "colliderRole": "finger",
+              "colliderHandle": 5e-324,
+              "otherColliderHandle": 3e-323,
+              "otherColliderRole": "floor",
+              "normal": [
+                -0.000002222293649323248,
+                -1.0000000096786068,
+                -0.0000016775039088800679
+              ],
+              "point": [
+                0.6185075044631958,
+                0.8904594779014587,
+                0.001858133589848876
+              ],
+              "distance": 0.0009190179407596588
+            }
+          ],
+          "jointActive": false
+        }
+      ]
+    }
+  ],
+  "repeatability": [
+    {
+      "fixture": "center",
+      "runs": 2,
+      "sameStep": true,
+      "sameCompletionReason": true,
+      "sameEndpoint": true,
+      "endpointDelta": 0
+    },
+    {
+      "fixture": "edge",
+      "runs": 2,
+      "sameStep": true,
+      "sameCompletionReason": true,
+      "sameEndpoint": true,
+      "endpointDelta": 0
+    },
+    {
+      "fixture": "corner",
+      "runs": 2,
+      "sameStep": true,
+      "sameCompletionReason": true,
+      "sameEndpoint": true,
+      "endpointDelta": 0
+    },
+    {
+      "fixture": "object-adjacent",
+      "runs": 2,
+      "sameStep": true,
+      "sameCompletionReason": true,
+      "sameEndpoint": true,
+      "endpointDelta": 0
+    }
+  ],
+  "reset": {
+    "runIdAdvanced": true,
+    "state": "ready",
+    "baselineRestored": true,
+    "noContacts": true,
+    "noLogs": true
+  },
+  "assertions": {
+    "basePlaneDistanceWithinTolerance": true,
+    "noForbiddenPenetration": true,
+    "noAnimationOnlyEndpoint": true,
+    "repeatedRunWithinTolerance": true,
+    "resetRestoresEpochAndBaseline": true
+  },
+  "failureResults": [],
+  "verificationCommands": [
+    "npm run typecheck",
+    "npm run lint",
+    "npm test",
+    "npm run build"
+  ],
+  "fixedStepMs": 16.666666666666668
+}

@@ -1,0 +1,715 @@
+{
+  "node": "N34",
+  "status": "pass",
+  "deterministic": true,
+  "fixedStep": {
+    "dt": 0.016666666666666666,
+    "frameMs": 16.666666666666668,
+    "revision": "fixed-step-rev3"
+  },
+  "inputPaths": [
+    {
+      "path": "key-up",
+      "trace": [
+        {
+          "event": "keydown",
+          "rawCode": "KeyD",
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 1,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": false
+        },
+        {
+          "event": "keyup",
+          "rawCode": "KeyD",
+          "terminalReason": "key-up",
+          "activeSemantic": [],
+          "deflection": {
+            "x": 0,
+            "z": 0
+          },
+          "zeroEmission": true
+        }
+      ],
+      "terminalReason": "key-up",
+      "zeroEmissions": 1,
+      "exactlyOneZeroEmission": true,
+      "preTerminalDisplacement": 0.11999999731779099,
+      "movedBeforeTerminal": true,
+      "maxPostTerminalDrift": 0,
+      "stopped": true,
+      "aimZero": true,
+      "state": "aiming"
+    },
+    {
+      "path": "pointer-up",
+      "trace": [
+        {
+          "event": "keydown",
+          "rawCode": "KeyD",
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 1,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": false
+        },
+        {
+          "event": "pointerdown",
+          "pointerId": 7,
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 0,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": true
+        },
+        {
+          "event": "pointermove",
+          "pointerId": 7,
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 0.2,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": false
+        },
+        {
+          "event": "terminal",
+          "terminalReason": "pointer-up",
+          "activeSemantic": [],
+          "deflection": {
+            "x": 0,
+            "z": 0
+          },
+          "zeroEmission": true
+        }
+      ],
+      "terminalReason": "pointer-up",
+      "zeroEmissions": 1,
+      "exactlyOneZeroEmission": true,
+      "preTerminalDisplacement": 0.11999999731779099,
+      "movedBeforeTerminal": true,
+      "maxPostTerminalDrift": 0,
+      "stopped": true,
+      "aimZero": true,
+      "state": "aiming"
+    },
+    {
+      "path": "pointer-cancel",
+      "trace": [
+        {
+          "event": "keydown",
+          "rawCode": "KeyD",
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 1,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": false
+        },
+        {
+          "event": "pointerdown",
+          "pointerId": 7,
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 0,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": true
+        },
+        {
+          "event": "pointermove",
+          "pointerId": 7,
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 0.2,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": false
+        },
+        {
+          "event": "terminal",
+          "terminalReason": "pointer-cancel",
+          "activeSemantic": [],
+          "deflection": {
+            "x": 0,
+            "z": 0
+          },
+          "zeroEmission": true
+        }
+      ],
+      "terminalReason": "pointer-cancel",
+      "zeroEmissions": 1,
+      "exactlyOneZeroEmission": true,
+      "preTerminalDisplacement": 0.11999999731779099,
+      "movedBeforeTerminal": true,
+      "maxPostTerminalDrift": 0,
+      "stopped": true,
+      "aimZero": true,
+      "state": "aiming"
+    },
+    {
+      "path": "lostpointercapture",
+      "trace": [
+        {
+          "event": "keydown",
+          "rawCode": "KeyD",
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 1,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": false
+        },
+        {
+          "event": "pointerdown",
+          "pointerId": 7,
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 0,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": true
+        },
+        {
+          "event": "pointermove",
+          "pointerId": 7,
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 0.2,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": false
+        },
+        {
+          "event": "terminal",
+          "terminalReason": "lostpointercapture",
+          "activeSemantic": [],
+          "deflection": {
+            "x": 0,
+            "z": 0
+          },
+          "zeroEmission": true
+        }
+      ],
+      "terminalReason": "lostpointercapture",
+      "zeroEmissions": 1,
+      "exactlyOneZeroEmission": true,
+      "preTerminalDisplacement": 0.11999999731779099,
+      "movedBeforeTerminal": true,
+      "maxPostTerminalDrift": 0,
+      "stopped": true,
+      "aimZero": true,
+      "state": "aiming"
+    },
+    {
+      "path": "blur",
+      "trace": [
+        {
+          "event": "keydown",
+          "rawCode": "KeyD",
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 1,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": false
+        },
+        {
+          "event": "pointerdown",
+          "pointerId": 7,
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 0,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": true
+        },
+        {
+          "event": "pointermove",
+          "pointerId": 7,
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 0.2,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": false
+        },
+        {
+          "event": "terminal",
+          "terminalReason": "blur",
+          "activeSemantic": [],
+          "deflection": {
+            "x": 0,
+            "z": 0
+          },
+          "zeroEmission": true
+        }
+      ],
+      "terminalReason": "blur",
+      "zeroEmissions": 1,
+      "exactlyOneZeroEmission": true,
+      "preTerminalDisplacement": 0.11999999731779099,
+      "movedBeforeTerminal": true,
+      "maxPostTerminalDrift": 0,
+      "stopped": true,
+      "aimZero": true,
+      "state": "aiming"
+    },
+    {
+      "path": "disable",
+      "trace": [
+        {
+          "event": "keydown",
+          "rawCode": "KeyD",
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 1,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": false
+        },
+        {
+          "event": "pointerdown",
+          "pointerId": 7,
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 0,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": true
+        },
+        {
+          "event": "pointermove",
+          "pointerId": 7,
+          "activeSemantic": [
+            "right"
+          ],
+          "deflection": {
+            "x": 0.2,
+            "z": 0
+          },
+          "terminalReason": null,
+          "zeroEmission": false
+        },
+        {
+          "event": "terminal",
+          "terminalReason": "disable",
+          "activeSemantic": [],
+          "deflection": {
+            "x": 0,
+            "z": 0
+          },
+          "zeroEmission": true
+        }
+      ],
+      "terminalReason": "disable",
+      "zeroEmissions": 1,
+      "exactlyOneZeroEmission": true,
+      "preTerminalDisplacement": 0.11999999731779099,
+      "movedBeforeTerminal": true,
+      "maxPostTerminalDrift": 0,
+      "stopped": true,
+      "aimZero": true,
+      "state": "aiming"
+    }
+  ],
+  "integrated": {
+    "keyboardDeflection": {
+      "x": 0.7071067811865475,
+      "z": -0.7071067811865475
+    },
+    "pointerDeflection": {
+      "x": 0.1,
+      "z": 0.1
+    },
+    "inputTrace": [
+      {
+        "event": "keydown",
+        "rawCode": "KeyW",
+        "activeSemantic": [
+          "back"
+        ],
+        "deflection": {
+          "x": 0,
+          "z": -1
+        },
+        "terminalReason": null,
+        "zeroEmission": false
+      },
+      {
+        "event": "keydown",
+        "rawCode": "KeyD",
+        "activeSemantic": [
+          "back",
+          "right"
+        ],
+        "deflection": {
+          "x": 0.7071067811865475,
+          "z": -0.7071067811865475
+        },
+        "terminalReason": null,
+        "zeroEmission": false
+      },
+      {
+        "event": "keyup",
+        "rawCode": "KeyW",
+        "terminalReason": "key-up",
+        "activeSemantic": [
+          "right"
+        ],
+        "deflection": {
+          "x": 1,
+          "z": 0
+        },
+        "zeroEmission": false
+      },
+      {
+        "event": "keyup",
+        "rawCode": "KeyD",
+        "terminalReason": "key-up",
+        "activeSemantic": [],
+        "deflection": {
+          "x": 0,
+          "z": 0
+        },
+        "zeroEmission": true
+      },
+      {
+        "event": "pointerdown",
+        "pointerId": 3,
+        "activeSemantic": [],
+        "deflection": {
+          "x": 0,
+          "z": 0
+        },
+        "terminalReason": null,
+        "zeroEmission": true
+      },
+      {
+        "event": "pointermove",
+        "pointerId": 3,
+        "activeSemantic": [],
+        "deflection": {
+          "x": 0.1,
+          "z": 0.1
+        },
+        "terminalReason": null,
+        "zeroEmission": false
+      },
+      {
+        "event": "terminal",
+        "terminalReason": "pointer-up",
+        "activeSemantic": [],
+        "deflection": {
+          "x": 0,
+          "z": 0
+        },
+        "zeroEmission": true
+      }
+    ],
+    "dropAccepted": true,
+    "reachedResult": true,
+    "transitions": [
+      "ready",
+      "aiming",
+      "aiming",
+      "aiming",
+      "aiming",
+      "aiming",
+      "aiming",
+      "aiming",
+      "aiming",
+      "aiming",
+      "aiming",
+      "aiming",
+      "aiming",
+      "aiming",
+      "aiming",
+      "aiming",
+      "lowering",
+      "aligning",
+      "gripping",
+      "lifting",
+      "returning",
+      "releasing",
+      "result"
+    ],
+    "transitionPathExact": true,
+    "report": {
+      "state": "result",
+      "grip": {
+        "observation": {
+          "physicalContact": true,
+          "solverContact": true,
+          "floorContact": false,
+          "barrierContact": false,
+          "visualOverlap": true,
+          "gripApproved": true,
+          "claw": {
+            "position": [
+              0,
+              1.309999942779541,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "prize": {
+            "position": [
+              -8.160452590120294e-21,
+              1.0463639497756958,
+              -0.000042668674723245203
+            ],
+            "quaternion": [
+              -0.00007792528776917607,
+              5.866572380955033e-23,
+              1.5330632662108233e-20,
+              0.9999999403953552
+            ]
+          },
+          "contacts": [
+            {
+              "pair": [
+                "claw",
+                "prize"
+              ],
+              "colliderRole": "head",
+              "colliderHandle": 0,
+              "otherColliderHandle": 2.5e-323,
+              "otherColliderRole": "prize",
+              "normal": [
+                3.2552235093147233e-19,
+                -0.9999981602775,
+                0.0019181870323491945
+              ],
+              "point": [
+                -6.734589184798215e-20,
+                1.2281804084777832,
+                -0.0003914273402187973
+              ],
+              "distance": -0.0763663649559021
+            }
+          ]
+        },
+        "attempt": {
+          "accepted": true,
+          "reason": "contact-approved",
+          "jointCreated": true,
+          "runId": 1,
+          "constraintCreatedAtRunId": 1
+        }
+      },
+      "outcome": {
+        "accepted": true,
+        "reason": "contact-approved",
+        "jointCreated": true,
+        "physicalContact": true,
+        "solverContact": true,
+        "visualOverlap": true,
+        "physicsRunId": 1,
+        "released": true,
+        "constraintRemovedAtPhysicsRunId": 1
+      },
+      "sync": {
+        "claw": {
+          "position": [
+            0,
+            2.799999952316284,
+            0
+          ],
+          "quaternion": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "prize": {
+          "position": [
+            3.0676644421261417e-19,
+            2.5363240242004395,
+            0.002319549908861518
+          ],
+          "quaternion": [
+            -0.005434309132397175,
+            6.971210015132691e-20,
+            7.693305473420011e-19,
+            0.9999852180480957
+          ]
+        },
+        "clawVisualWorldPosition": [
+          0,
+          2.799999952316284,
+          0
+        ],
+        "prizeVisualWorldPosition": [
+          3.0676644421261417e-19,
+          2.5363240242004395,
+          0.002319549908861518
+        ],
+        "clawSynchronized": true,
+        "prizeSynchronized": true
+      },
+      "ownership": {
+        "controllerOwnsState": true,
+        "physicsOwnsBodies": true,
+        "poseOwnsFingerPresentation": true,
+        "coordinatorOwnsCompletionEvents": true,
+        "gsapMovesAuthoritativeBodies": false
+      }
+    },
+    "finalPrize": {
+      "position": [
+        3.0676644421261417e-19,
+        2.5363240242004395,
+        0.002319549908861518
+      ],
+      "quaternion": [
+        -0.005434309132397175,
+        6.971210015132691e-20,
+        7.693305473420011e-19,
+        0.9999852180480957
+      ]
+    },
+    "finalClaw": {
+      "position": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "quaternion": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "acceptedPhysicalCarry": true,
+    "synchronized": true
+  },
+  "reset": {
+    "resetAccepted": true,
+    "state": "ready",
+    "controllerRunAdvanced": true,
+    "physicsRunAdvanced": true,
+    "aimZero": true,
+    "physicsReady": true,
+    "noCarryJoint": true,
+    "executionInputRejected": true,
+    "executionInputNoDrift": true,
+    "staleCallbackRejected": true,
+    "postResetStable": true,
+    "diagnostics": [
+      {
+        "sequence": 5,
+        "kind": "rejected-command",
+        "action": "moveAim",
+        "state": "lowering",
+        "runId": 1,
+        "reason": "moveAim is not legal from lowering"
+      },
+      {
+        "sequence": 8,
+        "kind": "stale-callback",
+        "action": "poseReached",
+        "state": "ready",
+        "runId": 2,
+        "reason": "callback belongs to run 1; active run is 2",
+        "callbackRunId": 1
+      }
+    ]
+  },
+  "repeatability": {
+    "runs": 2,
+    "sameTransitionPath": true,
+    "finalPrizeMatch": true,
+    "finalClawMatch": true,
+    "withinTolerance": true
+  },
+  "regressions": {
+    "n6": {
+      "status": "pass",
+      "source": "src/evidence/n6.test.ts",
+      "scope": "finger collision, adaptive carry, reset, repeatability"
+    },
+    "n7": {
+      "status": "pass",
+      "source": "src/evidence/n7.test.ts",
+      "scope": "state, coordinator, physics, pose integration"
+    },
+    "n33": {
+      "status": "head-feel-failed",
+      "promotionBlocked": true,
+      "source": "records/evidence/n33-head-feel.json"
+    }
+  },
+  "verificationCommands": [
+    "npm run typecheck",
+    "npm run lint",
+    "npm test",
+    "npm run build"
+  ],
+  "browserLimitations": [
+    "Node/Vitest verifies the pure input pipeline and coordinator integration; browser DOM pointer-capture delivery remains covered only by the partial N32 browser artifact."
+  ],
+  "claims": {
+    "noStaleVelocityAfterTerminalInput": true,
+    "fullInputStatePhysicsPath": true,
+    "noStaleVelocityAfterResetOrStateTransition": true,
+    "carryResetRepeatabilityGreen": true,
+    "n33FeelPromotionBlocked": true
+  }
+}

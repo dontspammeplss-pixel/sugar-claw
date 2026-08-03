@@ -21,6 +21,7 @@ import {
   type GripObservation,
   type GripAttempt,
   type PhysicsTransform,
+  type DescentObservation,
 } from '../physics/adapter'
 import { N6_PHYSICS_CONFIG, type Vec3 } from '../physics/config'
 import {
@@ -70,6 +71,7 @@ export interface N7RuntimeReport {
     readonly observation: GripObservation
     readonly attempt: GripAttempt
   } | null
+  readonly descent: DescentObservation | null
   readonly ownership: {
     readonly controllerOwnsState: true
     readonly physicsOwnsBodies: true
@@ -138,6 +140,7 @@ export class N7EffectCoordinator {
   /** Whether the releasing-state open animation has started this run. */
   private releaseOpened = false
   private lastGrip: N7RuntimeReport['grip'] = null
+  private lastDescent: DescentObservation | null = null
   private lastSync: N7SyncReport | null = null
   private disposed = false
   /** Kinematic claw travel between two absolute positions (see travel-animator). */
@@ -196,6 +199,7 @@ export class N7EffectCoordinator {
       physicsRunId: this.physics.currentRunId,
       sync: this.lastSync,
       grip: this.lastGrip,
+      descent: this.lastDescent,
       ownership: {
         controllerOwnsState: true,
         physicsOwnsBodies: true,
@@ -355,7 +359,11 @@ export class N7EffectCoordinator {
     // aim-derived position. The stick deflection is velocity, not position;
     // releasing it must not recenter the drop target.
     const current = this.physics.transform('claw').position
-    const target: Vec3 = [current[0], N6_PHYSICS_CONFIG.gripPosition[1], current[2]]
+    const target: Vec3 = [
+      current[0],
+      N6_PHYSICS_CONFIG.clawClearance.baseInteractionY,
+      current[2],
+    ]
     if (!this.physics.moveClaw(target)) {
       throw new Error(`N7 integration: derived lowering target is out of bounds`)
     }
@@ -396,13 +404,20 @@ export class N7EffectCoordinator {
     const runId = state.runId
 
     switch (state.state) {
-      case 'lowering':
-        // N25/N26: classic arcade contact stop — when a physical claw collider
-        // (head proxy or finger capsule) touches the prize, park the claw where
-        // it is instead of dragging the rigid fingers into the prize volume.
-        // The dynamic head keeps its momentum for a beat, producing the
-        // collision tilt, then the pendulum and angular damping settle it.
-        if (this.physics.observeGrip().solverContact) {
+      case 'lowering': {
+        const descent = this.physics.observeDescent()
+        this.lastDescent = descent
+        // N36: object contact is observed but does not terminate a base-first
+        // descent. Only a physical floor/wall barrier or approved base
+        // clearance can normalize lowering completion.
+        if (descent.completionReason === 'barrier-contact') {
+          this.travel.cancel()
+          this.target = this.physics.transform('claw').position
+        } else if (
+          descent.completionReason === 'base-clearance' &&
+          Math.abs(descent.basePlaneDistance) <=
+            N6_PHYSICS_CONFIG.clawClearance.tolerance
+        ) {
           this.travel.cancel()
           this.target = this.physics.transform('claw').position
         }
@@ -418,6 +433,7 @@ export class N7EffectCoordinator {
           this.emit({ type: 'poseReached', pose: 'lowered', runId })
         }
         break
+      }
       case 'aligning':
         this.alignmentSteps += 1
         if (this.alignmentSteps >= 3) {
@@ -520,6 +536,7 @@ export class N7EffectCoordinator {
     this.gripAttempted = false
     this.releaseOpened = false
     this.lastGrip = null
+    this.lastDescent = null
     this.syncVisuals()
     const runId = this.snapshot.runId
     const baselineRestored = this.controller.dispatch({

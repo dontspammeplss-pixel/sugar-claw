@@ -1,0 +1,2236 @@
+{
+  "node": "N38",
+  "status": "pass",
+  "deterministic": true,
+  "authority": {
+    "physics": "src/physics/adapter.ts",
+    "config": "src/physics/config.ts",
+    "evidence": "src/evidence/n38-evidence.ts",
+    "sceneManifest": "src/scene/report.ts REQUIRED_HIERARCHY",
+    "sceneTruth": false
+  },
+  "inventory": {
+    "beforeStepping": {
+      "runId": 0,
+      "sourceRevision": "fixed-step-rev3",
+      "identities": [
+        {
+          "entity": "body",
+          "logicalBodyId": "claw",
+          "bodyHandle": 0,
+          "colliderId": "body-claw",
+          "colliderHandle": null,
+          "role": "body",
+          "shapeType": "rigid-body",
+          "transform": {
+            "position": [
+              0,
+              2.799999952316284,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 0,
+          "filterMask": 0,
+          "solverMask": 0,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-carriage-rev1",
+          "colliderProfileId": "claw-carriage",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "body",
+          "logicalBodyId": "head",
+          "bodyHandle": 5e-324,
+          "colliderId": "body-head",
+          "colliderHandle": null,
+          "role": "body",
+          "shapeType": "rigid-body",
+          "transform": {
+            "position": [
+              0,
+              2.799999952316284,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 0,
+          "filterMask": 0,
+          "solverMask": 0,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-head-rev1",
+          "colliderProfileId": "claw-head-body",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "body",
+          "logicalBodyId": "prize",
+          "bodyHandle": 1e-323,
+          "colliderId": "body-prize",
+          "colliderHandle": null,
+          "role": "body",
+          "shapeType": "rigid-body",
+          "transform": {
+            "position": [
+              0,
+              1.2000000476837158,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 0,
+          "filterMask": 0,
+          "solverMask": 0,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-prize-rev1",
+          "colliderProfileId": "prize-body",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "body",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "body-environment",
+          "colliderHandle": null,
+          "role": "body",
+          "shapeType": "rigid-body",
+          "transform": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 0,
+          "filterMask": 0,
+          "solverMask": 0,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-environment-rev2",
+          "colliderProfileId": "environment-body",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "head",
+          "bodyHandle": 5e-324,
+          "colliderId": "claw-head",
+          "colliderHandle": 0,
+          "role": "clawBody",
+          "shapeType": "cuboid",
+          "transform": {
+            "position": [
+              0,
+              2.799999952316284,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 4,
+          "filterMask": 19,
+          "solverMask": 3,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-head-rev1",
+          "colliderProfileId": "claw-head",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "head",
+          "bodyHandle": 5e-324,
+          "colliderId": "claw-finger-0",
+          "colliderHandle": 5e-324,
+          "role": "clawFinger",
+          "shapeType": "capsule",
+          "transform": {
+            "position": [
+              0.300931453704834,
+              2.6014676094055176,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0.06994284689426422,
+              0.9975510239601135
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 8,
+          "filterMask": 3,
+          "solverMask": 3,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-finger-rev1",
+          "colliderProfileId": "claw-finger-0",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "head",
+          "bodyHandle": 5e-324,
+          "colliderId": "claw-finger-1",
+          "colliderHandle": 1e-323,
+          "role": "clawFinger",
+          "shapeType": "capsule",
+          "transform": {
+            "position": [
+              -0.300931453704834,
+              2.6014676094055176,
+              3.685347709274855e-17
+            ],
+            "quaternion": [
+              -0.06994284689426422,
+              -0.9975510239601135,
+              4.282764017440253e-18,
+              6.108238471036988e-17
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 8,
+          "filterMask": 3,
+          "solverMask": 3,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-finger-rev1",
+          "colliderProfileId": "claw-finger-1",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "head",
+          "bodyHandle": 5e-324,
+          "colliderId": "claw-finger-2",
+          "colliderHandle": 1.5e-323,
+          "role": "clawFinger",
+          "shapeType": "capsule",
+          "transform": {
+            "position": [
+              -5.3169889299320387e-17,
+              2.6014676094055176,
+              -0.300931453704834
+            ],
+            "quaternion": [
+              -0.049457062035799026,
+              -0.705375075340271,
+              -0.049457062035799026,
+              -0.705375075340271
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 8,
+          "filterMask": 3,
+          "solverMask": 3,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-finger-rev1",
+          "colliderProfileId": "claw-finger-2",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "head",
+          "bodyHandle": 5e-324,
+          "colliderId": "grip-sensor",
+          "colliderHandle": 2e-323,
+          "role": "sensor",
+          "shapeType": "ball",
+          "transform": {
+            "position": [
+              0,
+              2.1500000953674316,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": true,
+          "mode": "sensor",
+          "collisionGroup": 16,
+          "filterMask": 6,
+          "solverMask": 0,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-sensor-rev1",
+          "colliderProfileId": "grip-sensor",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "prize",
+          "bodyHandle": 1e-323,
+          "colliderId": "prize-collider",
+          "colliderHandle": 2.5e-323,
+          "role": "prize",
+          "shapeType": "ball",
+          "transform": {
+            "position": [
+              0,
+              1.2000000476837158,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 2,
+          "filterMask": 29,
+          "solverMask": 13,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-prize-rev1",
+          "colliderProfileId": "prize-collider",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "environment-floor",
+          "colliderHandle": 3e-323,
+          "role": "floor",
+          "shapeType": "cuboid",
+          "transform": {
+            "position": [
+              0,
+              0.7900000214576721,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 1,
+          "filterMask": 14,
+          "solverMask": 14,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-environment-rev2",
+          "colliderProfileId": "environment-floor",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "environment-wall-0",
+          "colliderHandle": 3.5e-323,
+          "role": "wall",
+          "shapeType": "cuboid",
+          "transform": {
+            "position": [
+              0,
+              1.899999976158142,
+              0.8799999952316284
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 1,
+          "filterMask": 14,
+          "solverMask": 14,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-environment-rev2",
+          "colliderProfileId": "environment-wall-0",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "environment-wall-1",
+          "colliderHandle": 4e-323,
+          "role": "wall",
+          "shapeType": "cuboid",
+          "transform": {
+            "position": [
+              0,
+              1.899999976158142,
+              -0.8799999952316284
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 1,
+          "filterMask": 14,
+          "solverMask": 14,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-environment-rev2",
+          "colliderProfileId": "environment-wall-1",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "environment-wall-2",
+          "colliderHandle": 4.4e-323,
+          "role": "wall",
+          "shapeType": "cuboid",
+          "transform": {
+            "position": [
+              -1.7000000476837158,
+              1.899999976158142,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 1,
+          "filterMask": 14,
+          "solverMask": 14,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-environment-rev2",
+          "colliderProfileId": "environment-wall-2",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "environment-wall-3",
+          "colliderHandle": 5e-323,
+          "role": "wall",
+          "shapeType": "cuboid",
+          "transform": {
+            "position": [
+              1.7000000476837158,
+              1.899999976158142,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 1,
+          "filterMask": 14,
+          "solverMask": 14,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-environment-rev2",
+          "colliderProfileId": "environment-wall-3",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        }
+      ],
+      "visualProxyBindings": [
+        {
+          "visualId": "ClawVisualRoot",
+          "logicalBodyId": "head",
+          "requiredColliderIds": [
+            "claw-head",
+            "claw-finger-0",
+            "claw-finger-1",
+            "claw-finger-2",
+            "grip-sensor"
+          ],
+          "registeredColliderIds": [
+            "claw-head",
+            "claw-finger-0",
+            "claw-finger-1",
+            "claw-finger-2",
+            "grip-sensor"
+          ],
+          "missingColliderIds": []
+        },
+        {
+          "visualId": "PrizeBody",
+          "logicalBodyId": "prize",
+          "requiredColliderIds": [
+            "prize-collider"
+          ],
+          "registeredColliderIds": [
+            "prize-collider"
+          ],
+          "missingColliderIds": []
+        },
+        {
+          "visualId": "MachineCollisionProxies/PlayfieldFloor",
+          "logicalBodyId": "environment",
+          "requiredColliderIds": [
+            "environment-floor"
+          ],
+          "registeredColliderIds": [
+            "environment-floor"
+          ],
+          "missingColliderIds": []
+        },
+        {
+          "visualId": "MachineCollisionProxies/ChamberWalls",
+          "logicalBodyId": "environment",
+          "requiredColliderIds": [
+            "environment-wall-0",
+            "environment-wall-1",
+            "environment-wall-2",
+            "environment-wall-3"
+          ],
+          "registeredColliderIds": [
+            "environment-wall-0",
+            "environment-wall-1",
+            "environment-wall-2",
+            "environment-wall-3"
+          ],
+          "missingColliderIds": []
+        }
+      ],
+      "missingRegistrations": []
+    },
+    "afterReset": {
+      "runId": 1,
+      "sourceRevision": "fixed-step-rev3",
+      "identities": [
+        {
+          "entity": "body",
+          "logicalBodyId": "claw",
+          "bodyHandle": 0,
+          "colliderId": "body-claw",
+          "colliderHandle": null,
+          "role": "body",
+          "shapeType": "rigid-body",
+          "transform": {
+            "position": [
+              0,
+              2.799999952316284,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 0,
+          "filterMask": 0,
+          "solverMask": 0,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-carriage-rev1",
+          "colliderProfileId": "claw-carriage",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "body",
+          "logicalBodyId": "head",
+          "bodyHandle": 5e-324,
+          "colliderId": "body-head",
+          "colliderHandle": null,
+          "role": "body",
+          "shapeType": "rigid-body",
+          "transform": {
+            "position": [
+              0,
+              2.799999952316284,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 0,
+          "filterMask": 0,
+          "solverMask": 0,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-head-rev1",
+          "colliderProfileId": "claw-head-body",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "body",
+          "logicalBodyId": "prize",
+          "bodyHandle": 1e-323,
+          "colliderId": "body-prize",
+          "colliderHandle": null,
+          "role": "body",
+          "shapeType": "rigid-body",
+          "transform": {
+            "position": [
+              0,
+              1.2000000476837158,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 0,
+          "filterMask": 0,
+          "solverMask": 0,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-prize-rev1",
+          "colliderProfileId": "prize-body",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "body",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "body-environment",
+          "colliderHandle": null,
+          "role": "body",
+          "shapeType": "rigid-body",
+          "transform": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 0,
+          "filterMask": 0,
+          "solverMask": 0,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-environment-rev2",
+          "colliderProfileId": "environment-body",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "head",
+          "bodyHandle": 5e-324,
+          "colliderId": "claw-head",
+          "colliderHandle": 0,
+          "role": "clawBody",
+          "shapeType": "cuboid",
+          "transform": {
+            "position": [
+              0,
+              2.799999952316284,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 4,
+          "filterMask": 19,
+          "solverMask": 3,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-head-rev1",
+          "colliderProfileId": "claw-head",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "head",
+          "bodyHandle": 5e-324,
+          "colliderId": "claw-finger-0",
+          "colliderHandle": 5e-324,
+          "role": "clawFinger",
+          "shapeType": "capsule",
+          "transform": {
+            "position": [
+              0.300931453704834,
+              2.6014676094055176,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0.06994284689426422,
+              0.9975510239601135
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 8,
+          "filterMask": 3,
+          "solverMask": 3,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-finger-rev1",
+          "colliderProfileId": "claw-finger-0",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "head",
+          "bodyHandle": 5e-324,
+          "colliderId": "claw-finger-1",
+          "colliderHandle": 1e-323,
+          "role": "clawFinger",
+          "shapeType": "capsule",
+          "transform": {
+            "position": [
+              -0.300931453704834,
+              2.6014676094055176,
+              3.685347709274855e-17
+            ],
+            "quaternion": [
+              -0.06994284689426422,
+              -0.9975510239601135,
+              4.282764017440253e-18,
+              6.108238471036988e-17
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 8,
+          "filterMask": 3,
+          "solverMask": 3,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-finger-rev1",
+          "colliderProfileId": "claw-finger-1",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "head",
+          "bodyHandle": 5e-324,
+          "colliderId": "claw-finger-2",
+          "colliderHandle": 1.5e-323,
+          "role": "clawFinger",
+          "shapeType": "capsule",
+          "transform": {
+            "position": [
+              -5.3169889299320387e-17,
+              2.6014676094055176,
+              -0.300931453704834
+            ],
+            "quaternion": [
+              -0.049457062035799026,
+              -0.705375075340271,
+              -0.049457062035799026,
+              -0.705375075340271
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 8,
+          "filterMask": 3,
+          "solverMask": 3,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-finger-rev1",
+          "colliderProfileId": "claw-finger-2",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "head",
+          "bodyHandle": 5e-324,
+          "colliderId": "grip-sensor",
+          "colliderHandle": 2e-323,
+          "role": "sensor",
+          "shapeType": "ball",
+          "transform": {
+            "position": [
+              0,
+              2.1500000953674316,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": true,
+          "mode": "sensor",
+          "collisionGroup": 16,
+          "filterMask": 6,
+          "solverMask": 0,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-sensor-rev1",
+          "colliderProfileId": "grip-sensor",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "prize",
+          "bodyHandle": 1e-323,
+          "colliderId": "prize-collider",
+          "colliderHandle": 2.5e-323,
+          "role": "prize",
+          "shapeType": "ball",
+          "transform": {
+            "position": [
+              0,
+              1.2000000476837158,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 2,
+          "filterMask": 29,
+          "solverMask": 13,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-prize-rev1",
+          "colliderProfileId": "prize-collider",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "environment-floor",
+          "colliderHandle": 3e-323,
+          "role": "floor",
+          "shapeType": "cuboid",
+          "transform": {
+            "position": [
+              0,
+              0.7900000214576721,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 1,
+          "filterMask": 14,
+          "solverMask": 14,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-environment-rev2",
+          "colliderProfileId": "environment-floor",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "environment-wall-0",
+          "colliderHandle": 3.5e-323,
+          "role": "wall",
+          "shapeType": "cuboid",
+          "transform": {
+            "position": [
+              0,
+              1.899999976158142,
+              0.8799999952316284
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 1,
+          "filterMask": 14,
+          "solverMask": 14,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-environment-rev2",
+          "colliderProfileId": "environment-wall-0",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "environment-wall-1",
+          "colliderHandle": 4e-323,
+          "role": "wall",
+          "shapeType": "cuboid",
+          "transform": {
+            "position": [
+              0,
+              1.899999976158142,
+              -0.8799999952316284
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 1,
+          "filterMask": 14,
+          "solverMask": 14,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-environment-rev2",
+          "colliderProfileId": "environment-wall-1",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "environment-wall-2",
+          "colliderHandle": 4.4e-323,
+          "role": "wall",
+          "shapeType": "cuboid",
+          "transform": {
+            "position": [
+              -1.7000000476837158,
+              1.899999976158142,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 1,
+          "filterMask": 14,
+          "solverMask": 14,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-environment-rev2",
+          "colliderProfileId": "environment-wall-2",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "environment-wall-3",
+          "colliderHandle": 5e-323,
+          "role": "wall",
+          "shapeType": "cuboid",
+          "transform": {
+            "position": [
+              1.7000000476837158,
+              1.899999976158142,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 1,
+          "filterMask": 14,
+          "solverMask": 14,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n38-authored-environment-rev2",
+          "colliderProfileId": "environment-wall-3",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        }
+      ],
+      "visualProxyBindings": [
+        {
+          "visualId": "ClawVisualRoot",
+          "logicalBodyId": "head",
+          "requiredColliderIds": [
+            "claw-head",
+            "claw-finger-0",
+            "claw-finger-1",
+            "claw-finger-2",
+            "grip-sensor"
+          ],
+          "registeredColliderIds": [
+            "claw-head",
+            "claw-finger-0",
+            "claw-finger-1",
+            "claw-finger-2",
+            "grip-sensor"
+          ],
+          "missingColliderIds": []
+        },
+        {
+          "visualId": "PrizeBody",
+          "logicalBodyId": "prize",
+          "requiredColliderIds": [
+            "prize-collider"
+          ],
+          "registeredColliderIds": [
+            "prize-collider"
+          ],
+          "missingColliderIds": []
+        },
+        {
+          "visualId": "MachineCollisionProxies/PlayfieldFloor",
+          "logicalBodyId": "environment",
+          "requiredColliderIds": [
+            "environment-floor"
+          ],
+          "registeredColliderIds": [
+            "environment-floor"
+          ],
+          "missingColliderIds": []
+        },
+        {
+          "visualId": "MachineCollisionProxies/ChamberWalls",
+          "logicalBodyId": "environment",
+          "requiredColliderIds": [
+            "environment-wall-0",
+            "environment-wall-1",
+            "environment-wall-2",
+            "environment-wall-3"
+          ],
+          "registeredColliderIds": [
+            "environment-wall-0",
+            "environment-wall-1",
+            "environment-wall-2",
+            "environment-wall-3"
+          ],
+          "missingColliderIds": []
+        }
+      ],
+      "missingRegistrations": []
+    }
+  },
+  "pairMatrix": {
+    "contractCells": 15,
+    "observed": [
+      {
+        "a": "environment",
+        "b": "environment",
+        "expected": "forbidden",
+        "eligible": false,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "ineligible-pair"
+      },
+      {
+        "a": "environment",
+        "b": "prize",
+        "expected": "solver",
+        "eligible": true,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "eligible-no-contact"
+      },
+      {
+        "a": "environment",
+        "b": "clawBody",
+        "expected": "solver",
+        "eligible": true,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "eligible-no-contact"
+      },
+      {
+        "a": "environment",
+        "b": "clawFinger",
+        "expected": "solver",
+        "eligible": true,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "eligible-no-contact"
+      },
+      {
+        "a": "environment",
+        "b": "sensor",
+        "expected": "forbidden",
+        "eligible": false,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "ineligible-pair"
+      },
+      {
+        "a": "prize",
+        "b": "prize",
+        "expected": "forbidden",
+        "eligible": false,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "ineligible-pair"
+      },
+      {
+        "a": "prize",
+        "b": "clawBody",
+        "expected": "solver",
+        "eligible": true,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "eligible-no-contact"
+      },
+      {
+        "a": "prize",
+        "b": "clawFinger",
+        "expected": "solver",
+        "eligible": true,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "eligible-no-contact"
+      },
+      {
+        "a": "prize",
+        "b": "sensor",
+        "expected": "sensor",
+        "eligible": true,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "eligible-no-contact"
+      },
+      {
+        "a": "clawBody",
+        "b": "clawBody",
+        "expected": "forbidden",
+        "eligible": false,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "ineligible-pair"
+      },
+      {
+        "a": "clawBody",
+        "b": "clawFinger",
+        "expected": "forbidden",
+        "eligible": false,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "ineligible-pair"
+      },
+      {
+        "a": "clawBody",
+        "b": "sensor",
+        "expected": "sensor",
+        "eligible": true,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "eligible-no-contact"
+      },
+      {
+        "a": "clawFinger",
+        "b": "clawFinger",
+        "expected": "forbidden",
+        "eligible": false,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "ineligible-pair"
+      },
+      {
+        "a": "clawFinger",
+        "b": "sensor",
+        "expected": "forbidden",
+        "eligible": false,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "ineligible-pair"
+      },
+      {
+        "a": "sensor",
+        "b": "sensor",
+        "expected": "forbidden",
+        "eligible": false,
+        "observedContact": false,
+        "sensorIntersection": false,
+        "solverContact": false,
+        "visualOverlap": false,
+        "result": "ineligible-pair"
+      }
+    ],
+    "pass": true
+  },
+  "fixtures": {
+    "clawToObject": {
+      "fixture": "claw-to-object-impact",
+      "target": [
+        0,
+        1.2,
+        0
+      ],
+      "contactTraces": [
+        {
+          "a": "clawBody",
+          "b": "prize",
+          "aColliderId": "claw-head",
+          "bColliderId": "prize-collider",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0.02567802183330059,
+            1.1176533699035645,
+            0.02961774170398712
+          ],
+          "contactNormal": [
+            -0.04790884453239362,
+            -0.9962749710612832,
+            -0.07170023942819959
+          ],
+          "contactDistance": -0.07225954532623291
+        },
+        {
+          "a": "clawFinger",
+          "b": "floor",
+          "aColliderId": "claw-finger-0",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0.31994715332984924,
+            0.8461414575576782,
+            -0.01149810291826725
+          ],
+          "contactNormal": [
+            5.538077938729499e-9,
+            -1.0000000635035196,
+            -8.621695668595969e-10
+          ],
+          "contactDistance": -0.08771702647209167
+        },
+        {
+          "a": "clawFinger",
+          "b": "floor",
+          "aColliderId": "claw-finger-1",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            -0.3229542672634125,
+            0.8618960380554199,
+            -0.019741760566830635
+          ],
+          "contactNormal": [
+            1.1027308828986846e-8,
+            -0.9999999949756975,
+            -1.5300696293296667e-8
+          ],
+          "contactDistance": -0.056207966059446335
+        },
+        {
+          "a": "clawFinger",
+          "b": "floor",
+          "aColliderId": "claw-finger-2",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            -0.0030604577623307705,
+            0.8674699068069458,
+            -0.3676774501800537
+          ],
+          "contactNormal": [
+            -1.2286318056692336e-10,
+            -1.0000000134912803,
+            -1.0818448567539996e-8
+          ],
+          "contactDistance": -0.045060236006975174
+        },
+        {
+          "a": "sensor",
+          "b": "prize",
+          "aColliderId": "grip-sensor",
+          "bColliderId": "prize-collider",
+          "eligible": true,
+          "sensorIntersection": true,
+          "solverContact": false,
+          "contactPoint": null,
+          "contactNormal": null,
+          "contactDistance": null
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0.02616828680038452,
+            0.8123418688774109,
+            0.02179119549691677
+          ],
+          "contactNormal": [
+            -1.5746916155572055e-8,
+            -1.0000000161720457,
+            -3.31695896790829e-9
+          ],
+          "contactDistance": -0.1553162932395935
+        }
+      ],
+      "visualOverlap": true,
+      "sensorIntersection": true,
+      "solverContact": true,
+      "carryConstraintCreated": false,
+      "contactObserved": true,
+      "requiredPairObserved": true
+    },
+    "fingerToObject": {
+      "fixture": "finger-to-object-impact",
+      "target": [
+        0,
+        1.2,
+        0
+      ],
+      "contactTraces": [
+        {
+          "a": "clawBody",
+          "b": "floor",
+          "aColliderId": "claw-head",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            -0.31265363097190857,
+            0.8849321603775024,
+            0.10685945302248001
+          ],
+          "contactNormal": [
+            2.6258160645831197e-9,
+            -1.000000007210384,
+            2.7987438477872217e-9
+          ],
+          "contactDistance": -0.010135308839380741
+        },
+        {
+          "a": "clawFinger",
+          "b": "prize",
+          "aColliderId": "claw-finger-0",
+          "bColliderId": "prize-collider",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0.31961578130722046,
+            1.1535834074020386,
+            0.33561670780181885
+          ],
+          "contactNormal": [
+            0.38227876827953244,
+            -0.534706501339301,
+            -0.7536259399775891
+          ],
+          "contactDistance": -0.0644877552986145
+        },
+        {
+          "a": "clawFinger",
+          "b": "floor",
+          "aColliderId": "claw-finger-1",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0.005376365035772324,
+            0.7766016721725464,
+            0.008451319299638271
+          ],
+          "contactNormal": [
+            -5.985648556666723e-9,
+            -1.0000000000555307,
+            -7.555181535945366e-8
+          ],
+          "contactDistance": -0.22679674625396729
+        },
+        {
+          "a": "clawFinger",
+          "b": "floor",
+          "aColliderId": "claw-finger-1",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0.0016216402873396873,
+            0.7984434366226196,
+            0.0014937667874619365
+          ],
+          "contactNormal": [
+            -6.590986922905273e-10,
+            -0.9999999664381788,
+            -2.4789268970870637e-8
+          ],
+          "contactDistance": -0.18311277031898499
+        },
+        {
+          "a": "clawFinger",
+          "b": "prize",
+          "aColliderId": "claw-finger-2",
+          "bColliderId": "prize-collider",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0.36190634965896606,
+            0.9954757690429688,
+            0.15821367502212524
+          ],
+          "contactNormal": [
+            -0.223967276392928,
+            0.5602199796910913,
+            0.7974911537706528
+          ],
+          "contactDistance": -0.018685534596443176
+        },
+        {
+          "a": "sensor",
+          "b": "prize",
+          "aColliderId": "grip-sensor",
+          "bColliderId": "prize-collider",
+          "eligible": true,
+          "sensorIntersection": true,
+          "solverContact": false,
+          "contactPoint": null,
+          "contactNormal": null,
+          "contactDistance": null
+        }
+      ],
+      "visualOverlap": true,
+      "sensorIntersection": true,
+      "solverContact": true,
+      "carryConstraintCreated": false,
+      "contactObserved": true,
+      "requiredPairObserved": true
+    },
+    "objectToFloor": {
+      "fixture": "object-to-floor-rest",
+      "target": [
+        0,
+        1.2,
+        0
+      ],
+      "contactTraces": [
+        {
+          "a": "clawBody",
+          "b": "prize",
+          "aColliderId": "claw-head",
+          "bColliderId": "prize-collider",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0.02567802183330059,
+            1.1176533699035645,
+            0.02961774170398712
+          ],
+          "contactNormal": [
+            -0.04790884453239362,
+            -0.9962749710612832,
+            -0.07170023942819959
+          ],
+          "contactDistance": -0.07225954532623291
+        },
+        {
+          "a": "clawFinger",
+          "b": "floor",
+          "aColliderId": "claw-finger-0",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0.31994715332984924,
+            0.8461414575576782,
+            -0.01149810291826725
+          ],
+          "contactNormal": [
+            5.538077938729499e-9,
+            -1.0000000635035196,
+            -8.621695668595969e-10
+          ],
+          "contactDistance": -0.08771702647209167
+        },
+        {
+          "a": "clawFinger",
+          "b": "floor",
+          "aColliderId": "claw-finger-1",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            -0.3229542672634125,
+            0.8618960380554199,
+            -0.019741760566830635
+          ],
+          "contactNormal": [
+            1.1027308828986846e-8,
+            -0.9999999949756975,
+            -1.5300696293296667e-8
+          ],
+          "contactDistance": -0.056207966059446335
+        },
+        {
+          "a": "clawFinger",
+          "b": "floor",
+          "aColliderId": "claw-finger-2",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            -0.0030604577623307705,
+            0.8674699068069458,
+            -0.3676774501800537
+          ],
+          "contactNormal": [
+            -1.2286318056692336e-10,
+            -1.0000000134912803,
+            -1.0818448567539996e-8
+          ],
+          "contactDistance": -0.045060236006975174
+        },
+        {
+          "a": "sensor",
+          "b": "prize",
+          "aColliderId": "grip-sensor",
+          "bColliderId": "prize-collider",
+          "eligible": true,
+          "sensorIntersection": true,
+          "solverContact": false,
+          "contactPoint": null,
+          "contactNormal": null,
+          "contactDistance": null
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0.02616828680038452,
+            0.8123418688774109,
+            0.02179119549691677
+          ],
+          "contactNormal": [
+            -1.5746916155572055e-8,
+            -1.0000000161720457,
+            -3.31695896790829e-9
+          ],
+          "contactDistance": -0.1553162932395935
+        }
+      ],
+      "visualOverlap": true,
+      "sensorIntersection": true,
+      "solverContact": true,
+      "carryConstraintCreated": false,
+      "contactObserved": true,
+      "requiredPairObserved": true
+    },
+    "clawToWall": {
+      "fixture": "claw-to-wall-impact",
+      "target": [
+        1.25,
+        2.4,
+        0
+      ],
+      "contactTraces": [
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "clawFinger",
+          "b": "wall",
+          "aColliderId": "claw-finger-0",
+          "bColliderId": "environment-wall-3",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            1.6497849225997925,
+            2.092576742172241,
+            0.0020877565257251263
+          ],
+          "contactNormal": [
+            0.999999420696863,
+            -0.0011073827406857099,
+            0.00007753838190622349
+          ],
+          "contactDistance": 0.00043030118104070425
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        }
+      ],
+      "visualOverlap": false,
+      "sensorIntersection": false,
+      "solverContact": true,
+      "carryConstraintCreated": false,
+      "contactObserved": true,
+      "requiredPairObserved": true
+    },
+    "objectToWall": {
+      "fixture": "object-to-wall-impact",
+      "target": [
+        1.55,
+        1.2,
+        0
+      ],
+      "contactTraces": [
+        {
+          "a": "prize",
+          "b": "wall",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-wall-3",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            1.6969997882843018,
+            1.199127435684204,
+            0
+          ],
+          "contactNormal": [
+            0.9999999710725925,
+            -1.4836760686252904e-10,
+            0
+          ],
+          "contactDistance": -0.09399940073490143
+        }
+      ],
+      "visualOverlap": false,
+      "sensorIntersection": false,
+      "solverContact": true,
+      "carryConstraintCreated": false,
+      "contactObserved": true,
+      "requiredPairObserved": true
+    },
+    "negativeVisualOverlap": {
+      "fixture": "visual-overlap-ineligible",
+      "target": [
+        0.6,
+        1.55,
+        0
+      ],
+      "contactTraces": [
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        },
+        {
+          "a": "prize",
+          "b": "floor",
+          "aColliderId": "prize-collider",
+          "bColliderId": "environment-floor",
+          "eligible": true,
+          "sensorIntersection": false,
+          "solverContact": true,
+          "contactPoint": [
+            0,
+            0.8893628716468811,
+            0
+          ],
+          "contactNormal": [
+            0,
+            -1,
+            0
+          ],
+          "contactDistance": -0.0012742280960083008
+        }
+      ],
+      "visualOverlap": true,
+      "sensorIntersection": false,
+      "solverContact": false,
+      "carryConstraintCreated": false,
+      "contactObserved": true,
+      "requiredPairObserved": false
+    }
+  },
+  "barrierTraces": [
+    {
+      "barrier": "floor",
+      "colliderId": "environment-floor",
+      "contactObserved": true,
+      "contact": {
+        "pair": [
+          "claw",
+          "environment"
+        ],
+        "colliderRole": "head",
+        "colliderHandle": 0,
+        "otherColliderHandle": 3e-323,
+        "otherColliderRole": "floor",
+        "normal": [
+          -6.950162667607174e-10,
+          -0.9999999958079646,
+          1.7938646713899775e-8
+        ],
+        "point": [
+          0.18242940306663513,
+          0.7021697759628296,
+          0.25580549240112305
+        ],
+        "distance": -0.3756603002548218
+      },
+      "before": {
+        "position": [
+          0,
+          2.799999952316284,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "target": [
+        0,
+        0.83,
+        0
+      ],
+      "after": {
+        "position": [
+          -0.009617609903216362,
+          0.8446514010429382,
+          0.0029164254665374756
+        ],
+        "quaternion": [
+          0.4712268114089966,
+          -0.17156937718391418,
+          -0.2831149697303772,
+          0.8175299167633057
+        ]
+      },
+      "responseObserved": true
+    },
+    {
+      "barrier": "wall",
+      "colliderId": "environment-wall-3",
+      "contactObserved": true,
+      "contact": {
+        "pair": [
+          "claw",
+          "environment"
+        ],
+        "colliderRole": "finger",
+        "colliderHandle": 5e-324,
+        "otherColliderHandle": 5e-323,
+        "otherColliderRole": "wall",
+        "normal": [
+          1.0000000353929221,
+          -0.0000012606181345347789,
+          -0.0000012533902278320387
+        ],
+        "point": [
+          1.6499593257904053,
+          2.092576503753662,
+          0.002087773522362113
+        ],
+        "distance": 0.000081673264503479
+      },
+      "before": {
+        "position": [
+          0,
+          2.799999952316284,
+          0
+        ],
+        "quaternion": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "target": [
+        1.25,
+        2.4,
+        0
+      ],
+      "after": {
+        "position": [
+          1.2499990463256836,
+          2.4000000953674316,
+          -2.3079337552189827e-8
+        ],
+        "quaternion": [
+          -0.003648480400443077,
+          0.00044491380685940385,
+          0.05748135969042778,
+          0.998339831829071
+        ]
+      },
+      "responseObserved": true
+    }
+  ],
+  "reset": {
+    "runIdAdvanced": true,
+    "noMissingBefore": true,
+    "noMissingAfter": true,
+    "sameRegistrationShape": true,
+    "baselineClawRestored": true,
+    "baselineBodiesRestored": true,
+    "noContactsAfterReset": true,
+    "zeroVelocitiesAfterReset": true,
+    "noCarryAfterReset": true
+  },
+  "failureResults": [],
+  "claims": {
+    "visualOverlapNeverApprovesCarry": true,
+    "registrationComplete": true,
+    "barrierResponsePhysical": true,
+    "visualManifestPass": true,
+    "resetRepeatable": true
+  },
+  "verificationCommands": [
+    "npm run typecheck",
+    "npm run lint",
+    "npm test",
+    "npm run build"
+  ]
+}

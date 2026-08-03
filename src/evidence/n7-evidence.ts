@@ -76,7 +76,7 @@ export async function createN7Evidence() {
     const dropPosition = coordinator.physics.transform('claw').position
     const loweredTarget: Vec3 = [
       dropPosition[0],
-      N6_PHYSICS_CONFIG.gripPosition[1],
+      N6_PHYSICS_CONFIG.clawClearance.baseInteractionY,
       dropPosition[2],
     ]
     // Travel is kinematic and animated; advance until the claw physically
@@ -99,6 +99,13 @@ export async function createN7Evidence() {
     }
     if (!lowered.sync) {
       throw new Error('N7 evidence: lowered tick did not publish synchronization')
+    }
+    if (coordinator.snapshot.state === 'lowering') {
+      throw new Error('N7 evidence: descent did not reach an authoritative completion')
+    }
+    const loweredDescent = coordinator.runtimeReport.descent
+    if (!loweredDescent) {
+      throw new Error('N7 evidence: missing authoritative descent observation')
     }
     const ticksToResult = tickUntil(
       coordinator,
@@ -133,7 +140,7 @@ export async function createN7Evidence() {
         finalState: completed.state.state,
         transitionStates: completed.state.transitions.map(({ to }) => to),
         loweredTarget: [...loweredTarget],
-        loweredClawPosition: lowered.sync.claw.position,
+        loweredClawPosition: loweredDescent.claw.position,
         loweredSync: lowered.sync,
       },
       synchronization: completed.sync,

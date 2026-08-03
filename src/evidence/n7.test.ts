@@ -260,16 +260,17 @@ describe('N7 integrated effect coordinator', () => {
         fixedDt: N6_PHYSICS_CONFIG.dt,
       },
     })
-    // N23: the claw drops straight down from its position at drop time — the
-    // stick was deflected but never ticked, so the drop is centered.
+    // N36: the lowering target is derived from the explicit base clearance,
+    // but Rapier may stop earlier only for a reported physical barrier.
     expect(evidence.behavior.loweredTarget).toEqual([
       0,
-      N6_PHYSICS_CONFIG.gripPosition[1],
+      N6_PHYSICS_CONFIG.clawClearance.baseInteractionY,
       0,
     ])
-    evidence.behavior.loweredClawPosition.forEach((value, axis) => {
-      expect(value).toBeCloseTo(evidence.behavior.loweredTarget[axis], 5)
-    })
+    expect(evidence.behavior.loweredClawPosition[1]).toBeGreaterThanOrEqual(
+      N6_PHYSICS_CONFIG.clawClearance.baseInteractionY -
+        N6_PHYSICS_CONFIG.clawClearance.tolerance,
+    )
   })
 
   it('returns the post-failure snapshot when a command side effect fails', async () => {

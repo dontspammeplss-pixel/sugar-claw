@@ -4,8 +4,36 @@ import {
   FINGER_RING_RADIUS,
   POSE_ARTICULATION_RADIANS,
 } from '../claw/rig'
+import type { GripProfile } from './grip-evaluator'
 import type { Vec3 } from '../types/geometry'
 export type { Vec3 } from '../types/geometry'
+export type { GripProfile } from './grip-evaluator'
+
+/** N37: opt-in candidate profile; A-24 remains the active runtime rule. */
+export const N37_CANDIDATE_GRIP_PROFILE: GripProfile = Object.freeze({
+  revision: 'n37-candidate-profile-rev1',
+  objectBodyId: 'prize',
+  captureEnvelopeOffset: Object.freeze([0, 0, 0]) as Vec3,
+  captureEnvelopeHalfExtents: Object.freeze([0.34, 0.34, 0.34]) as Vec3,
+  referencePoint: Object.freeze([0, 0, 0]) as Vec3,
+  requiredVolumeHalfExtents: Object.freeze([0.22, 0.22, 0.22]) as Vec3,
+  margin: 0.02,
+  requiredContacts: Object.freeze([
+    Object.freeze({ id: 'finger-right', approachDirection: 'right' }),
+    Object.freeze({ id: 'finger-left', approachDirection: 'left' }),
+    Object.freeze({ id: 'finger-back', approachDirection: 'back' }),
+  ]),
+  settlingSteps: 3,
+})
+
+const AUTHORED_FLOOR_TOP_Y = 0.89
+const APPROVED_CLAW_LOWEST_POINT_OFFSET_Y = -0.4
+const APPROVED_BASE_CLEARANCE = 0.02
+const APPROVED_BASE_DESCENT_Y =
+  AUTHORED_FLOOR_TOP_Y -
+  APPROVED_CLAW_LOWEST_POINT_OFFSET_Y +
+  APPROVED_BASE_CLEARANCE
+
 /**
  * N6 physics policy: one fixed-step configuration is shared by every adapter
  * and evidence fixture. Render timing never enters this simulation.
@@ -36,7 +64,32 @@ export const N6_PHYSICS_CONFIG = Object.freeze({
     min: Object.freeze({ x: -1.25, y: 0.83, z: -0.35 }),
     max: Object.freeze({ x: 1.25, y: 2.8, z: 0.55 }),
   }),
+  /** N36: explicit finite physical base in canonical world/ClawMount meters. */
+  basePlane: Object.freeze({
+    y: AUTHORED_FLOOR_TOP_Y,
+    normal: Object.freeze([0, 1, 0]) as Vec3,
+    halfExtents: Object.freeze([3, 2]) as readonly [number, number],
+    coordinateLayer: 'world/ClawMount',
+    source: 'N6PhysicsAdapter floor collider top surface',
+  }),
+  /** N36: approved physical claw envelope and derived lowest legal carriage Y. */
+  clawClearance: Object.freeze({
+    lowestPhysicalPointOffsetY: APPROVED_CLAW_LOWEST_POINT_OFFSET_Y,
+    approvedMargin: APPROVED_BASE_CLEARANCE,
+    baseInteractionY: APPROVED_BASE_DESCENT_Y,
+    tolerance: 0.02,
+    envelope: 'head cuboid + three finger capsules; sensors excluded',
+  }),
+  /** N36: continue through prize contact; only physical environment contact may stop early. */
+  descent: Object.freeze({
+    policy: 'base-first',
+    objectContact: 'observe-and-continue',
+    barrierContact: 'stop-and-report',
+    completion: 'base-clearance',
+  }),
   clawPosition: Object.freeze([0, 2.8, 0]) as Vec3,
+  // N26: retained grip candidate for low-level contact/carry fixtures. N36
+  // descent no longer uses this fixed value as its completion endpoint.
   // N26: the descent parks the claw at 1.97, where the sensor (at head-local
   // -0.65, radius 0.30) reaches the resting prize (center ~1.109, radius
   // 0.22) for contact approval with a ~0.19 margin at centered drops, while
@@ -124,9 +177,109 @@ export const N6_COLLISION_GROUPS = Object.freeze({
   debug: 1 << 5,
 })
 
+export type N38CollisionRole =
+  | 'environment'
+  | 'prize'
+  | 'clawBody'
+  | 'clawFinger'
+  | 'sensor'
+
 /** Rapier packs a 16-bit membership group and a 16-bit interaction mask. */
 export function interactionGroups(group: number, mask: number): number {
   return (group << 16) | mask
+}
+
+/**
+ * N38: collision membership and solver policy live in config so diagnostics can
+ * compare runtime colliders against the versioned matrix without re-encoding
+ * masks in the evidence or scene layers.
+ */
+export const N38_COLLISION_POLICY: Readonly<
+  Record<
+    N38CollisionRole,
+    Readonly<{
+      readonly group: number
+      readonly collisionMask: number
+      readonly solverMask: number
+    }>
+  >
+> = Object.freeze({
+  environment: Object.freeze({
+    group: N6_COLLISION_GROUPS.environment,
+    collisionMask:
+      N6_COLLISION_GROUPS.prize |
+      N6_COLLISION_GROUPS.clawBody |
+      N6_COLLISION_GROUPS.clawFinger,
+    solverMask:
+      N6_COLLISION_GROUPS.prize |
+      N6_COLLISION_GROUPS.clawBody |
+      N6_COLLISION_GROUPS.clawFinger,
+  }),
+  prize: Object.freeze({
+    group: N6_COLLISION_GROUPS.prize,
+    collisionMask:
+      N6_COLLISION_GROUPS.environment |
+      N6_COLLISION_GROUPS.clawBody |
+      N6_COLLISION_GROUPS.clawFinger |
+      N6_COLLISION_GROUPS.sensor,
+    solverMask:
+      N6_COLLISION_GROUPS.environment |
+      N6_COLLISION_GROUPS.clawBody |
+      N6_COLLISION_GROUPS.clawFinger,
+  }),
+  clawBody: Object.freeze({
+    group: N6_COLLISION_GROUPS.clawBody,
+    collisionMask:
+      N6_COLLISION_GROUPS.environment |
+      N6_COLLISION_GROUPS.prize |
+      N6_COLLISION_GROUPS.sensor,
+    solverMask: N6_COLLISION_GROUPS.environment | N6_COLLISION_GROUPS.prize,
+  }),
+  clawFinger: Object.freeze({
+    group: N6_COLLISION_GROUPS.clawFinger,
+    collisionMask: N6_COLLISION_GROUPS.environment | N6_COLLISION_GROUPS.prize,
+    solverMask: N6_COLLISION_GROUPS.environment | N6_COLLISION_GROUPS.prize,
+  }),
+  sensor: Object.freeze({
+    group: N6_COLLISION_GROUPS.sensor,
+    collisionMask: N6_COLLISION_GROUPS.prize | N6_COLLISION_GROUPS.clawBody,
+    solverMask: 0,
+  }),
+})
+
+export type N38PairExpectation = 'solver' | 'sensor' | 'forbidden'
+
+/** All unordered cells from records/contracts/collision-matrix.md rev 2. */
+export const N38_COLLISION_MATRIX: readonly {
+  readonly a: N38CollisionRole
+  readonly b: N38CollisionRole
+  readonly expectation: N38PairExpectation
+}[] = Object.freeze([
+  { a: 'environment', b: 'environment', expectation: 'forbidden' },
+  { a: 'environment', b: 'prize', expectation: 'solver' },
+  { a: 'environment', b: 'clawBody', expectation: 'solver' },
+  { a: 'environment', b: 'clawFinger', expectation: 'solver' },
+  { a: 'environment', b: 'sensor', expectation: 'forbidden' },
+  { a: 'prize', b: 'prize', expectation: 'forbidden' },
+  { a: 'prize', b: 'clawBody', expectation: 'solver' },
+  { a: 'prize', b: 'clawFinger', expectation: 'solver' },
+  { a: 'prize', b: 'sensor', expectation: 'sensor' },
+  { a: 'clawBody', b: 'clawBody', expectation: 'forbidden' },
+  { a: 'clawBody', b: 'clawFinger', expectation: 'forbidden' },
+  { a: 'clawBody', b: 'sensor', expectation: 'sensor' },
+  { a: 'clawFinger', b: 'clawFinger', expectation: 'forbidden' },
+  { a: 'clawFinger', b: 'sensor', expectation: 'forbidden' },
+  { a: 'sensor', b: 'sensor', expectation: 'forbidden' },
+])
+
+export function n38CollisionGroups(role: N38CollisionRole): number {
+  const policy = N38_COLLISION_POLICY[role]
+  return interactionGroups(policy.group, policy.collisionMask)
+}
+
+export function n38SolverGroups(role: N38CollisionRole): number {
+  const policy = N38_COLLISION_POLICY[role]
+  return interactionGroups(policy.group, policy.solverMask)
 }
 
 export interface FingerColliderGeometry {

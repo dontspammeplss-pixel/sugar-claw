@@ -1,0 +1,409 @@
+{
+  "node": "N39",
+  "status": "pass",
+  "deterministic": true,
+  "algorithmRevision": "n39-geometry-candidate-rev1",
+  "authority": {
+    "assetBoundary": "src/assets/collider-profiles.ts",
+    "runtimeProfiles": "src/physics/config.ts",
+    "runtimeInstantiation": "src/physics/adapter.ts",
+    "evidence": "src/evidence/n39-evidence.ts",
+    "gripInference": false
+  },
+  "fixtures": {
+    "simpleBox": {
+      "status": "candidate",
+      "profile": {
+        "profileId": "candidate:fixture-box:mesh-rev1:580f190a:n39-geometry-candidate-rev1",
+        "sourceMeshId": "fixture-box",
+        "geometryRevision": "mesh-rev1",
+        "geometryHash": "580f190a",
+        "algorithmRevision": "n39-geometry-candidate-rev1",
+        "topology": "box-like",
+        "canonicalTransform": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "authoredUnitScale": 1,
+          "authoredUpAxis": "+Y",
+          "authoredForwardAxis": "+Z"
+        },
+        "shapes": [
+          {
+            "kind": "box",
+            "dimensions": [
+              1,
+              1,
+              1
+            ],
+            "localTransform": {
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0,
+                1
+              ]
+            }
+          }
+        ],
+        "runtimePolicy": null,
+        "gripContactRegions": null,
+        "approximation": {
+          "relativeBoundsError": 0,
+          "clearanceError": 0,
+          "tolerance": 0.05
+        }
+      },
+      "failureCode": null,
+      "blockReason": null,
+      "diagnostic": {
+        "sourceMeshId": "fixture-box",
+        "geometryRevision": "mesh-rev1",
+        "geometryHash": "580f190a",
+        "algorithmRevision": "n39-geometry-candidate-rev1",
+        "topology": "box-like",
+        "chosenShape": "box",
+        "dimensions": [
+          1,
+          1,
+          1
+        ],
+        "canonicalTransform": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "authoredUnitScale": 1,
+          "authoredUpAxis": "+Y",
+          "authoredForwardAxis": "+Z"
+        },
+        "reason": "bounded box candidate from validated convex-ish bounds"
+      }
+    },
+    "rotatedScaled": {
+      "status": "candidate",
+      "profile": {
+        "profileId": "candidate:fixture-box:mesh-rev1:0025ee74:n39-geometry-candidate-rev1",
+        "sourceMeshId": "fixture-box",
+        "geometryRevision": "mesh-rev1",
+        "geometryHash": "0025ee74",
+        "algorithmRevision": "n39-geometry-candidate-rev1",
+        "topology": "box-like",
+        "canonicalTransform": {
+          "position": [
+            4,
+            8,
+            -2
+          ],
+          "rotation": [
+            0,
+            0.7071067811865476,
+            0,
+            0.7071067811865476
+          ],
+          "scale": [
+            2,
+            1,
+            3
+          ],
+          "authoredUnitScale": 1,
+          "authoredUpAxis": "+Y",
+          "authoredForwardAxis": "+Z"
+        },
+        "shapes": [
+          {
+            "kind": "box",
+            "dimensions": [
+              3,
+              1,
+              2
+            ],
+            "localTransform": {
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0,
+                1
+              ]
+            }
+          }
+        ],
+        "runtimePolicy": null,
+        "gripContactRegions": null,
+        "approximation": {
+          "relativeBoundsError": 4.440892098500626e-16,
+          "clearanceError": 0,
+          "tolerance": 0.05
+        }
+      },
+      "failureCode": null,
+      "blockReason": null,
+      "diagnostic": {
+        "sourceMeshId": "fixture-box",
+        "geometryRevision": "mesh-rev1",
+        "geometryHash": "0025ee74",
+        "algorithmRevision": "n39-geometry-candidate-rev1",
+        "topology": "box-like",
+        "chosenShape": "box",
+        "dimensions": [
+          3,
+          1,
+          2
+        ],
+        "canonicalTransform": {
+          "position": [
+            4,
+            8,
+            -2
+          ],
+          "rotation": [
+            0,
+            0.7071067811865476,
+            0,
+            0.7071067811865476
+          ],
+          "scale": [
+            2,
+            1,
+            3
+          ],
+          "authoredUnitScale": 1,
+          "authoredUpAxis": "+Y",
+          "authoredForwardAxis": "+Z"
+        },
+        "reason": "bounded box candidate from validated convex-ish bounds"
+      }
+    },
+    "authoredPrecedence": {
+      "status": "authored",
+      "profile": {
+        "profileId": "authored-fixture-rev1",
+        "sourceMeshId": "fixture-box",
+        "revision": "authored-rev1",
+        "shapes": [
+          {
+            "kind": "sphere",
+            "dimensions": [
+              0.9,
+              0.9,
+              0.9
+            ],
+            "localTransform": {
+              "position": [
+                0,
+                0,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0,
+                1
+              ]
+            }
+          }
+        ],
+        "runtimePolicy": {
+          "bodyType": "dynamic",
+          "mode": "solver",
+          "collisionGroup": 2,
+          "collisionMask": 12,
+          "solverMask": 12,
+          "friction": 0.7,
+          "restitution": 0,
+          "ccd": true,
+          "sleeping": true
+        },
+        "gripContactRegions": [
+          "authored-grip-region"
+        ]
+      },
+      "failureCode": null,
+      "blockReason": null,
+      "diagnostic": {
+        "sourceMeshId": "fixture-box",
+        "geometryRevision": "mesh-rev1",
+        "geometryHash": "580f190a",
+        "algorithmRevision": "n39-geometry-candidate-rev1",
+        "topology": "box-like",
+        "chosenShape": null,
+        "dimensions": null,
+        "canonicalTransform": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "authoredUnitScale": 1,
+          "authoredUpAxis": "+Y",
+          "authoredForwardAxis": "+Z"
+        },
+        "reason": "authored profile preferred"
+      }
+    },
+    "concave": {
+      "status": "rejected",
+      "profile": null,
+      "failureCode": "collider-candidate-rejected",
+      "blockReason": "grip-collider-ambiguous",
+      "diagnostic": {
+        "sourceMeshId": "fixture-box",
+        "geometryRevision": "mesh-rev1",
+        "geometryHash": null,
+        "algorithmRevision": "n39-geometry-candidate-rev1",
+        "topology": "concave",
+        "chosenShape": null,
+        "dimensions": null,
+        "canonicalTransform": null,
+        "reason": "automatic derivation rejected for concave geometry"
+      }
+    },
+    "hollow": {
+      "status": "rejected",
+      "profile": null,
+      "failureCode": "collider-candidate-rejected",
+      "blockReason": "grip-collider-ambiguous",
+      "diagnostic": {
+        "sourceMeshId": "fixture-box",
+        "geometryRevision": "mesh-rev1",
+        "geometryHash": null,
+        "algorithmRevision": "n39-geometry-candidate-rev1",
+        "topology": "hollow",
+        "chosenShape": null,
+        "dimensions": null,
+        "canonicalTransform": null,
+        "reason": "automatic derivation rejected for hollow geometry"
+      }
+    },
+    "articulated": {
+      "status": "rejected",
+      "profile": null,
+      "failureCode": "collider-candidate-rejected",
+      "blockReason": "grip-collider-ambiguous",
+      "diagnostic": {
+        "sourceMeshId": "fixture-box",
+        "geometryRevision": "mesh-rev1",
+        "geometryHash": null,
+        "algorithmRevision": "n39-geometry-candidate-rev1",
+        "topology": "articulated",
+        "chosenShape": null,
+        "dimensions": null,
+        "canonicalTransform": null,
+        "reason": "automatic derivation rejected for articulated geometry"
+      }
+    },
+    "invalidGeometry": {
+      "status": "rejected",
+      "profile": null,
+      "failureCode": "collider-derivation-inconclusive",
+      "blockReason": "collision-registration-missing",
+      "diagnostic": {
+        "sourceMeshId": "fixture-box",
+        "geometryRevision": "mesh-rev1",
+        "geometryHash": null,
+        "algorithmRevision": "n39-geometry-candidate-rev1",
+        "topology": null,
+        "chosenShape": null,
+        "dimensions": null,
+        "canonicalTransform": null,
+        "reason": "mesh positions contain non-finite values"
+      }
+    },
+    "outOfTolerance": {
+      "status": "rejected",
+      "profile": null,
+      "failureCode": "collider-approximation-out-of-tolerance",
+      "blockReason": "grip-collider-ambiguous",
+      "diagnostic": {
+        "sourceMeshId": "fixture-box",
+        "geometryRevision": "mesh-rev1",
+        "geometryHash": null,
+        "algorithmRevision": "n39-geometry-candidate-rev1",
+        "topology": "box-like",
+        "chosenShape": null,
+        "dimensions": null,
+        "canonicalTransform": null,
+        "reason": "candidate bounds differ from authored bounds by 0.500000"
+      }
+    },
+    "missingGeometry": {
+      "status": "rejected",
+      "profile": null,
+      "failureCode": "collider-derivation-inconclusive",
+      "blockReason": "collision-registration-missing",
+      "diagnostic": {
+        "sourceMeshId": "fixture-box",
+        "geometryRevision": "mesh-rev1",
+        "geometryHash": null,
+        "algorithmRevision": "n39-geometry-candidate-rev1",
+        "topology": null,
+        "chosenShape": null,
+        "dimensions": null,
+        "canonicalTransform": null,
+        "reason": "mesh topology is missing; a candidate cannot be registered safely"
+      }
+    }
+  },
+  "claims": {
+    "authoredProfilePreferred": true,
+    "canonicalTransformApplied": true,
+    "candidateDoesNotAuthorizeGrip": true,
+    "unsupportedGeometryBlocked": true,
+    "invalidGeometryBlocked": true,
+    "toleranceBlocked": true,
+    "missingRegistrationBlocked": true,
+    "stableProfileIdentity": true
+  },
+  "verificationCommands": [
+    "npm run typecheck",
+    "npm run lint",
+    "npm test",
+    "npm run build"
+  ]
+}
