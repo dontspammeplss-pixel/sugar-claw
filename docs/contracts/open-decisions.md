@@ -108,6 +108,74 @@ The human approved this set on **2026-08-01** as **Gate 1 baseline revision 1**,
 
 The attachment primitive, collision matrix, fixed-step policy, and performance thresholds are recorded as versioned contracts in `records/contracts/` and must exist before their corresponding implementation nodes begin.
 
+## Revision 2 (recorded by nodes N23–N28, 2026-08-02)
+
+**Status:** Implemented 2026-08-02; typecheck/lint/60 tests/build green.
+**Scope:** Eli's explicit directives (joystick input, Left·Right·Back fingers,
+real rigid-body collision head, chamber walls) resolved by the Developer Brain.
+**Approver:** Eli (scope directives) + Developer Brain (engineering resolution),
+recorded per the charter §20 brain-authority note.
+
+These entries amend the rev-1 outcomes above where they conflict. Where not
+amended, rev-1 outcomes remain binding.
+
+| ID | Decision | Revised outcome (rev 2) |
+| ---- | -------- | ----------------------- |
+| A-01 | Claw body strategy | **Hybrid, two-body.** Kinematic carriage owns X/Z/Y travel (glide, bounds-clamped). A **dynamic head body** hangs from the carriage through a spherical joint at the head center (translation pinned, rotation free). The head's center of mass sits below the pivot (sensor + finger colliders), so gravity self-rights it like a pendulum; angular damping settles it. No torque spring — a spring destabilized the tiny head body (removed during N26). Rapier's spherical impulse joint supports no angular limits (verified empirically), so the swing is bounded by the pendulum plus the head's collider contacts with the prize, floor, and chamber walls — no joint-level hard cap. |
+| A-02 | Finger physics representation | **Physical capsule colliders (one per pivot) rigidly attached to the head** at the rig's open-pose transforms (N25). Visual blades extend beyond the colliders so a kinematic descent parks on first contact (contact-stop) instead of dragging rigid fingers into the prize. Per-pivot articulated prongs (revolute joints/motors) remain deferred (A-43). |
+| A-09 | Horizontal aim model and legal range | **Joystick velocity glide (N23).** The stick deflection (clamped to ±1) maps to glide speed on X/Z while aiming; the claw is positioned directly by the glide, clamped per-axis to the travel bounds. `aim` is now velocity input, not position. Drop/lift descend/lift **straight from the claw's current position** — never toward an aim-derived target (releasing the stick must not recenter the drop). Virtual on-screen stick (pointer/touch) plus WASD/arrows mirror; first deflection auto-enters aim space. |
+| A-22 | Collision matrix | **Rev 2** (`records/contracts/collision-matrix.md`): `clawFinger` leaves the reserved state and collides (solver) with environment and prize; chamber walls (N28) added to `environment`; sensor enlarged 0.24 → 0.30. |
+| A-23 | Sensor versus physical finger colliders | **Both exist.** Finger capsules take full solver response; the sensor stays sensor-type (observation only) with filter `prize | clawBody`. Sensor radius 0.30 compensates the prize shrink (0.31 → 0.22) so off-center drops keep a ~0.19 contact margin (rev-1 margin was ~0.07 and the head's residual wobble could flip it). |
+| A-24 | Grip-evaluation rule and contact evidence | Unchanged contract (sensor overlap = `physicalContact` approval; visual overlap alone never approves). The descent now uses a **contact-stop** (N25/N26): when a claw collider touches the prize, the carriage parks there and the head keeps momentum for the collision tilt. The carry anchor is **adaptive** — the prize keeps its head-local offset at grip creation, so creating the fixed constraint never snaps the prize. |
+| A-26 | Carry attachment | **Fixed impulse joint from the dynamic head** with the adaptive anchor (prize's head-local offset at creation). The prize is carried on the head, so head tilt moves the prize with it; release removes the joint. |
+| A-28 | GSAP role | Unchanged (presentation-only). F-001 (gsap vs zustand decision) remains an open product-feel call for V1 close-out. |
+| A-37 | Drop completion rule | Drop/lift targets are derived from the **current claw position** (straight down/up) rather than the aim-scaled position; motion-completion tolerance unchanged. |
+
+**Affected nodes:** N23 (joystick), N24 (finger layout), N25 (finger colliders),
+N26 (dynamic head + contact stop), N27 (adaptive carry on head), N28 (walls),
+N29 (perf re-check), N30 (verification).
+**Migration impact:** `src/physics/adapter.ts` and `config.ts` own the two-body
+fixture; `src/effects/n7-coordinator.ts` owns glide + contact-stop + head
+visual sync; `src/ui/` adds the joystick; `src/claw/rig.ts` is the single
+source of truth for finger angles (Right·Left·Back, open 0.14 rad).
+**New verification requirements:** 60 deterministic tests (incl. joystick-math
+unit, n6 two-body scenarios, n7 glide/bounds/cycle); typecheck + lint + build;
+human visual gates for head tilt feel and finger layout; reference-GPU perf
+pass (N29) against `performance-thresholds.md`.
+
+## Revision 3 — N31–N35 input reliability and head-feel contracts (2026-08-02)
+
+**Status:** Contract-only; implementation not started.
+**Scope:** Eli reported three defects after N23–N28: WASD has no reaction,
+pointer drag stalls after roughly one pixel and latches direction, and the
+head wobbles without believable weight.
+**Approver:** Eli (product feel and observed defects) + Developer Brain
+(engineering contract decomposition).
+
+### Decisions and constraints
+
+| ID | Decision | Contract outcome |
+| ---- | -------- | ---------------- |
+| A-09 | Input semantics | Preserve velocity-glide joystick semantics. N31 maps raw keyboard codes to the existing semantic directions before math; N32 proves continuous pointer capture/coordinate updates and terminal release/cancel handling. No polling loop, pointer-lock API, or input dependency. |
+| A-25 | Head-feel tuning | N33 may tune centralized head mass/inertia policy, angular damping, friction, or solver values only through `src/physics/config.ts` and adapter construction. No torque spring, quaternion correction, rotation lock, or velocity-zeroing hack. Any physics-value change requires a fixed-step policy revision and deterministic trace. |
+| A-27 | Evidence target | N34 must prove keyboard, pointer, and head decay under fixed `dt = 1/60 s`; existing carry, reset, collision, repeatability, typecheck, lint, test, and build gates remain mandatory. |
+
+**Affected nodes:** N31 keyboard semantic mapping, N32 pointer drag continuity,
+N33 head weight/wobble tuning, N34 integrated verification, N35 Eli visual and
+performance gate.
+**Protected scope:** state-machine semantics, physics authority boundary,
+collision groups, finger/carry/wall contracts, and dependency set remain
+unchanged.
+**Required promotion evidence:** pure mapping tests; actual browser pointer
+trace with at least **3 non-identical delivered samples per 100-pixel drag** and
+reversed signs (**10 is the target, not an environment-dependent pass
+requirement**); fixed-step 90-step head impact/no-impact trace using the
+packet's dimensionless response envelope; full deterministic suite +
+typecheck/lint/build; Eli's visual feel gate.
+**Failure routing:** `keyboard-input-failed`, `pointer-drag-failed`,
+`head-feel-failed`, `physics-authority-regressed`, or `visual-feel-failed` as
+specified in `records/task-packets/N31-N33-input-and-head-feel-fixes.md`.
+
 ## Remaining before full Gate 1 promotion
 
 N1 (this contract set) is approved. **N1a — the deterministic gate-enforcement script — must still be built** to enforce gate evidence and protected-file boundaries before Gate 1 is fully promoted.

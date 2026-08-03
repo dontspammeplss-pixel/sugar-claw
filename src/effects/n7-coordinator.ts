@@ -33,6 +33,7 @@ export interface N7SceneBindings {
   readonly sceneRoot: Object3D
   readonly clawSystem: Object3D
   readonly clawVisualRoot: Object3D
+  readonly headVisualRoot: Object3D
   readonly prizeRoot: Object3D
 }
 
@@ -99,6 +100,7 @@ export function resolveN7SceneBindings(scene: Object3D): N7SceneBindings {
     sceneRoot: findRequired(scene, 'SceneRoot'),
     clawSystem: findRequired(scene, 'ClawSystem'),
     clawVisualRoot: findRequired(scene, 'ClawVisualRoot'),
+    headVisualRoot: findRequired(scene, 'HeadRoot'),
     prizeRoot: findRequired(scene, 'PrizeRoot'),
   }
 }
@@ -128,6 +130,8 @@ export class N7EffectCoordinator {
   readonly animator: ClawPoseAnimator
 
   private target: Vec3 | null = null
+  /** N23: velocity glide while aiming (joystick). Null when not gliding. */
+  private glideVelocity: { readonly x: number; readonly z: number } | null = null
   private alignmentSteps = 0
   private physicsAccumulatorMs = 0
   private gripAttempted = false
@@ -218,7 +222,7 @@ export class N7EffectCoordinator {
           }
           break
         case 'confirmDrop':
-          this.beginLowering(result.snapshot.aim)
+          this.beginLowering()
           break
         case 'requestReset':
           this.resetTransaction()
@@ -288,6 +292,13 @@ export class N7EffectCoordinator {
           // rejected so travel can never stall silently.
           this.physics.moveClaw(this.target!)
         }
+      } else if (this.glideVelocity) {
+        if (this.snapshot.state === 'aiming') {
+          this.applyGlide(fixedStepMs)
+        } else {
+          // The sequence left aim space (e.g. Drop landed); stop the glide.
+          this.glideVelocity = null
+        }
       }
       this.physics.step()
       if (this.animator.state.active) this.animator.advance(fixedStepMs)
@@ -310,25 +321,46 @@ export class N7EffectCoordinator {
     this.physics.dispose()
   }
 
+  /**
+   * N23: velocity glide. Deflection maps to a glide speed along X/Z; the claw
+   * keeps moving at that speed (clamped to travel bounds) while aiming. This
+   * replaces the fixed-duration aim tween so the joystick feels continuous.
+   */
   private previewAim(aim: StateSnapshot['aim']): void {
-    const target: Vec3 = [
-      aim.x * 1.25,
-      N6_PHYSICS_CONFIG.clawPosition[1],
-      aim.z * 0.35,
-    ]
-    if (!this.physics.moveClaw(target)) {
-      throw new Error(`N7 integration: aim preview target is out of bounds`)
+    this.glideVelocity = {
+      x: aim.x * GLIDE_SPEED_X,
+      z: aim.z * GLIDE_SPEED_Z,
     }
-    this.target = target
-    this.travel.start(this.physics.transform('claw').position, target, TRAVEL_AIM_MS)
+    this.travel.cancel()
   }
 
-  private beginLowering(aim: StateSnapshot['aim']): void {
-    const target: Vec3 = [aim.x * 1.25, N6_PHYSICS_CONFIG.gripPosition[1], aim.z * 0.35]
+  private applyGlide(deltaMs: number): void {
+    if (!this.glideVelocity) return
+    const current = this.physics.transform('claw').position
+    const dtSeconds = deltaMs / 1000
+    const { min, max } = this.physics.config.travelBounds
+    // Clamp per axis so hitting one travel bound does not freeze the free
+    // axis: a diagonal full-deflection keeps sliding along the edge.
+    const next: Vec3 = [
+      Math.min(max.x, Math.max(min.x, current[0] + this.glideVelocity.x * dtSeconds)),
+      current[1],
+      Math.min(max.z, Math.max(min.z, current[2] + this.glideVelocity.z * dtSeconds)),
+    ]
+    if (this.physics.moveClaw(next)) this.target = next
+  }
+
+  private beginLowering(): void {
+    // N23: the joystick moves the claw directly (velocity glide), so the claw
+    // drops straight down from its current position — never toward an
+    // aim-derived position. The stick deflection is velocity, not position;
+    // releasing it must not recenter the drop target.
+    const current = this.physics.transform('claw').position
+    const target: Vec3 = [current[0], N6_PHYSICS_CONFIG.gripPosition[1], current[2]]
     if (!this.physics.moveClaw(target)) {
       throw new Error(`N7 integration: derived lowering target is out of bounds`)
     }
     this.target = target
+    this.glideVelocity = null
     this.alignmentSteps = 0
     this.gripAttempted = false
     this.releaseOpened = false
@@ -338,8 +370,9 @@ export class N7EffectCoordinator {
   }
 
   private beginLift(): void {
-    const aim = this.snapshot.aim
-    const target: Vec3 = [aim.x * 1.25, N6_PHYSICS_CONFIG.liftPosition[1], aim.z * 0.35]
+    // N23: lift straight up from wherever the grip happened.
+    const current = this.physics.transform('claw').position
+    const target: Vec3 = [current[0], N6_PHYSICS_CONFIG.liftPosition[1], current[2]]
     if (!this.physics.moveClaw(target)) {
       throw new Error(`N7 integration: derived lifting target is out of bounds`)
     }
@@ -364,6 +397,15 @@ export class N7EffectCoordinator {
 
     switch (state.state) {
       case 'lowering':
+        // N25/N26: classic arcade contact stop — when a physical claw collider
+        // (head proxy or finger capsule) touches the prize, park the claw where
+        // it is instead of dragging the rigid fingers into the prize volume.
+        // The dynamic head keeps its momentum for a beat, producing the
+        // collision tilt, then the pendulum and angular damping settle it.
+        if (this.physics.observeGrip().solverContact) {
+          this.travel.cancel()
+          this.target = this.physics.transform('claw').position
+        }
         if (
           this.target &&
           positionsMatch(
@@ -471,6 +513,7 @@ export class N7EffectCoordinator {
     // Parked-open presentation after every reset.
     this.pose.applyPoseTarget('open')
     this.target = null
+    this.glideVelocity = null
     this.travel.cancel()
     this.alignmentSteps = 0
     this.physicsAccumulatorMs = 0
@@ -513,8 +556,12 @@ export class N7EffectCoordinator {
 
   private syncVisuals(): void {
     const claw = this.physics.transform('claw')
+    const head = this.physics.transform('head')
     const prize = this.physics.transform('prize')
     syncObjectToWorldTransform(this.bindings.clawVisualRoot, claw)
+    // N26: the head hangs and tilts on its own dynamic body; drive the visual
+    // HeadRoot from the head transform relative to the synced carriage root.
+    syncObjectToWorldTransform(this.bindings.headVisualRoot, head)
     syncObjectToWorldTransform(this.bindings.prizeRoot, prize)
     this.bindings.sceneRoot.updateWorldMatrix(true, true)
 
@@ -564,7 +611,9 @@ const MAX_CATCH_UP_MS = 250
 /** How long the releasing-state finger-open animation runs before release. */
 const RELEASE_OPEN_MS = 250
 const INITIAL_SIGNATURE = ''
-const TRAVEL_AIM_MS = 350
+/** N23: full-deflection glide speeds (units/second) in aim space. */
+const GLIDE_SPEED_X = 1.8
+const GLIDE_SPEED_Z = 0.9
 const TRAVEL_LOWERING_MS = 800
 const TRAVEL_LIFT_MS = 700
 const TRAVEL_RETURN_MS = 700

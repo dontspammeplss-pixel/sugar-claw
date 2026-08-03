@@ -1,12 +1,14 @@
+import { Quaternion, Vector3 } from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
 import {
+  FINGER_COLLIDERS,
   interactionGroups,
   N6_COLLISION_GROUPS,
   N6_PHYSICS_CONFIG,
   type Vec3,
 } from './config'
 
-export type PhysicsBodyId = 'claw' | 'prize' | 'environment'
+export type PhysicsBodyId = 'claw' | 'head' | 'prize' | 'environment'
 export type PhysicsRunState = 'ready' | 'carrying' | 'released' | 'failed'
 
 export interface PhysicsTransform {
@@ -107,14 +109,29 @@ function sameQuaternion(
   b: readonly [number, number, number, number],
   tolerance: number,
 ): boolean {
-  const direct = a.every((value, index) => Math.abs(value - b[index]) <= tolerance)
-  const negated = a.every((value, index) => Math.abs(value + b[index]) <= tolerance)
+  const direct = a.every(
+    (value, index) => Math.abs(value - b[index]) <= tolerance,
+  )
+  const negated = a.every(
+    (value, index) => Math.abs(value + b[index]) <= tolerance,
+  )
   return direct || negated
 }
 
 /**
  * The N6 physics authority. It is deliberately headless: a scene adapter may
  * read `transform()` but must not write Rapier bodies or call `world.step()`.
+ *
+ * N26: the claw is hybrid — `clawBody` is the kinematic carriage (travel
+ * authority) and `headBody` is dynamic, joined by a spherical joint at the
+ * head center (free rotation, translation pinned). The head carries the head
+ * cuboid, the three finger capsule colliders (N25), and the grip sensor. The
+ * head hangs with its center of mass below the pivot, so gravity self-rights
+ * it like a pendulum (settled by angular damping); collisions tilt it, and
+ * the head's own collider contacts (prize, floor, chamber walls) bound the
+ * swing. The prize is carried from the head (N27). Note: Rapier's spherical
+ * impulse joint does not support angular limits, so there is no joint-level
+ * hard cap; the pendulum + contacts are the physical bounds.
  */
 export class N6PhysicsAdapter {
   readonly config = N6_PHYSICS_CONFIG
@@ -122,11 +139,14 @@ export class N6PhysicsAdapter {
   private readonly world: RAPIER.World
 
   private readonly clawBody: RAPIER.RigidBody
+  private readonly headBody: RAPIER.RigidBody
   private readonly prizeBody: RAPIER.RigidBody
   private readonly environmentBody: RAPIER.RigidBody
-  private readonly clawCollider: RAPIER.Collider
+  private readonly headCollider: RAPIER.Collider
+  private readonly fingerColliders: readonly RAPIER.Collider[]
   private readonly prizeCollider: RAPIER.Collider
   private readonly sensorCollider: RAPIER.Collider
+  private readonly headJoint: RAPIER.ImpulseJoint
   private readonly baseline: Readonly<Record<PhysicsBodyId, BodyBaseline>>
   private readonly stepRecords: PhysicsStepRecord[] = []
   private carryJoint: RAPIER.ImpulseJoint | null = null
@@ -150,6 +170,19 @@ export class N6PhysicsAdapter {
     this.clawBody = this.world.createRigidBody(clawBodyDesc)
     this.clawBody.userData = { id: 'claw', authority: 'N6PhysicsAdapter' }
 
+    // N26: dynamic head. It hangs from the carriage through the spherical
+    // joint (anchor at the head center, so the head center tracks the carriage
+    // anchor exactly) and rotates freely — gravity self-rights it (pendulum),
+    // angular damping settles it, and its collider contacts bound the swing.
+    const headBodyDesc = RAPIER.RigidBodyDesc.dynamic()
+      .setTranslation(...this.config.clawPosition)
+      .setLinearDamping(this.config.linearDamping)
+      .setAngularDamping(this.config.head.angularDamping)
+      .setCanSleep(false)
+      .setCcdEnabled(this.config.ccd)
+    this.headBody = this.world.createRigidBody(headBodyDesc)
+    this.headBody.userData = { id: 'head', authority: 'N6PhysicsAdapter' }
+
     const prizeBodyDesc = RAPIER.RigidBodyDesc.dynamic()
       .setTranslation(...prizePosition)
       .setLinearDamping(this.config.linearDamping)
@@ -159,14 +192,17 @@ export class N6PhysicsAdapter {
     this.prizeBody = this.world.createRigidBody(prizeBodyDesc)
     this.prizeBody.userData = { id: 'prize', authority: 'N6PhysicsAdapter' }
 
-    this.environmentBody = this.world.createRigidBody(RAPIER.RigidBodyDesc.fixed())
+    this.environmentBody = this.world.createRigidBody(
+      RAPIER.RigidBodyDesc.fixed(),
+    )
     this.environmentBody.userData = {
       id: 'environment',
       authority: 'N6PhysicsAdapter',
     }
 
-    this.clawCollider = this.world.createCollider(
-      RAPIER.ColliderDesc.cuboid(...this.config.clawHalfExtents)
+    // Head proxy collider (was the single claw-body cuboid).
+    this.headCollider = this.world.createCollider(
+      RAPIER.ColliderDesc.cuboid(...this.config.headHalfExtents)
         .setCollisionGroups(
           interactionGroups(
             N6_COLLISION_GROUPS.clawBody,
@@ -183,7 +219,35 @@ export class N6PhysicsAdapter {
         )
         .setFriction(this.config.friction)
         .setRestitution(this.config.restitution),
-      this.clawBody,
+      this.headBody,
+    )
+
+    // N25: one physical capsule per finger at the open-pose pivot transform.
+    this.fingerColliders = Object.freeze(
+      FINGER_COLLIDERS.map((finger) =>
+        this.world.createCollider(
+          RAPIER.ColliderDesc.capsule(finger.halfHeight, finger.radius)
+            .setTranslation(...finger.position)
+            .setRotation(
+              rotation(finger.rotation as [number, number, number, number]),
+            )
+            .setCollisionGroups(
+              interactionGroups(
+                N6_COLLISION_GROUPS.clawFinger,
+                N6_COLLISION_GROUPS.environment | N6_COLLISION_GROUPS.prize,
+              ),
+            )
+            .setSolverGroups(
+              interactionGroups(
+                N6_COLLISION_GROUPS.clawFinger,
+                N6_COLLISION_GROUPS.environment | N6_COLLISION_GROUPS.prize,
+              ),
+            )
+            .setFriction(this.config.friction)
+            .setRestitution(this.config.restitution),
+          this.headBody,
+        ),
+      ),
     )
 
     this.sensorCollider = this.world.createCollider(
@@ -200,7 +264,7 @@ export class N6PhysicsAdapter {
             N6_COLLISION_GROUPS.prize | N6_COLLISION_GROUPS.clawBody,
           ),
         ),
-      this.clawBody,
+      this.headBody,
     )
 
     this.prizeCollider = this.world.createCollider(
@@ -210,7 +274,16 @@ export class N6PhysicsAdapter {
             N6_COLLISION_GROUPS.prize,
             N6_COLLISION_GROUPS.environment |
               N6_COLLISION_GROUPS.clawBody |
+              N6_COLLISION_GROUPS.clawFinger |
               N6_COLLISION_GROUPS.sensor,
+          ),
+        )
+        .setSolverGroups(
+          interactionGroups(
+            N6_COLLISION_GROUPS.prize,
+            N6_COLLISION_GROUPS.environment |
+              N6_COLLISION_GROUPS.clawBody |
+              N6_COLLISION_GROUPS.clawFinger,
           ),
         )
         .setFriction(this.config.friction)
@@ -218,27 +291,79 @@ export class N6PhysicsAdapter {
       this.prizeBody,
     )
 
-    const floorCollider = RAPIER.ColliderDesc.cuboid(...this.config.floorHalfExtents)
+    const floorCollider = RAPIER.ColliderDesc.cuboid(
+      ...this.config.floorHalfExtents,
+    )
       .setTranslation(...this.config.floorPosition)
       .setCollisionGroups(
         interactionGroups(
           N6_COLLISION_GROUPS.environment,
-          N6_COLLISION_GROUPS.prize | N6_COLLISION_GROUPS.clawBody,
+          N6_COLLISION_GROUPS.prize |
+            N6_COLLISION_GROUPS.clawBody |
+            N6_COLLISION_GROUPS.clawFinger,
+        ),
+      )
+      .setSolverGroups(
+        interactionGroups(
+          N6_COLLISION_GROUPS.environment,
+          N6_COLLISION_GROUPS.prize |
+            N6_COLLISION_GROUPS.clawBody |
+            N6_COLLISION_GROUPS.clawFinger,
         ),
       )
       .setFriction(this.config.friction)
       .setRestitution(this.config.restitution)
     this.world.createCollider(floorCollider, this.environmentBody)
 
+    // N28: chamber walls contain the prize and stop the claw head at the glass.
+    for (const wall of this.config.chamberWalls) {
+      const wallCollider = RAPIER.ColliderDesc.cuboid(...wall.halfExtents)
+        .setTranslation(...wall.position)
+        .setCollisionGroups(
+          interactionGroups(
+            N6_COLLISION_GROUPS.environment,
+            N6_COLLISION_GROUPS.prize |
+              N6_COLLISION_GROUPS.clawBody |
+              N6_COLLISION_GROUPS.clawFinger,
+          ),
+        )
+        .setSolverGroups(
+          interactionGroups(
+            N6_COLLISION_GROUPS.environment,
+            N6_COLLISION_GROUPS.prize |
+              N6_COLLISION_GROUPS.clawBody |
+              N6_COLLISION_GROUPS.clawFinger,
+          ),
+        )
+        .setFriction(this.config.friction)
+        .setRestitution(this.config.restitution)
+      this.world.createCollider(wallCollider, this.environmentBody)
+    }
+
+    // N26: spherical joint at the head center — pins translation, leaves the
+    // head free to rotate. Rapier's spherical impulse joint has no angular
+    // limit support (verified empirically: limits fields are ignored), so the
+    // head's swing is bounded by pendulum self-righting and its own collider
+    // contacts with the prize, floor, and chamber walls.
+    this.headJoint = this.world.createImpulseJoint(
+      RAPIER.JointData.spherical(ZERO, ZERO),
+      this.clawBody,
+      this.headBody,
+      true,
+    )
+
     this.baseline = Object.freeze({
       claw: this.captureBody(this.clawBody),
+      head: this.captureBody(this.headBody),
       prize: this.captureBody(this.prizeBody),
       environment: this.captureBody(this.environmentBody),
     })
   }
 
   /** Rapier WASM must be initialized once before an adapter can be created. */
-  static async create(options: N6PhysicsAdapterOptions = {}): Promise<N6PhysicsAdapter> {
+  static async create(
+    options: N6PhysicsAdapterOptions = {},
+  ): Promise<N6PhysicsAdapter> {
     await RAPIER.init()
     return new N6PhysicsAdapter(options)
   }
@@ -277,7 +402,8 @@ export class N6PhysicsAdapter {
     this.assertNotDisposed()
     const { min, max } = this.config.travelBounds
     const inBounds = position.every(
-      (value, index) => value >= min[['x', 'y', 'z'][index] as keyof typeof min] &&
+      (value, index) =>
+        value >= min[['x', 'y', 'z'][index] as keyof typeof min] &&
         value <= max[['x', 'y', 'z'][index] as keyof typeof max],
     )
     if (!inBounds) return false
@@ -288,6 +414,11 @@ export class N6PhysicsAdapter {
   /** Advances exactly one configured fixed step and records the resulting pose. */
   step(): PhysicsStepRecord {
     this.assertNotDisposed()
+    // N26: no self-righting controller is needed — the head is a physical
+    // pendulum (its center of mass hangs below the joint pivot, on the sensor
+    // and finger colliders), so gravity rights it and angular damping settles
+    // it. A torque spring here destabilizes the tiny head body (per-step
+    // torque overshoots the upright), so none is applied.
     this.world.step()
     this.stepNumber += 1
     const observation = this.observeGrip()
@@ -312,7 +443,9 @@ export class N6PhysicsAdapter {
   stepMany(count: number): readonly PhysicsStepRecord[] {
     this.assertNotDisposed()
     if (!Number.isInteger(count) || count < 0) {
-      throw new Error('N6PhysicsAdapter.stepMany: count must be a non-negative integer')
+      throw new Error(
+        'N6PhysicsAdapter.stepMany: count must be a non-negative integer',
+      )
     }
     return Array.from({ length: count }, () => this.step())
   }
@@ -324,13 +457,22 @@ export class N6PhysicsAdapter {
       this.sensorCollider,
       this.prizeCollider,
     )
+    // N25: "solver contact" now means any physical claw collider (head proxy
+    // or a finger capsule) is touching the prize.
+    const clawColliders = [this.headCollider, ...this.fingerColliders]
     let solverContact = false
-    this.world.contactPairsWith(this.clawCollider, (collider) => {
-      if (collider.handle === this.prizeCollider.handle) solverContact = true
-    })
+    for (const collider of clawColliders) {
+      this.world.contactPairsWith(collider, (other) => {
+        if (other.handle === this.prizeCollider.handle) solverContact = true
+      })
+      if (solverContact) break
+    }
     const claw = this.transform('claw')
     const prize = this.transform('prize')
-    const visualOverlap = this.visualEnvelopeOverlaps(claw.position, prize.position)
+    const visualOverlap = this.visualEnvelopeOverlaps(
+      claw.position,
+      prize.position,
+    )
     return {
       physicalContact,
       solverContact,
@@ -357,14 +499,25 @@ export class N6PhysicsAdapter {
     }
     const createdNow = this.carryJoint === null
     if (createdNow) {
+      // N27: the prize is carried from the dynamic head. The anchor is the
+      // prize's CURRENT head-local offset (adaptive), so creating the fixed
+      // constraint never snaps the prize — the claw may park slightly above
+      // the classic grip height after the N26 contact stop.
+      const head = this.transform('head')
+      const prize = this.transform('prize')
+      const headQuat = new Quaternion().fromArray([...head.quaternion])
+      const localOffset = new Vector3()
+        .fromArray([...prize.position])
+        .sub(new Vector3().fromArray([...head.position]))
+        .applyQuaternion(headQuat.clone().invert())
       this.carryJoint = this.world.createImpulseJoint(
         RAPIER.JointData.fixed(
-          rapierVector(this.config.sensorOffset),
+          rapierVector(localOffset),
           IDENTITY,
           ZERO,
           IDENTITY,
         ),
-        this.clawBody,
+        this.headBody,
         this.prizeBody,
         true,
       )
@@ -392,8 +545,25 @@ export class N6PhysicsAdapter {
     return removedAtRunId
   }
 
+  /** Applies one world-space angular impulse through the physics authority. */
+  applyAngularImpulse(impulse: Vec3): void {
+    this.assertNotDisposed()
+    this.headBody.applyTorqueImpulse(vector(impulse), true)
+  }
+
+  /** Reads the dynamic head's world angular velocity in rad/s. */
+  angularVelocity(): PhysicsVelocity {
+    this.assertNotDisposed()
+    return tuple(this.headBody.angvel())
+  }
+
   velocity(body: Exclude<PhysicsBodyId, 'environment'>): PhysicsVelocity {
-    const source = body === 'claw' ? this.clawBody : this.prizeBody
+    const source =
+      body === 'claw'
+        ? this.clawBody
+        : body === 'head'
+          ? this.headBody
+          : this.prizeBody
     return tuple(source.linvel())
   }
 
@@ -401,9 +571,11 @@ export class N6PhysicsAdapter {
     const source =
       body === 'claw'
         ? this.clawBody
-        : body === 'prize'
-          ? this.prizeBody
-          : this.environmentBody
+        : body === 'head'
+          ? this.headBody
+          : body === 'prize'
+            ? this.prizeBody
+            : this.environmentBody
     return {
       position: tuple(source.translation()),
       quaternion: quaternionTuple(source.rotation()),
@@ -413,7 +585,12 @@ export class N6PhysicsAdapter {
   baselineTransform(body: PhysicsBodyId): PhysicsTransform {
     return {
       position: [...this.baseline[body].position] as Vec3,
-      quaternion: [...this.baseline[body].quaternion] as [number, number, number, number],
+      quaternion: [...this.baseline[body].quaternion] as [
+        number,
+        number,
+        number,
+        number,
+      ],
     }
   }
 
@@ -458,10 +635,15 @@ export class N6PhysicsAdapter {
   /** Restores bodies and the kinematic claw pose from the recorded baseline. */
   private restoreBaselinePose(): void {
     this.restoreBody(this.clawBody, this.baseline.claw)
+    this.restoreBody(this.headBody, this.baseline.head)
     this.restoreBody(this.prizeBody, this.baseline.prize)
     this.restoreBody(this.environmentBody, this.baseline.environment)
-    this.clawBody.setNextKinematicTranslation(vector(this.baseline.claw.position))
-    this.clawBody.setNextKinematicRotation(rotation(this.baseline.claw.quaternion))
+    this.clawBody.setNextKinematicTranslation(
+      vector(this.baseline.claw.position),
+    )
+    this.clawBody.setNextKinematicRotation(
+      rotation(this.baseline.claw.quaternion),
+    )
   }
 
   private assertNotDisposed(): void {
@@ -472,7 +654,8 @@ export class N6PhysicsAdapter {
 
   private restoreBody(body: RAPIER.RigidBody, baseline: BodyBaseline): void {
     body.setTranslation(vector(baseline.position), true)
-    if (body.isKinematic()) body.setNextKinematicRotation(rotation(baseline.quaternion))
+    if (body.isKinematic())
+      body.setNextKinematicRotation(rotation(baseline.quaternion))
     body.setRotation(rotation(baseline.quaternion), true)
     body.setLinvel(ZERO, true)
     body.setAngvel(ZERO, true)

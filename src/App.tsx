@@ -7,6 +7,9 @@ import {
   type N7EffectCoordinator,
   type N7RuntimeReport,
 } from './effects/n7-coordinator'
+import { Joystick } from './ui/Joystick'
+import { ZERO_DEFLECTION } from './ui/joystick-math'
+import type { Deflection } from './ui/joystick-math'
 
 /** Execution states where coordinate input must be locked out. */
 const EXECUTION_STATES = new Set([
@@ -64,8 +67,7 @@ export default function App() {
   const [coordinator, setCoordinator] = useState<N7EffectCoordinator | null>(
     null,
   )
-  const [aimX, setAimX] = useState(0)
-  const [aimZ, setAimZ] = useState(0)
+  const [deflection, setDeflection] = useState<Deflection>(ZERO_DEFLECTION)
   const [cameraView, setCameraView] = useState<CameraViewName>('orbit')
   const [toastVisible, setToastVisible] = useState(false)
   const lastResultRunId = useRef<number | null>(null)
@@ -77,7 +79,8 @@ export default function App() {
     : 'pending'
   const n7State = n7Report?.state.state ?? 'booting'
   const n7Sync = n7Report?.sync
-  const n7Ready = coordinator !== null && n7State === 'ready'
+  const joystickAvailable =
+    coordinator !== null && (n7State === 'ready' || n7State === 'aiming')
   const executionLocked = EXECUTION_STATES.has(n7State)
   const aiming = n7State === 'aiming'
   const resetting = n7State === 'resetting'
@@ -89,15 +92,12 @@ export default function App() {
     ? outcomeReason(n7Report?.state.outcome ?? null)
     : ''
 
+  // The stick is live in ready (first deflection enters aiming) and aiming.
+  // Keep it mounted and enabled across that state transition so the active
+  // pointer capture and move stream are not torn down after the first sample.
+  const joystickEnabled = joystickAvailable
+
   const onN7Snapshot = useCallback((report: N7RuntimeReport) => {
-    if (
-      report.state.state === 'ready' &&
-      report.state.aim.x === 0 &&
-      report.state.aim.z === 0
-    ) {
-      setAimX(0)
-      setAimZ(0)
-    }
     setN7Report((previous) => {
       if (
         previous?.state.state === report.state.state &&
@@ -123,10 +123,37 @@ export default function App() {
 
   const dismissToast = useCallback(() => setToastVisible(false), [])
 
-  const dispatchAim = (axis: 'x' | 'z', value: number) => {
-    if (!coordinator || !aiming) return
-    coordinator.dispatch({ type: 'moveAim', axis, value })
-  }
+  // N23: joystick deflection -> commands. First deflection from ready enters
+  // aim space automatically (the old "Aim" button is gone); from aiming the
+  // stick glides the claw via moveAim. Center release stops the glide.
+  const handleJoystickChange = useCallback(
+    (next: Deflection) => {
+      setDeflection(next)
+      if (!coordinator) return
+      const state = coordinator.snapshot.state
+      if (next.x === 0 && next.z === 0 && state !== 'aiming') return
+      if (state === 'ready') {
+        const begun = coordinator.dispatch({ type: 'beginAim' })
+        if (!begun.accepted) {
+          setDeflection(ZERO_DEFLECTION)
+          return
+        }
+      }
+      if (coordinator.snapshot.state === 'aiming') {
+        coordinator.dispatch({ type: 'moveAim', axis: 'x', value: next.x })
+        coordinator.dispatch({ type: 'moveAim', axis: 'z', value: next.z })
+      }
+    },
+    [coordinator],
+  )
+
+  // When the sequence leaves ready/aiming, return the stick to center so the
+  // knob never shows a phantom deflection during the run.
+  useEffect(() => {
+    if (!joystickEnabled) {
+      setDeflection(ZERO_DEFLECTION)
+    }
+  }, [joystickEnabled])
 
   return (
     <main
@@ -200,79 +227,30 @@ export default function App() {
         </div>
       )}
       <section aria-label="Claw controls" data-n7-controls>
-        {/* Coordinate sub-panel: readouts, sliders, and preset triggers */}
-        <div className="control-group" data-n7-coordinate-group>
-          <span className="control-group-label">Coordinates</span>
-          <div className="coordinate-fields">
-            <label className="coordinate-field">
-              <span className="coordinate-axis">X</span>
-              <input
-                aria-label="Aim X"
-                type="range"
-                min={-1}
-                max={1}
-                step={0.01}
-                value={aimX}
-                disabled={!aiming}
-                onChange={(event) => {
-                  const value = Number(event.target.value)
-                  setAimX(value)
-                  dispatchAim('x', value)
-                }}
-              />
-              <output className="coordinate-readout">{aimX.toFixed(2)}</output>
-            </label>
-            <label className="coordinate-field">
-              <span className="coordinate-axis">Z</span>
-              <input
-                aria-label="Aim Z"
-                type="range"
-                min={-1}
-                max={1}
-                step={0.01}
-                value={aimZ}
-                disabled={!aiming}
-                onChange={(event) => {
-                  const value = Number(event.target.value)
-                  setAimZ(value)
-                  dispatchAim('z', value)
-                }}
-              />
-              <output className="coordinate-readout">{aimZ.toFixed(2)}</output>
-            </label>
-          </div>
-          <div className="coordinate-presets">
-            <button
-              type="button"
-              className="preset-button"
-              onClick={() => dispatchAim('x', aimX)}
-              disabled={!aiming}
-            >
-              Set X {aimX.toFixed(2)}
-            </button>
-            <button
-              type="button"
-              className="preset-button"
-              onClick={() => dispatchAim('z', aimZ)}
-              disabled={!aiming}
-            >
-              Set Z {aimZ.toFixed(2)}
-            </button>
-          </div>
+        {/* Joystick: continuous velocity glide on X/Z */}
+        <div className="control-group" data-n7-joystick-group>
+          <span className="control-group-label">Joystick</span>
+          <Joystick
+            deflection={deflection}
+            onChange={handleJoystickChange}
+            onFailure={(failure) => {
+              setDeflection(ZERO_DEFLECTION)
+              if (!coordinator) return
+              coordinator.controller.dispatch({
+                type: 'invariantFailure',
+                error: failure.message,
+                runId: coordinator.snapshot.runId,
+              })
+            }}
+            disabled={!joystickEnabled}
+            ariaLabel="Claw position joystick"
+          />
         </div>
 
-        {/* Action sub-panel: primary Drop CTA + secondary utilities */}
+        {/* Action sub-panel: Drop CTA + Reset + state badge */}
         <div className="control-group" data-n7-action-group>
           <span className="control-group-label">Actions</span>
           <div className="action-row">
-            <button
-              type="button"
-              className="action-button action-secondary"
-              onClick={() => coordinator?.dispatch({ type: 'beginAim' })}
-              disabled={!n7Ready}
-            >
-              Aim
-            </button>
             <button
               type="button"
               className="action-button action-primary"

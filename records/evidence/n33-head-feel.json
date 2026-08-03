@@ -1,0 +1,3503 @@
+{
+  "node": "N33",
+  "result": "head-feel-failed",
+  "deterministic": true,
+  "physics": {
+    "revision": "fixed-step-rev3",
+    "dt": 0.016666666666666666,
+    "headAngularDamping": 10,
+    "headDensity": null,
+    "headMassPolicy": "Rapier collider-derived mass/inertia; no additional mass override",
+    "solverIterations": 8,
+    "friction": 0.7
+  },
+  "baseline": {
+    "headQuaternion": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "identityWithinTolerance": true,
+    "tolerance": 0.0005
+  },
+  "fixture": {
+    "carriagePosition": [
+      0,
+      2.8,
+      0
+    ],
+    "carriageFixed": true,
+    "headResponseObserved": true
+  },
+  "impulse": [
+    0,
+    0,
+    0.05
+  ],
+  "preImpactSteps": 30,
+  "samples": [
+    {
+      "relativeStep": 1,
+      "fixedStep": 31,
+      "headQuaternion": [
+        -0.0025447749067097902,
+        0.000019609959053923376,
+        0.007377978879958391,
+        0.9999695420265198
+      ],
+      "theta": 0.015609237423280535,
+      "signedTheta": 0.015609237423313323,
+      "errorAxis": [
+        -0.32606342997963383,
+        0.00251263500517204,
+        0.9453445542760841
+      ],
+      "angularVelocity": [
+        -0.009098607115447521,
+        0.003942521754652262,
+        0.7672300338745117
+      ],
+      "omega": 0.7672941111518526,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087292432785034,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.5079723823882412
+    },
+    {
+      "relativeStep": 2,
+      "fixedStep": 32,
+      "headQuaternion": [
+        -0.0026278879959136248,
+        0.000036514815292321146,
+        0.014195197261869907,
+        0.9998958110809326
+      ],
+      "theta": 0.02887387918430746,
+      "signedTheta": 0.02855359594699461,
+      "errorAxis": [
+        -0.18203160096371832,
+        0.0025293506789069997,
+        0.983289427704704
+      ],
+      "angularVelocity": [
+        -0.008833350613713264,
+        0.0035035666078329086,
+        0.7067822813987732
+      ],
+      "omega": 0.7068461617362684,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.108728289604187,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.4516019334953821
+    },
+    {
+      "relativeStep": 3,
+      "fixedStep": 33,
+      "headQuaternion": [
+        -0.0027083412278443575,
+        0.00005105234595248476,
+        0.02045978046953678,
+        0.9997869729995728
+      ],
+      "theta": 0.04127957622368053,
+      "signedTheta": 0.040452396155223815,
+      "errorAxis": [
+        -0.13122875137155113,
+        0.0024736674777370575,
+        0.9913490282353948
+      ],
+      "angularVelocity": [
+        -0.00854947417974472,
+        0.0031029395759105682,
+        0.6483272910118103
+      ],
+      "omega": 0.6483910841563713,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087273359298706,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.41279931403471926
+    },
+    {
+      "relativeStep": 4,
+      "fixedStep": 34,
+      "headQuaternion": [
+        -0.0027860102709382772,
+        0.00006351627962430939,
+        0.026190495118498802,
+        0.9996531009674072
+      ],
+      "theta": 0.052682762674117464,
+      "signedTheta": 0.05134117153908591,
+      "errorAxis": [
+        -0.10577776490540841,
+        0.002411552521485743,
+        0.9943868708236321
+      ],
+      "angularVelocity": [
+        -0.008250592276453972,
+        0.002736364956945181,
+        0.5919232964515686
+      ],
+      "omega": 0.5919871188194736,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087263822555542,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.38844183275720545
+    },
+    {
+      "relativeStep": 5,
+      "fixedStep": 35,
+      "headQuaternion": [
+        -0.0028607954736799,
+        0.00007416075095534325,
+        0.03140672296285629,
+        0.9995025396347046
+      ],
+      "theta": 0.06308413106757164,
+      "signedTheta": 0.061256483252215436,
+      "errorAxis": [
+        -0.09071283043191546,
+        0.0023515597979683806,
+        0.9958743156451554
+      ],
+      "angularVelocity": [
+        -0.007939880713820457,
+        0.0024001679848879576,
+        0.5376156568527222
+      ],
+      "omega": 0.5376796416131908,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.375739916916801
+    },
+    {
+      "relativeStep": 6,
+      "fixedStep": 36,
+      "headQuaternion": [
+        -0.0029326232615858316,
+        0.00008320576307596639,
+        0.03612827509641647,
+        0.9993428587913513
+      ],
+      "theta": 0.07251028243216827,
+      "signedTheta": 0.0702355821305098,
+      "errorAxis": [
+        -0.08090620270520392,
+        0.0022955087418985477,
+        0.9967190762714653
+      ],
+      "angularVelocity": [
+        -0.007620166055858135,
+        0.002091197296977043,
+        0.48544085025787354
+      ],
+      "omega": 0.4855051587119759,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.3722239487871085
+    },
+    {
+      "relativeStep": 7,
+      "fixedStep": 37,
+      "headQuaternion": [
+        -0.0030014370568096638,
+        0.00009084202611120418,
+        0.040375202894210815,
+        0.9991800785064697
+      ],
+      "theta": 0.08099556270262391,
+      "signedTheta": 0.07831613604499542,
+      "errorAxis": [
+        -0.07413387935936959,
+        0.0022437491365043076,
+        0.9972457738797441
+      ],
+      "angularVelocity": [
+        -0.007293942384421825,
+        0.0018067396013066173,
+        0.4354237914085388
+      ],
+      "omega": 0.4354886267494031,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.37572259075595743
+    },
+    {
+      "relativeStep": 8,
+      "fixedStep": 38,
+      "headQuaternion": [
+        -0.003067202167585492,
+        0.00009723532275529578,
+        0.04416791722178459,
+        0.9990193843841553
+      ],
+      "theta": 0.08857774784060471,
+      "signedTheta": 0.08553645623554047,
+      "errorAxis": [
+        -0.06927711003146653,
+        0.002196197637264492,
+        0.9975950374484044
+      ],
+      "angularVelocity": [
+        -0.006963436026126146,
+        0.0015444590244442225,
+        0.3875802159309387
+      ],
+      "omega": 0.3876458416854761,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.38434781153695696
+    },
+    {
+      "relativeStep": 9,
+      "fixedStep": 39,
+      "headQuaternion": [
+        -0.0031298999674618244,
+        0.00010252986976411194,
+        0.04752672091126442,
+        0.9988650679588318
+      ],
+      "theta": 0.0952956143645873,
+      "signedTheta": 0.09193464254729249,
+      "errorAxis": [
+        -0.06571308826477446,
+        0.002152642081736785,
+        0.9978362371465513
+      ],
+      "angularVelocity": [
+        -0.006630630232393742,
+        0.001302340067923069,
+        0.3419172167778015
+      ],
+      "omega": 0.3419839827769853,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.3964712952828795
+    },
+    {
+      "relativeStep": 10,
+      "fixedStep": 40,
+      "headQuaternion": [
+        -0.0031895285937935114,
+        0.00010685143934097141,
+        0.05047210305929184,
+        0.9987204074859619
+      ],
+      "theta": 0.1011889513005675,
+      "signedTheta": 0.09754917877032111,
+      "errorAxis": [
+        -0.06306794580396102,
+        0.0021128203078488806,
+        0.9980069990748702
+      ],
+      "angularVelocity": [
+        -0.006297300569713116,
+        0.0010786375496536493,
+        0.2984333038330078
+      ],
+      "omega": 0.29850168557332,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.4107083938798462
+    },
+    {
+      "relativeStep": 11,
+      "fixedStep": 41,
+      "headQuaternion": [
+        -0.0032460966613143682,
+        0.00011030992754967883,
+        0.053024452179670334,
+        0.998587965965271
+      ],
+      "theta": 0.10629770422635057,
+      "signedTheta": 0.10241838369549196,
+      "errorAxis": [
+        -0.061104336006792444,
+        0.0020764677029522782,
+        0.9981292243006604
+      ],
+      "angularVelocity": [
+        -0.00596502423286438,
+        0.0008718385943211615,
+        0.25711944699287415
+      ],
+      "omega": 0.25719010797181646,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.42589615227350125
+    },
+    {
+      "relativeStep": 12,
+      "fixedStep": 42,
+      "headQuaternion": [
+        -0.003299626288935542,
+        0.00011300147889414802,
+        0.0552038848400116,
+        0.9984695911407471
+      ],
+      "theta": 0.11066151092614973,
+      "signedTheta": 0.10658010631760095,
+      "errorAxis": [
+        -0.0596650211732575,
+        0.002043333105157128,
+        0.9982163643410417
+      ],
+      "angularVelocity": [
+        -0.0056352028623223305,
+        0.0006806240999139845,
+        0.2179592400789261
+      ],
+      "omega": 0.21803313761042803,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.44107172973686326
+    },
+    {
+      "relativeStep": 13,
+      "fixedStep": 43,
+      "headQuaternion": [
+        -0.0033501507714390755,
+        0.00011501094559207559,
+        0.05703059211373329,
+        0.9983667731285095
+      ],
+      "theta": 0.11432029044665161,
+      "signedTheta": 0.1100723537730238,
+      "errorAxis": [
+        -0.05864183638988703,
+        0.002013178962557431,
+        0.9982770568010385
+      ],
+      "angularVelocity": [
+        -0.005309091415256262,
+        0.0005038409726694226,
+        0.18093036115169525
+      ],
+      "omega": 0.18100893871260657,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.4554588859814412
+    },
+    {
+      "relativeStep": 14,
+      "fixedStep": 44,
+      "headQuaternion": [
+        -0.0033977129496634007,
+        0.00011641267337836325,
+        0.05852418392896652,
+        0.9982802271842957
+      ],
+      "theta": 0.1173129489194252,
+      "signedTheta": 0.11293210675211358,
+      "errorAxis": [
+        -0.057958853303804486,
+        0.0019857901944626243,
+        0.9983169977322173
+      ],
+      "angularVelocity": [
+        -0.004987790714949369,
+        0.00034047465305775404,
+        0.14600414037704468
+      ],
+      "omega": 0.14608970869450483,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.4684405603364487
+    },
+    {
+      "relativeStep": 15,
+      "fixedStep": 45,
+      "headQuaternion": [
+        -0.0034423619508743286,
+        0.00011727266974048689,
+        0.05970422551035881,
+        0.9982101917266846
+      ],
+      "theta": 0.1196783995024679,
+      "signedTheta": 0.11519630783385774,
+      "errorAxis": [
+        -0.05756121585098115,
+        0.0019609667875391383,
+        0.9983400528072134
+      ],
+      "angularVelocity": [
+        -0.004672275856137276,
+        0.00018962901958730072,
+        0.1131468266248703
+      ],
+      "omega": 0.11324341259481442,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.47954938960792953
+    },
+    {
+      "relativeStep": 16,
+      "fixedStep": 46,
+      "headQuaternion": [
+        -0.0034841562155634165,
+        0.00011764928058255464,
+        0.060589734464883804,
+        0.9981566667556763
+      ],
+      "theta": 0.12145452100512134,
+      "signedTheta": 0.11690089202613166,
+      "errorAxis": [
+        -0.05740912048735192,
+        0.001938530107818932,
+        0.9983488543520105
+      ],
+      "angularVelocity": [
+        -0.004363401792943478,
+        0.00005050705294706859,
+        0.08231975138187408
+      ],
+      "omega": 0.08243532794707993,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.4884433063219288
+    },
+    {
+      "relativeStep": 17,
+      "fixedStep": 47,
+      "headQuaternion": [
+        -0.0035231614019721746,
+        0.00011759454355342314,
+        0.061199404299259186,
+        0.9981193542480469
+      ],
+      "theta": 0.12267860278599056,
+      "signedTheta": 0.11808121701822966,
+      "errorAxis": [
+        -0.05747329273609637,
+        0.0019183184801100123,
+        0.998345201158575
+      ],
+      "angularVelocity": [
+        -0.0040619103237986565,
+        -0.00007760423613945022,
+        0.0534801222383976
+      ],
+      "omega": 0.05363421121383253,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.494893318884381
+    },
+    {
+      "relativeStep": 18,
+      "fixedStep": 48,
+      "headQuaternion": [
+        -0.003559446195140481,
+        0.00011715483560692519,
+        0.06155143678188324,
+        0.9980975389480591
+      ],
+      "theta": 0.12338702081357074,
+      "signedTheta": 0.11877176103424712,
+      "errorAxis": [
+        -0.057732250510665314,
+        0.0019001866995570298,
+        0.9983302943122072
+      ],
+      "angularVelocity": [
+        -0.0037684382405132055,
+        -0.00019534718012437224,
+        0.026581263169646263
+      ],
+      "omega": 0.026847771583268093,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.4987662519097782
+    },
+    {
+      "relativeStep": 19,
+      "fixedStep": 49,
+      "headQuaternion": [
+        -0.003593086265027523,
+        0.00011637186980806291,
+        0.061663657426834106,
+        0.9980905055999756
+      ],
+      "theta": 0.12361541411681748,
+      "signedTheta": 0.11900629576871138,
+      "errorAxis": [
+        -0.058170334925334063,
+        0.00188400448620193,
+        0.998304894639797
+      ],
+      "angularVelocity": [
+        -0.0034835301339626312,
+        -0.0003033046377822757,
+        0.0015732526080682874
+      ],
+      "omega": 0.003834331710522659,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.500012486066301
+    },
+    {
+      "relativeStep": 20,
+      "fixedStep": 50,
+      "headQuaternion": [
+        -0.0036241612397134304,
+        0.00011528313916642219,
+        0.06155338138341904,
+        0.9980971813201904
+      ],
+      "theta": 0.12339845859921317,
+      "signedTheta": 0.11881767437049742,
+      "errorAxis": [
+        -0.05877645149996093,
+        0.0018696557326776792,
+        0.9982694191131519
+      ],
+      "angularVelocity": [
+        -0.003207642585039139,
+        -0.00040200946386903524,
+        -0.021596740931272507
+      ],
+      "omega": 0.02183734877257077,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.4986514471708074
+    },
+    {
+      "relativeStep": 21,
+      "fixedStep": 51,
+      "headQuaternion": [
+        -0.0036527530755847692,
+        0.00011392250598873943,
+        0.06123737618327141,
+        0.9981165528297424
+      ],
+      "theta": 0.12276973925512158,
+      "signedTheta": 0.11823771090985646,
+      "errorAxis": [
+        -0.05954314234698152,
+        0.0018570387459126095,
+        0.9982240057254499
+      ],
+      "angularVelocity": [
+        -0.0029411499854177237,
+        -0.0004919524071738124,
+        -0.0429840050637722
+      ],
+      "omega": 0.04308731915227543,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.49475891041948206
+    },
+    {
+      "relativeStep": 22,
+      "fixedStep": 52,
+      "headQuaternion": [
+        -0.003678946988657117,
+        0.00011232065298827365,
+        0.06073186174035072,
+        0.9981473088264465
+      ],
+      "theta": 0.12176179263199281,
+      "signedTheta": 0.11729722328865771,
+      "errorAxis": [
+        -0.06046594143941997,
+        0.0018460646611560487,
+        0.9981685538881387
+      ],
+      "angularVelocity": [
+        -0.002684351522475481,
+        -0.0005735887098126113,
+        -0.06264591962099075
+      ],
+      "omega": 0.06270602835664109,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.488456730951567
+    },
+    {
+      "relativeStep": 23,
+      "fixedStep": 53,
+      "headQuaternion": [
+        -0.003702831221744418,
+        0.00011050555622205138,
+        0.060052599757909775,
+        0.9981883764266968
+      ],
+      "theta": 0.12040621781991166,
+      "signedTheta": 0.11602613820196471,
+      "errorAxis": [
+        -0.061542815080467356,
+        0.0018366548742489008,
+        0.9981027545352855
+      ],
+      "angularVelocity": [
+        -0.002437479328364134,
+        -0.0006473437533713877,
+        -0.08064162731170654
+      ],
+      "omega": 0.0806810536302756,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.4799041284203913
+    },
+    {
+      "relativeStep": 24,
+      "fixedStep": 54,
+      "headQuaternion": [
+        -0.0037244949489831924,
+        0.00010850267426576465,
+        0.059214700013399124,
+        0.9982383251190186
+      ],
+      "theta": 0.11873336171455467,
+      "signedTheta": 0.11445319381219482,
+      "errorAxis": [
+        -0.0627739926078029,
+        0.0018287435385421682,
+        0.9980260926193989
+      ],
+      "angularVelocity": [
+        -0.0022006991785019636,
+        -0.0007136172498576343,
+        -0.09703154861927032
+      ],
+      "omega": 0.09705912504194222,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.4692865375180095
+    },
+    {
+      "relativeStep": 25,
+      "fixedStep": 55,
+      "headQuaternion": [
+        -0.003744028741493821,
+        0.000106335362943355,
+        0.05823273956775665,
+        0.9982960224151611
+      ],
+      "theta": 0.1167724763591801,
+      "signedTheta": 0.11260608811482038,
+      "errorAxis": [
+        -0.06416163898293725,
+        0.0018222753187436787,
+        0.9979378554778581
+      ],
+      "angularVelocity": [
+        -0.0019741228315979242,
+        -0.0007727877236902714,
+        -0.11187727749347687
+      ],
+      "omega": 0.11189736181506939,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.4568092482334614
+    },
+    {
+      "relativeStep": 26,
+      "fixedStep": 56,
+      "headQuaternion": [
+        -0.0037615245673805475,
+        0.00010402508632978424,
+        0.057120710611343384,
+        0.9983602166175842
+      ],
+      "theta": 0.11455166492426846,
+      "signedTheta": 0.11051142880379052,
+      "errorAxis": [
+        -0.06570977166681688,
+        0.0018172059089091956,
+        0.997837122816264
+      ],
+      "angularVelocity": [
+        -0.0017578063998371363,
+        -0.0008252153056673706,
+        -0.12524114549160004
+      ],
+      "omega": 0.12525619899904414,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.4426902195125366
+    },
+    {
+      "relativeStep": 27,
+      "fixedStep": 57,
+      "headQuaternion": [
+        -0.0037770732305943966,
+        0.00010159143130294979,
+        0.05589190125465393,
+        0.9984297156333923
+      ],
+      "theta": 0.11209762201240225,
+      "signedTheta": 0.10819448553229892,
+      "errorAxis": [
+        -0.0674242920246473,
+        0.0018135021253728888,
+        0.9977227450825713
+      ],
+      "angularVelocity": [
+        -0.0015517596621066332,
+        -0.0008712444687262177,
+        -0.1371859312057495
+      ],
+      "omega": 0.1371974735400104,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.42715228585447934
+    },
+    {
+      "relativeStep": 28,
+      "fixedStep": 58,
+      "headQuaternion": [
+        -0.0037907673977315426,
+        0.00009905278420774266,
+        0.05455927178263664,
+        0.9985033273696899
+      ],
+      "theta": 0.10943639031234284,
+      "signedTheta": 0.1056799083415562,
+      "errorAxis": [
+        -0.06931258813396067,
+        0.0018111385149671387,
+        0.9975933464611186
+      ],
+      "angularVelocity": [
+        -0.0013559481594711542,
+        -0.0009112060652114451,
+        -0.14777475595474243
+      ],
+      "omega": 0.1477837859488927,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.41042375807548265
+    },
+    {
+      "relativeStep": 29,
+      "fixedStep": 59,
+      "headQuaternion": [
+        -0.003802698804065585,
+        0.00009642604709370062,
+        0.053135085850954056,
+        0.9985800981521606
+      ],
+      "theta": 0.1065925994104183,
+      "signedTheta": 0.10299100434671252,
+      "errorAxis": [
+        -0.07138393552256951,
+        0.0018101014787376413,
+        0.9974472704268592
+      ],
+      "angularVelocity": [
+        -0.0011702985502779484,
+        -0.0009454194223508239,
+        -0.15707071125507355
+      ],
+      "omega": 0.15707791617778621,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.39272832645521144
+    },
+    {
+      "relativeStep": 30,
+      "fixedStep": 60,
+      "headQuaternion": [
+        -0.0038129575550556183,
+        0.00009372673957841471,
+        0.051630984991788864,
+        0.9986589550971985
+      ],
+      "theta": 0.10358965413965053,
+      "signedTheta": 0.10014991605390197,
+      "errorAxis": [
+        -0.07364949583122155,
+        0.0018103865611359396,
+        0.9972825448509742
+      ],
+      "angularVelocity": [
+        -0.0009947012877091765,
+        -0.0009741930989548564,
+        -0.1651366949081421
+      ],
+      "omega": 0.16514256413181497,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.37428294775534354
+    },
+    {
+      "relativeStep": 31,
+      "fixedStep": 61,
+      "headQuaternion": [
+        -0.003821635153144598,
+        0.00009096944268094376,
+        0.05005811154842377,
+        0.9987390041351318
+      ],
+      "theta": 0.10044994786011896,
+      "signedTheta": 0.09717782391218649,
+      "errorAxis": [
+        -0.07612233490200815,
+        0.001812000911680389,
+        0.9970968392196535
+      ],
+      "angularVelocity": [
+        -0.0008290162077173591,
+        -0.0009978264570236206,
+        -0.17203523218631744
+      ],
+      "omega": 0.17204012334019977,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.3552963453139225
+    },
+    {
+      "relativeStep": 32,
+      "fixedStep": 62,
+      "headQuaternion": [
+        -0.0038288196083158255,
+        0.0000881674641277641,
+        0.04842689260840416,
+        0.9988194108009338
+      ],
+      "theta": 0.09719444547836634,
+      "signedTheta": 0.09409454803438728,
+      "errorAxis": [
+        -0.0788178171243749,
+        0.0018149632980485881,
+        0.9968873846187477
+      ],
+      "angularVelocity": [
+        -0.0006730741006322205,
+        -0.001016610418446362,
+        -0.17782829701900482
+      ],
+      "omega": 0.1778324766350827,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.3359638222129442
+    },
+    {
+      "relativeStep": 33,
+      "fixedStep": 63,
+      "headQuaternion": [
+        -0.00383459753356874,
+        0.00008533320942660794,
+        0.046747274696826935,
+        0.9988994002342224
+      ],
+      "theta": 0.09384315213319457,
+      "signedTheta": 0.09091899264708389,
+      "errorAxis": [
+        -0.08175353901013688,
+        0.001819302235670546,
+        0.9966509163186773
+      ],
+      "angularVelocity": [
+        -0.0005266823573037982,
+        -0.0010308276396244764,
+        -0.1825770139694214
+      ],
+      "omega": 0.18258068361663674,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.31646854346303877
+    },
+    {
+      "relativeStep": 34,
+      "fixedStep": 64,
+      "headQuaternion": [
+        -0.0038390555419027805,
+        0.00008247834193753079,
+        0.045028720051050186,
+        0.998978316783905
+      ],
+      "theta": 0.0904151016356027,
+      "signedTheta": 0.08766913477354789,
+      "errorAxis": [
+        -0.08494960309438176,
+        0.001825058881019277,
+        0.9963835777923765
+      ],
+      "angularVelocity": [
+        -0.0003896266862284392,
+        -0.0010407534427940845,
+        -0.18634173274040222
+      ],
+      "omega": 0.18634504645248504,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.2969799640061936
+    },
+    {
+      "relativeStep": 35,
+      "fixedStep": 65,
+      "headQuaternion": [
+        -0.003842276753857732,
+        0.00007961342635098845,
+        0.0432799756526947,
+        0.9990555644035339
+      ],
+      "theta": 0.0869279036484683,
+      "signedTheta": 0.08436159174564865,
+      "errorAxis": [
+        -0.08842930089347921,
+        0.0018322885322833461,
+        0.9960807705514657
+      ],
+      "angularVelocity": [
+        -0.0002616739657241851,
+        -0.001046655816026032,
+        -0.18918171525001526
+      ],
+      "omega": 0.18918479153092463,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.2776500653709092
+    },
+    {
+      "relativeStep": 36,
+      "fixedStep": 66,
+      "headQuaternion": [
+        -0.0038443440571427345,
+        0.0000767484016250819,
+        0.04150935634970665,
+        0.9991307258605957
+      ],
+      "theta": 0.0833982997493405,
+      "signedTheta": 0.08101214842555443,
+      "errorAxis": [
+        -0.0922191066620684,
+        0.0018410602512167159,
+        0.9957370370050824
+      ],
+      "angularVelocity": [
+        -0.00014257543080020696,
+        -0.0010487958788871765,
+        -0.19115513563156128
+      ],
+      "omega": 0.19115806595294277,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.25861620064380286
+    },
+    {
+      "relativeStep": 37,
+      "fixedStep": 67,
+      "headQuaternion": [
+        -0.0038453363813459873,
+        0.00007389234087895602,
+        0.03972461819648743,
+        0.9992032647132874
+      ],
+      "theta": 0.07984193859804123,
+      "signedTheta": 0.0776355408136741,
+      "errorAxis": [
+        -0.09634931242481884,
+        0.0018514573319735705,
+        0.9953458605434897
+      ],
+      "angularVelocity": [
+        -0.00003206858673365787,
+        -0.001047427416779101,
+        -0.1923186480998993
+      ],
+      "omega": 0.1923215030607877,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.23999929620103347
+    },
+    {
+      "relativeStep": 38,
+      "fixedStep": 68,
+      "headQuaternion": [
+        -0.0038453321903944016,
+        0.00007105373515514657,
+        0.037932973355054855,
+        0.999272882938385
+      ],
+      "theta": 0.0762733784208087,
+      "signedTheta": 0.07424545704927696,
+      "errorAxis": [
+        -0.10085470311307795,
+        0.0018635849932675326,
+        0.9948994199973044
+      ],
+      "angularVelocity": [
+        0.00007011982233962044,
+        -0.0010427978122606874,
+        -0.19272786378860474
+      ],
+      "omega": 0.19273069767057277,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.22190408982077536
+    },
+    {
+      "relativeStep": 39,
+      "fixedStep": 69,
+      "headQuaternion": [
+        -0.003844405524432659,
+        0.00006824037700425833,
+        0.036141205579042435,
+        0.9993392825126648
+      ],
+      "theta": 0.0727063395461049,
+      "signedTheta": 0.07085477312209597,
+      "errorAxis": [
+        -0.10577488830477617,
+        0.0018775642188700841,
+        0.9943883284496435
+      ],
+      "angularVelocity": [
+        0.0001642722199903801,
+        -0.0010351466480642557,
+        -0.19243668019771576
+      ],
+      "omega": 0.19243953439837455,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.2044204416139801
+    },
+    {
+      "relativeStep": 40,
+      "fixedStep": 70,
+      "headQuaternion": [
+        -0.0038426301907747984,
+        0.00006545932410517707,
+        0.034355528652668,
+        0.9994022846221924
+      ],
+      "theta": 0.06915341818531817,
+      "signedTheta": 0.06747527938320484,
+      "errorAxis": [
+        -0.11115563267262293,
+        0.00189353963925582,
+        0.9938012074015742
+      ],
+      "angularVelocity": [
+        0.00025067757815122604,
+        -0.0010247076861560345,
+        -0.19149762392044067
+      ],
+      "omega": 0.19150052958742642,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.18762240424500967
+    },
+    {
+      "relativeStep": 41,
+      "fixedStep": 71,
+      "headQuaternion": [
+        -0.0038400753401219845,
+        0.00006271705206017941,
+        0.03258170187473297,
+        0.9994617104530334
+      ],
+      "theta": 0.06562632867195616,
+      "signedTheta": 0.06411790479515586,
+      "errorAxis": [
+        -0.11704949993189737,
+        0.0019116811339992042,
+        0.9931242419963853
+      ],
+      "angularVelocity": [
+        0.00032963050762191415,
+        -0.0010117068886756897,
+        -0.18996156752109528
+      ],
+      "omega": 0.1899645475928911,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.1715699450528258
+    },
+    {
+      "relativeStep": 42,
+      "fixedStep": 72,
+      "headQuaternion": [
+        -0.0038368094246834517,
+        0.00006001947258482687,
+        0.030825020745396614,
+        0.9995174407958984
+      ],
+      "theta": 0.06213588658986769,
+      "signedTheta": 0.060792697670167484,
+      "errorAxis": [
+        -0.12351724229121232,
+        0.0019321886799374892,
+        0.9923405451275243
+      ],
+      "angularVelocity": [
+        0.00040142881334759295,
+        -0.000996362417936325,
+        -0.18787755072116852
+      ],
+      "omega": 0.187880621534381,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.15630946994293785
+    },
+    {
+      "relativeStep": 43,
+      "fixedStep": 73,
+      "headQuaternion": [
+        -0.003832896240055561,
+        0.00005737193350796588,
+        0.029090330004692078,
+        0.9995694160461426
+      ],
+      "theta": 0.05869204058852599,
+      "signedTheta": 0.057508848151494686,
+      "errorAxis": [
+        -0.1306291782130407,
+        0.0019552964800659874,
+        0.9914293694535289
+      ],
+      "angularVelocity": [
+        0.00046637238119728863,
+        -0.0009788863826543093,
+        -0.1852932572364807
+      ],
+      "omega": 0.18529642980654729,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.14187489708550785
+    },
+    {
+      "relativeStep": 44,
+      "fixedStep": 74,
+      "headQuaternion": [
+        -0.003828399581834674,
+        0.000054779255151515827,
+        0.027382051572203636,
+        0.9996176958084106
+      ],
+      "theta": 0.05530393401219828,
+      "signedTheta": 0.054274741286483685,
+      "errorAxis": [
+        -0.1384670956555516,
+        0.001981278129638132,
+        0.9903650528758471
+      ],
+      "angularVelocity": [
+        0.0005247617373242974,
+        -0.0009594818693585694,
+        -0.18225425481796265
+      ],
+      "omega": 0.18225753586502108,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.1282885018961863
+    },
+    {
+      "relativeStep": 45,
+      "fixedStep": 75,
+      "headQuaternion": [
+        -0.003823379287496209,
+        0.00005224574852036312,
+        0.025704197585582733,
+        0.9996622800827026
+      ],
+      "theta": 0.05197995030827627,
+      "signedTheta": 0.05109798968012147,
+      "errorAxis": [
+        -0.14712633360368713,
+        0.0020104532792023996,
+        0.989115665651909
+      ],
+      "angularVelocity": [
+        0.0005768976407125592,
+        -0.0009383457945659757,
+        -0.17880471050739288
+      ],
+      "omega": 0.1788081032933089,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.11556217595964134
+    },
+    {
+      "relativeStep": 46,
+      "fixedStep": 76,
+      "headQuaternion": [
+        -0.0038178921677172184,
+        0.000049775229854276404,
+        0.02406037040054798,
+        0.9997032284736633
+      ],
+      "theta": 0.048727718208030964,
+      "signedTheta": 0.047985427022211875,
+      "errorAxis": [
+        -0.15671859883580003,
+        0.002043196595611618,
+        0.9876411828830687
+      ],
+      "angularVelocity": [
+        0.000623078434728086,
+        -0.0009156668675132096,
+        -0.17498661577701569
+      ],
+      "omega": 0.17499012078869194,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.10369809342178941
+    },
+    {
+      "relativeStep": 47,
+      "fixedStep": 77,
+      "headQuaternion": [
+        -0.0038119922392070293,
+        0.00004737108974950388,
+        0.02245381847023964,
+        0.9997406005859375
+      ],
+      "theta": 0.0455542408943178,
+      "signedTheta": 0.044943217117505235,
+      "errorAxis": [
+        -0.16737506052768225,
+        0.0020799462634097116,
+        0.9858911009524333
+      ],
+      "angularVelocity": [
+        0.0006636006874032319,
+        -0.0008916259394027293,
+        -0.17084048688411713
+      ],
+      "omega": 0.17084410239013326,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.0926902425103434
+    },
+    {
+      "relativeStep": 48,
+      "fixedStep": 78,
+      "headQuaternion": [
+        -0.0038057309575378895,
+        0.000045036176743451506,
+        0.020887354388833046,
+        0.9997745752334595
+      ],
+      "theta": 0.04246574857927022,
+      "signedTheta": 0.04197669383148676,
+      "errorAxis": [
+        -0.17925114330163483,
+        0.002121218305042996,
+        0.983801061220305
+      ],
+      "angularVelocity": [
+        0.0006987567758187652,
+        -0.000866395712364465,
+        -0.16640475392341614
+      ],
+      "omega": 0.16640847643937745,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.08252465989747985
+    },
+    {
+      "relativeStep": 49,
+      "fixedStep": 79,
+      "headQuaternion": [
+        -0.003799157915636897,
+        0.00004277299376553856,
+        0.019363494589924812,
+        0.9998052716255188
+      ],
+      "theta": 0.03946800819065949,
+      "signedTheta": 0.03909063407862536,
+      "errorAxis": [
+        -0.19253085012582843,
+        0.002167617412851171,
+        0.9812885269814123
+      ],
+      "angularVelocity": [
+        0.0007288350607268512,
+        -0.0008401423110626638,
+        -0.1617162674665451
+      ],
+      "omega": 0.1617200921436781,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.07318137576744158
+    },
+    {
+      "relativeStep": 50,
+      "fixedStep": 80,
+      "headQuaternion": [
+        -0.0037923192139714956,
+        0.00004058361446368508,
+        0.01788441650569439,
+        0.9998328685760498
+      ],
+      "theta": 0.036566264781208155,
+      "signedTheta": 0.0362891703647493,
+      "errorAxis": [
+        -0.20743330070587043,
+        0.002219853505939591,
+        0.9782466447727205
+      ],
+      "angularVelocity": [
+        0.0007541183731518686,
+        -0.0008130214991979301,
+        -0.15680968761444092
+      ],
+      "omega": 0.15681360855556328,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.0646347990482375
+    },
+    {
+      "relativeStep": 51,
+      "fixedStep": 81,
+      "headQuaternion": [
+        -0.003785258624702692,
+        0.00003846976687782444,
+        0.01645198091864586,
+        0.999857485294342
+      ],
+      "theta": 0.03376533256993339,
+      "signedTheta": 0.033575838442650816,
+      "errorAxis": [
+        -0.22422041662377776,
+        0.0022787629623175075,
+        0.9745357930873094
+      ],
+      "angularVelocity": [
+        0.0007748848875053227,
+        -0.0007851838017813861,
+        -0.15171831846237183
+      ],
+      "omega": 0.15172232900018753,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.056854913091170065
+    },
+    {
+      "relativeStep": 52,
+      "fixedStep": 82,
+      "headQuaternion": [
+        -0.0037780171260237694,
+        0.00003643277887022123,
+        0.015067732892930508,
+        0.9998793601989746
+      ],
+      "theta": 0.031069645443749953,
+      "signedTheta": 0.030953572277893495,
+      "errorAxis": [
+        -0.24320644458829763,
+        0.002345327276169264,
+        0.969971713376695
+      ],
+      "angularVelocity": [
+        0.0007914065499790013,
+        -0.0007567706634290516,
+        -0.1464734524488449
+      ],
+      "omega": 0.14647754537282637,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.04980787578118055
+    },
+    {
+      "relativeStep": 53,
+      "fixedStep": 83,
+      "headQuaternion": [
+        -0.003770634066313505,
+        0.0000344736545230262,
+        0.013732961378991604,
+        0.9998986124992371
+      ],
+      "theta": 0.028483454892496603,
+      "signedTheta": 0.02842482568932352,
+      "errorAxis": [
+        -0.26476854416911416,
+        0.0024206908333522024,
+        0.964308953746126
+      ],
+      "angularVelocity": [
+        0.0008039482054300606,
+        -0.0007279155543074012,
+        -0.14110460877418518
+      ],
+      "omega": 0.14110877652041023,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.04345708912189278
+    },
+    {
+      "relativeStep": 54,
+      "fixedStep": 84,
+      "headQuaternion": [
+        -0.0037631464656442404,
+        0.00003259308869019151,
+        0.012448674067854881,
+        0.9999154210090637
+      ],
+      "theta": 0.026010871492133433,
+      "signedTheta": 0.02599151810084333,
+      "errorAxis": [
+        -0.28935997693073284,
+        0.0025061834498330006,
+        0.9572170719313269
+      ],
+      "angularVelocity": [
+        0.000812767946626991,
+        -0.0006987442029640079,
+        -0.13563957810401917
+      ],
+      "omega": 0.13564381291984,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.03776374847033363
+    },
+    {
+      "relativeStep": 55,
+      "fixedStep": 85,
+      "headQuaternion": [
+        -0.003755587385967374,
+        0.00003079147791140713,
+        0.0112156318500638,
+        0.9999300241470337
+      ],
+      "theta": 0.023656061697635865,
+      "signedTheta": 0.02365509929604122,
+      "errorAxis": [
+        -0.31752327166276256,
+        0.002603324007928334,
+        0.948246905957703
+      ],
+      "angularVelocity": [
+        0.0008181172888725996,
+        -0.0006693751784041524,
+        -0.13010448217391968
+      ],
+      "omega": 0.13010877626344658,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.03268760592247853
+    },
+    {
+      "relativeStep": 56,
+      "fixedStep": 86,
+      "headQuaternion": [
+        -0.0037479891907423735,
+        0.000029068913136143237,
+        0.010034351609647274,
+        0.9999426603317261
+      ],
+      "theta": 0.021423432189006608,
+      "signedTheta": 0.021416558710562906,
+      "errorAxis": [
+        -0.349902921247021,
+        0.002713801216112303,
+        0.9367820349396168
+      ],
+      "angularVelocity": [
+        0.000820239307358861,
+        -0.0006399194244295359,
+        -0.12452378869056702
+      ],
+      "omega": 0.12452813432812718,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.028187542412914296
+    },
+    {
+      "relativeStep": 57,
+      "fixedStep": 87,
+      "headQuaternion": [
+        -0.003740382380783558,
+        0.00002742528340604622,
+        0.008905166760087013,
+        0.9999533295631409
+      ],
+      "theta": 0.0193179826194315,
+      "signedTheta": 0.01927654361436832,
+      "errorAxis": [
+        -0.3872496109661506,
+        0.002839396951549909,
+        0.9219705400039807
+      ],
+      "angularVelocity": [
+        0.0008193703833967447,
+        -0.000610480026807636,
+        -0.11892028152942657
+      ],
+      "omega": 0.11892467116930108,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.02422222223996779
+    },
+    {
+      "relativeStep": 58,
+      "fixedStep": 88,
+      "headQuaternion": [
+        -0.0037327921018004417,
+        0.000025860152163659222,
+        0.007828152738511562,
+        0.9999623894691467
+      ],
+      "theta": 0.017345462475944755,
+      "signedTheta": 0.017235203175067555,
+      "errorAxis": [
+        -0.43041099788080855,
+        0.0029818145759421028,
+        0.9026280971075288
+      ],
+      "angularVelocity": [
+        0.0008157385746017098,
+        -0.0005811533774249256,
+        -0.11331519484519958
+      ],
+      "omega": 0.1133196212113142,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.020750338880751097
+    },
+    {
+      "relativeStep": 59,
+      "fixedStep": 89,
+      "headQuaternion": [
+        -0.0037252437323331833,
+        0.000024372897314606234,
+        0.006803217343986034,
+        0.9999698996543884
+      ],
+      "theta": 0.015512963603048314,
+      "signedTheta": 0.015292376542692936,
+      "errorAxis": [
+        -0.48027975212406526,
+        0.003142293477123128,
+        0.8771097341245095
+      ],
+      "angularVelocity": [
+        0.0008095632656477392,
+        -0.000552027951925993,
+        -0.10772809386253357
+      ],
+      "omega": 0.10773255002456611,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.017731237927132777
+    },
+    {
+      "relativeStep": 60,
+      "fixedStep": 90,
+      "headQuaternion": [
+        -0.0037177614867687225,
+        0.00002296269485668745,
+        0.005830102134495974,
+        0.9999760389328003
+      ],
+      "theta": 0.013829408650286852,
+      "signedTheta": 0.013447586021384992,
+      "errorAxis": [
+        -0.5376645394214499,
+        0.0033208764999948467,
+        0.8431523082047547
+      ],
+      "angularVelocity": [
+        0.0008010558085516095,
+        -0.0005231862887740135,
+        -0.10217717289924622
+      ],
+      "omega": 0.1021816523451428,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.015125262853075434
+    },
+    {
+      "relativeStep": 61,
+      "fixedStep": 91,
+      "headQuaternion": [
+        -0.003710366552695632,
+        0.00002162853161280509,
+        0.004908381495624781,
+        0.9999810457229614
+      ],
+      "theta": 0.012306092196778735,
+      "signedTheta": 0.011700035924823235,
+      "errorAxis": [
+        -0.603016781641833,
+        0.003515115646813092,
+        0.7977207562987598
+      ],
+      "angularVelocity": [
+        0.0007904203375801444,
+        -0.0004947037668898702,
+        -0.09667909145355225
+      ],
+      "omega": 0.0966835881647519,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.012893988304212484
+    },
+    {
+      "relativeStep": 62,
+      "fixedStep": 92,
+      "headQuaternion": [
+        -0.0037030770909041166,
+        0.000020369205230963416,
+        0.004037485457956791,
+        0.9999849796295166
+      ],
+      "theta": 0.010957150130331529,
+      "signedTheta": 0.010048658576285166,
+      "errorAxis": [
+        -0.6759231405307233,
+        0.0037179936663068844,
+        0.7369627430367591
+      ],
+      "angularVelocity": [
+        0.0007778519066050649,
+        -0.00046664924593642354,
+        -0.09124919027090073
+      ],
+      "omega": 0.09125369877545997,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.011000519647896377
+    },
+    {
+      "relativeStep": 63,
+      "fixedStep": 93,
+      "headQuaternion": [
+        -0.003695911727845669,
+        0.00001918337329698261,
+        0.0032167050521820784,
+        0.9999879598617554
+      ],
+      "theta": 0.009799493203657946,
+      "signedTheta": 0.008492123207202622,
+      "errorAxis": [
+        -0.7543097533516413,
+        0.00391519241952622,
+        0.6565070199690012
+      ],
+      "angularVelocity": [
+        0.0007635373040102422,
+        -0.0004390852409414947,
+        -0.08590129762887955
+      ],
+      "omega": 0.08590581307099522,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.009409643895327065
+    },
+    {
+      "relativeStep": 64,
+      "fixedStep": 94,
+      "headQuaternion": [
+        -0.003688885597512126,
+        0.000018069540601572953,
+        0.002445204881951213,
+        0.9999901652336121
+      ],
+      "theta": 0.008851521874195484,
+      "signedTheta": 0.00702885765924995,
+      "errorAxis": [
+        -0.8335058861468958,
+        0.004082823403777804,
+        0.5524954916780289
+      ],
+      "angularVelocity": [
+        0.0007476555183529854,
+        -0.00041206827154383063,
+        -0.08064807206392288
+      ],
+      "omega": 0.08065259026629112,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.008088033249474722
+    },
+    {
+      "relativeStep": 65,
+      "fixedStep": 95,
+      "headQuaternion": [
+        -0.003682013601064682,
+        0.000017026090063154697,
+        0.0017220476875081658,
+        0.9999917149543762
+      ],
+      "theta": 0.008129711942056854,
+      "signedTheta": 0.005657098047709412,
+      "errorAxis": [
+        -0.9058190139205716,
+        0.004188620082084999,
+        0.4236441543213749
+      ],
+      "angularVelocity": [
+        0.0007303773309104145,
+        -0.00038564918213523924,
+        -0.07550081610679626
+      ],
+      "omega": 0.07550533364689846,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.007004335148475715
+    },
+    {
+      "relativeStep": 66,
+      "fixedStep": 96,
+      "headQuaternion": [
+        -0.003675307147204876,
+        0.000016051293641794473,
+        0.0010461898054927588,
+        0.9999927282333374
+      ],
+      "theta": 0.007642702033950286,
+      "signedTheta": 0.004374877360174597,
+      "errorAxis": [
+        -0.9617844492891862,
+        0.004200433867790627,
+        0.273775509264049
+      ],
+      "angularVelocity": [
+        0.0007118652574717999,
+        -0.00035987296723760664,
+        -0.0704696848988533
+      ],
+      "omega": 0.07047419918268684,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.006129254846357729
+    },
+    {
+      "relativeStep": 67,
+      "fixedStep": 97,
+      "headQuaternion": [
+        -0.0036687785759568214,
+        0.000015143314158194698,
+        0.0004165041318628937,
+        0.9999932050704956
+      ],
+      "theta": 0.007384768815027744,
+      "signedTheta": 0.0031800721339765273,
+      "errorAxis": [
+        -0.9936091227704844,
+        0.0041012382690981935,
+        0.11280111255627942
+      ],
+      "angularVelocity": [
+        0.0006922737811692059,
+        -0.0003347793535795063,
+        -0.06556364893913269
+      ],
+      "omega": 0.06556815829667258,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.0054355976552926556
+    },
+    {
+      "relativeStep": 68,
+      "fixedStep": 98,
+      "headQuaternion": [
+        -0.003662435570731759,
+        0.000014300229850050528,
+        -0.0001682179281488061,
+        0.9999932646751404
+      ],
+      "theta": 0.0073326657340177445,
+      "signedTheta": 0.002070401334507248,
+      "errorAxis": [
+        -0.9989392565193246,
+        0.0039004265600256697,
+        -0.045881897123616844
+      ],
+      "angularVelocity": [
+        0.0006717496435157955,
+        -0.0003104028874076903,
+        -0.060790594667196274
+      ],
+      "omega": 0.06079509846630258,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004898277758084025
+    },
+    {
+      "relativeStep": 69,
+      "fixedStep": 99,
+      "headQuaternion": [
+        -0.0036562876775860786,
+        0.000013520046195480973,
+        -0.0007092506857588887,
+        0.9999930262565613
+      ],
+      "theta": 0.007448952705102627,
+      "signedTheta": 0.001043461249344174,
+      "errorAxis": [
+        -0.9816940485607998,
+        0.0036300614330033896,
+        -0.190430086072125
+      ],
+      "angularVelocity": [
+        0.0006504314951598644,
+        -0.0002867733419407159,
+        -0.05615735799074173
+      ],
+      "omega": 0.05616185677646233,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004494310659054508
+    },
+    {
+      "relativeStep": 70,
+      "fixedStep": 100,
+      "headQuaternion": [
+        -0.003650342347100377,
+        0.000012800714102922939,
+        -0.001207927823998034,
+        0.9999926090240479
+      ],
+      "theta": 0.007690078168924346,
+      "signedTheta": 0.00009673487713114658,
+      "errorAxis": [
+        -0.9493665102682439,
+        0.0033291587805419813,
+        -0.3141530612425578
+      ],
+      "angularVelocity": [
+        0.0006284508854150772,
+        -0.00026391580468043685,
+        -0.05166983604431152
+      ],
+      "omega": 0.0516743317219814,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004202777925262486
+    },
+    {
+      "relativeStep": 71,
+      "fixedStep": 101,
+      "headQuaternion": [
+        -0.003644603071734309,
+        0.000012140120816184208,
+        -0.0016656330553814769,
+        0.9999919533729553
+      ],
+      "theta": 0.008014411751136988,
+      "signedTheta": -0.0007723917931757539,
+      "errorAxis": [
+        -0.9095147600953029,
+        0.0030295806852858585,
+        -0.4156605860651943
+      ],
+      "angularVelocity": [
+        0.0006059315637685359,
+        -0.00024185098300222307,
+        -0.04733289033174515
+      ],
+      "omega": 0.04733738640984485,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004004757336872033
+    },
+    {
+      "relativeStep": 72,
+      "fixedStep": 102,
+      "headQuaternion": [
+        -0.0036390770692378283,
+        0.000011536121746757999,
+        -0.0020837897900491953,
+        0.9999911785125732
+      ],
+      "theta": 0.00838696583574442,
+      "signedTheta": -0.0015666054228494445,
+      "errorAxis": [
+        -0.8677960328525446,
+        0.00275097242951144,
+        -0.49691294762329985
+      ],
+      "angularVelocity": [
+        0.0005829897709190845,
+        -0.00022059548064135015,
+        -0.04315057769417763
+      ],
+      "omega": 0.04315507959418376,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.0038832736534397073
+    },
+    {
+      "relativeStep": 73,
+      "fixedStep": 103,
+      "headQuaternion": [
+        -0.0036337682977318764,
+        0.000010986538654833566,
+        -0.002463854383677244,
+        0.9999903440475464
+      ],
+      "theta": 0.008780682370381505,
+      "signedTheta": -0.002288656922627219,
+      "errorAxis": [
+        -0.8276760016942704,
+        0.002502441994435375,
+        -0.5612006539634777
+      ],
+      "angularVelocity": [
+        0.0005597352283075452,
+        -0.0002001617685891688,
+        -0.039126068353652954
+      ],
+      "omega": 0.03913058385807879,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.0038231969543599436
+    },
+    {
+      "relativeStep": 74,
+      "fixedStep": 104,
+      "headQuaternion": [
+        -0.003628675825893879,
+        0.00001048917056323262,
+        -0.0028073075227439404,
+        0.9999894499778748
+      ],
+      "theta": 0.009175733772121834,
+      "signedTheta": -0.0029413464688562724,
+      "errorAxis": [
+        -0.7909315460330806,
+        0.0022862929311517058,
+        -0.6119003696361323
+      ],
+      "angularVelocity": [
+        0.0005362705560401082,
+        -0.00018055894179269671,
+        -0.03526177629828453
+      ],
+      "omega": 0.03526631615792891,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.0038111526647982693
+    },
+    {
+      "relativeStep": 75,
+      "fixedStep": 105,
+      "headQuaternion": [
+        -0.003623802214860916,
+        0.000010041803761851043,
+        -0.003115653293207288,
+        0.9999885559082031
+      ],
+      "theta": 0.009558140774612083,
+      "signedTheta": -0.003527516038913838,
+      "errorAxis": [
+        -0.7582679901726108,
+        0.0021012124571756735,
+        -0.6519395984213892
+      ],
+      "angularVelocity": [
+        0.0005126905161887407,
+        -0.00016179245722014457,
+        -0.03155934065580368
+      ],
+      "omega": 0.03156391944916959,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.0038354269252555842
+    },
+    {
+      "relativeStep": 76,
+      "fixedStep": 106,
+      "headQuaternion": [
+        -0.003619150957092643,
+        0.00000964221908361651,
+        -0.0033904039300978184,
+        0.9999876618385315
+      ],
+      "theta": 0.009918344435094355,
+      "signedTheta": -0.004050022548750649,
+      "errorAxis": [
+        -0.7297923490188872,
+        0.0019443283240221875,
+        -0.6836661077703748
+      ],
+      "angularVelocity": [
+        0.0004890841082669795,
+        -0.00014386477414518595,
+        -0.028019793331623077
+      ],
+      "omega": 0.02802443074685137,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.0038858584953153992
+    },
+    {
+      "relativeStep": 77,
+      "fixedStep": 107,
+      "headQuaternion": [
+        -0.003614719957113266,
+        0.000009288208275393117,
+        -0.0036330760922282934,
+        0.9999868273735046
+      ],
+      "theta": 0.01025002645519987,
+      "signedTheta": -0.004511734677211222,
+      "errorAxis": [
+        -0.7053125063891625,
+        0.0018123366502266508,
+        -0.7088941978671207
+      ],
+      "angularVelocity": [
+        0.0004655341908801347,
+        -0.000126774946693331,
+        -0.0246434286236763
+      ],
+      "omega": 0.024648151417504233,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.003953712152217289
+    },
+    {
+      "relativeStep": 78,
+      "fixedStep": 108,
+      "headQuaternion": [
+        -0.00361050758510828,
+        0.000008977564903034363,
+        -0.0038451903965324163,
+        0.9999861121177673
+      ],
+      "theta": 0.010549235335990167,
+      "signedTheta": -0.004915528194460753,
+      "errorAxis": [
+        -0.6845091855912404,
+        0.0017020392550108042,
+        -0.7290022482239784
+      ],
+      "angularVelocity": [
+        0.00044211704516783357,
+        -0.00011051964975195006,
+        -0.021430017426609993
+      ],
+      "omega": 0.021434862467004944,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004031586299764886
+    },
+    {
+      "relativeStep": 79,
+      "fixedStep": 109,
+      "headQuaternion": [
+        -0.003606511512771249,
+        0.000008708101631782483,
+        -0.0040282574482262135,
+        0.99998539686203
+      ],
+      "theta": 0.010813721516008446,
+      "signedTheta": -0.005264261271163604,
+      "errorAxis": [
+        -0.6670282806120093,
+        0.0016105729978328014,
+        -0.7450306563663748
+      ],
+      "angularVelocity": [
+        0.00041890243301168084,
+        -0.00009509276424068958,
+        -0.01837873086333275
+      ],
+      "omega": 0.01838375016227684,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004113287115203524
+    },
+    {
+      "relativeStep": 80,
+      "fixedStep": 110,
+      "headQuaternion": [
+        -0.003602728946134448,
+        0.00000847764385980554,
+        -0.0041837845928967,
+        0.9999847412109375
+      ],
+      "theta": 0.01104248016188432,
+      "signedTheta": -0.005560785390794024,
+      "errorAxis": [
+        -0.6525250230323081,
+        0.001535467929335829,
+        -0.7577656211887152
+      ],
+      "angularVelocity": [
+        0.00039595438283868134,
+        -0.00008048597373999655,
+        -0.01548827439546585
+      ],
+      "omega": 0.015493543868802293,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004193730594035586
+    },
+    {
+      "relativeStep": 81,
+      "fixedStep": 111,
+      "headQuaternion": [
+        -0.003599159186705947,
+        0.000008284074283437803,
+        -0.004313253331929445,
+        0.9999842047691345
+      ],
+      "theta": 0.011235391007354848,
+      "signedTheta": -0.005807901729581126,
+      "errorAxis": [
+        -0.6406858778237569,
+        0.001474647029741167,
+        -0.7678016875304257
+      ],
+      "angularVelocity": [
+        0.00037333095679059625,
+        -0.00006668867717962712,
+        -0.012756871990859509
+      ],
+      "omega": 0.012762507840316415,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.00426881638799456
+    },
+    {
+      "relativeStep": 82,
+      "fixedStep": 112,
+      "headQuaternion": [
+        -0.0035958015359938145,
+        0.000008125281055981759,
+        -0.004418136086314917,
+        0.9999837279319763
+      ],
+      "theta": 0.011393004035603609,
+      "signedTheta": -0.006008394960200167,
+      "errorAxis": [
+        -0.6312331921188935,
+        0.0014263710181137655,
+        -0.7755917886634545
+      ],
+      "angularVelocity": [
+        0.00035108637530356646,
+        -0.00005368833080865443,
+        -0.010182322934269905
+      ],
+      "omega": 0.010188515319591354,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004335344993711374
+    },
+    {
+      "relativeStep": 83,
+      "fixedStep": 113,
+      "headQuaternion": [
+        -0.0035926492419093847,
+        0.000007999203262443189,
+        -0.004499876871705055,
+        0.9999833703041077
+      ],
+      "theta": 0.011516328284208809,
+      "signedTheta": -0.006164999309710136,
+      "errorAxis": [
+        -0.6239261666826742,
+        0.0013892010858814596,
+        -0.7814820590764961
+      ],
+      "angularVelocity": [
+        0.00032926941639743745,
+        -0.000041470633732387796,
+        -0.0077620455995202065
+      ],
+      "omega": 0.007769137020999685,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004390892741622465
+    },
+    {
+      "relativeStep": 84,
+      "fixedStep": 114,
+      "headQuaternion": [
+        -0.003589698113501072,
+        0.00000790381818660535,
+        -0.0045599001459777355,
+        0.9999831318855286
+      ],
+      "theta": 0.0116067332833084,
+      "signedTheta": -0.006280410697102559,
+      "errorAxis": [
+        -0.6185579143323823,
+        0.0013619444137603794,
+        -0.7857380299617976
+      ],
+      "angularVelocity": [
+        0.00030792353209108114,
+        -0.00003001965887960978,
+        -0.005493106320500374
+      ],
+      "omega": 0.005501811986051128,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.00443373956884158
+    },
+    {
+      "relativeStep": 85,
+      "fixedStep": 115,
+      "headQuaternion": [
+        -0.003586942097172141,
+        0.000007837142220523674,
+        -0.004599594045430422,
+        0.999983012676239
+      ],
+      "theta": 0.011665824381452616,
+      "signedTheta": -0.006357257590667331,
+      "errorAxis": [
+        -0.6149522285496879,
+        0.0013436146844331373,
+        -0.7885632195990164
+      ],
+      "angularVelocity": [
+        0.00028708664467558265,
+        -0.000019318045815452933,
+        -0.0033722647931426764
+      ],
+      "omega": 0.00338451795142452,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004462758321361942
+    },
+    {
+      "relativeStep": 86,
+      "fixedStep": 116,
+      "headQuaternion": [
+        -0.0035843783989548683,
+        0.000007797253601893317,
+        -0.004620321560651064,
+        0.9999828934669495
+      ],
+      "theta": 0.011695399267474356,
+      "signedTheta": -0.0063981195599303025,
+      "errorAxis": [
+        -0.6129587843693901,
+        0.0013333957962222826,
+        -0.7901137580893056
+      ],
+      "angularVelocity": [
+        0.00026679286384023726,
+        -0.000009347134437120985,
+        -0.0013959993375465274
+      ],
+      "omega": 0.0014212951669335277,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004477352575241178
+    },
+    {
+      "relativeStep": 87,
+      "fixedStep": 117,
+      "headQuaternion": [
+        -0.003582001430913806,
+        0.000007782277862133924,
+        -0.00462340796366334,
+        0.9999828934669495
+      ],
+      "theta": 0.011697364876104404,
+      "signedTheta": -0.00640550516606924,
+      "errorAxis": [
+        -0.612449368120177,
+        0.0013306111823589203,
+        -0.790508697587269
+      ],
+      "angularVelocity": [
+        0.0002470721083227545,
+        -8.716551747056656e-8,
+        0.00043945491779595613
+      ],
+      "omega": 0.0005041480527423754,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004477357373795842
+    },
+    {
+      "relativeStep": 88,
+      "fixedStep": 118,
+      "headQuaternion": [
+        -0.003579804440960288,
+        0.000007790386916894931,
+        -0.004610143136233091,
+        0.9999828934669495
+      ],
+      "theta": 0.011673709277224383,
+      "signedTheta": -0.006381858335860973,
+      "errorAxis": [
+        -0.6133140617003183,
+        0.0013346968866646126,
+        -0.7898380089009805
+      ],
+      "angularVelocity": [
+        0.00022794980031903833,
+        0.00000848260970087722,
+        0.0021380765829235315
+      ],
+      "omega": 0.0021502103479843064,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004462978091735394
+    },
+    {
+      "relativeStep": 89,
+      "fixedStep": 119,
+      "headQuaternion": [
+        -0.003577783238142729,
+        0.000007819825441401917,
+        -0.004581779707223177,
+        0.9999831318855286
+      ],
+      "theta": 0.011626466026262938,
+      "signedTheta": -0.006329548612988454,
+      "errorAxis": [
+        -0.6154584339920944,
+        0.0013451842104205104,
+        -0.7881681968436343
+      ],
+      "angularVelocity": [
+        0.00020944775315001607,
+        0.000016383768524974585,
+        0.0037040296010673046
+      ],
+      "omega": 0.00370998275936068,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004434722568766989
+    },
+    {
+      "relativeStep": 90,
+      "fixedStep": 120,
+      "headQuaternion": [
+        -0.0035759310703724623,
+        0.000007868879947636742,
+        -0.004539527930319309,
+        0.9999832510948181
+      ],
+      "theta": 0.011557687302549274,
+      "signedTheta": -0.006250870885009884,
+      "errorAxis": [
+        -0.6188004682648747,
+        0.0013616779799423048,
+        -0.7855470236148817
+      ],
+      "angularVelocity": [
+        0.0001915840111905709,
+        0.000023638576749362983,
+        0.005141633562743664
+      ],
+      "omega": 0.005145255961484006,
+      "carriagePosition": [
+        0,
+        2.799999952316284,
+        0
+      ],
+      "prizePosition": [
+        0,
+        1.1087257862091064,
+        0
+      ],
+      "physicalContact": false,
+      "solverContact": false,
+      "visualOverlap": false,
+      "jointActive": false,
+      "responseEnvelope": 0.004393340618448212
+    }
+  ],
+  "metrics": {
+    "thetaPeak": 0.12361541411681748,
+    "omegaPeak": 0.7672941111518526,
+    "rPeak": 0.5079723823882412,
+    "r45": 0.11556217595964134,
+    "r60": 0.015125262853075434,
+    "r45OverPeak": 0.2274969663041989,
+    "r60OverPeak": 0.029775758244894618,
+    "omegaAt60": 0.1021816523451428,
+    "thetaAt60": 0.013829408650286852,
+    "signReversals": 0,
+    "dominantAxis": [
+      -0.326063429978949,
+      0.0025126350051667625,
+      0.9453445542740986
+    ],
+    "gates": {
+      "decay45": false,
+      "decay60": true,
+      "angularVelocity60": false,
+      "orientation60": true,
+      "signReversals": true
+    }
+  },
+  "noImpactControl": {
+    "steps": 120,
+    "maxPositionJitter": 0,
+    "maxPrizeSpeed": 0,
+    "maxHeadTheta": 0.007694677263283027,
+    "maxHeadOmega": 0.011166799813508987,
+    "stable": true,
+    "repeatable": true
+  },
+  "carryRegression": {
+    "gripAccepted": true,
+    "jointCreated": true,
+    "liftSteps": 120,
+    "maxAnchorDeviation": 0.011542177142903698,
+    "released": true,
+    "passed": true
+  },
+  "failureResult": "head-feel-failed"
+}

@@ -4,7 +4,13 @@ import {
   type PhysicsStepRecord,
   type PhysicsTransform,
 } from '../physics/adapter'
-import { N6_PHYSICS_CONFIG } from '../physics/config'
+import { N6_PHYSICS_CONFIG, type Vec3 } from '../physics/config'
+
+/**
+ * Grip park position (N26): the descent target where the prize top sits at
+ * the fingertip level — contact-free for the centered fixture.
+ */
+const PARK_POSITION = N6_PHYSICS_CONFIG.gripPosition
 
 function maxPositionDelta(
   records: readonly PhysicsStepRecord[],
@@ -26,11 +32,14 @@ function maxPositionDelta(
 function anchorDistance(
   claw: PhysicsTransform,
   prize: PhysicsTransform,
+  gripOffset: readonly [number, number, number],
 ): number {
+  // N27: the carry anchor is adaptive — the prize keeps the head-local offset
+  // it had when the constraint was created, not a fixed sensor offset.
   const expectedPrize = [
-    claw.position[0] + N6_PHYSICS_CONFIG.sensorOffset.x,
-    claw.position[1] + N6_PHYSICS_CONFIG.sensorOffset.y,
-    claw.position[2] + N6_PHYSICS_CONFIG.sensorOffset.z,
+    claw.position[0] + gripOffset[0],
+    claw.position[1] + gripOffset[1],
+    claw.position[2] + gripOffset[2],
   ]
   return Math.sqrt(
     expectedPrize.reduce(
@@ -44,18 +53,43 @@ function trimLogs(records: readonly PhysicsStepRecord[]): readonly PhysicsStepRe
   return records.slice(0, 3).concat(records.slice(-3))
 }
 
+/**
+ * Moves the claw to a target the way real travel does — a smooth glide over
+ * many small steps — so the dynamic head (N26) never swings violently. A
+ * teleport whips the pendulum head and can sweep the grip sensor across the
+ * prize, producing a non-deterministic-looking false sensor contact.
+ */
+function glideTo(adapter: N6PhysicsAdapter, target: Vec3, steps = 90): void {
+  const start = adapter.transform('claw').position
+  for (let step = 1; step <= steps; step += 1) {
+    const progress = step / steps
+    const position = start.map(
+      (value, axis) => value + (target[axis] - value) * progress,
+    ) as unknown as Vec3
+    adapter.moveClaw(position)
+    adapter.step()
+  }
+}
+
 async function runSuccessfulCarry() {
   const adapter = await N6PhysicsAdapter.create()
-  adapter.moveClaw(N6_PHYSICS_CONFIG.gripPosition)
+  adapter.moveClaw(PARK_POSITION)
   adapter.stepMany(3)
   const contact = adapter.observeGrip()
   const grip = adapter.attemptGrip()
+  const gripClaw = adapter.transform('claw')
+  const gripPrize = adapter.transform('prize')
+  const gripOffset: [number, number, number] = [
+    gripPrize.position[0] - gripClaw.position[0],
+    gripPrize.position[1] - gripClaw.position[1],
+    gripPrize.position[2] - gripClaw.position[2],
+  ]
   adapter.step()
   const settleRecords = adapter.stepMany(N6_PHYSICS_CONFIG.carrySettleSteps)
   const carryRecords: PhysicsStepRecord[] = [...settleRecords]
   for (let step = 1; step <= N6_PHYSICS_CONFIG.carryLiftSteps; step += 1) {
     const progress = step / N6_PHYSICS_CONFIG.carryLiftSteps
-    const target = N6_PHYSICS_CONFIG.gripPosition.map(
+    const target = PARK_POSITION.map(
       (value, axis) =>
         value +
         (N6_PHYSICS_CONFIG.liftPosition[axis] - value) * progress,
@@ -65,7 +99,9 @@ async function runSuccessfulCarry() {
   }
   const measuredCarryRecords = carryRecords.slice(N6_PHYSICS_CONFIG.carrySettleSteps)
   const carryDeviation = Math.max(
-    ...measuredCarryRecords.map((record) => anchorDistance(record.claw, record.prize)),
+    ...measuredCarryRecords.map((record) =>
+      anchorDistance(record.claw, record.prize, gripOffset),
+    ),
   )
   const beforeRelease = adapter.transform('prize')
   const removedAtRunId = adapter.releaseGrip()
@@ -91,7 +127,8 @@ async function runSuccessfulCarry() {
 
 /**
  * Generates the complete N6 proof from fresh Rapier worlds. The fixture is
- * intentionally one claw, one prize, and one floor environment.
+ * intentionally one carriage + one dynamic head + three finger colliders, one
+ * prize, and one floor plus chamber walls.
  */
 export async function createN6Evidence() {
   const idleAdapter = await N6PhysicsAdapter.create()
@@ -157,8 +194,10 @@ export async function createN6Evidence() {
 
   const overlapAdapter = await N6PhysicsAdapter.create()
   const failedCarryBaseline = overlapAdapter.baselineTransform('prize')
-  overlapAdapter.moveClaw(N6_PHYSICS_CONFIG.overlapPosition)
-  overlapAdapter.stepMany(3)
+  // Glide in (real travel) so the head stays calm and the sensor position is
+  // deterministic; a teleport would whip the pendulum head over the prize.
+  glideTo(overlapAdapter, N6_PHYSICS_CONFIG.overlapPosition)
+  overlapAdapter.stepMany(15)
   const overlapObservation = overlapAdapter.observeGrip()
   const failedGrip = overlapAdapter.attemptGrip()
   overlapAdapter.moveClaw(N6_PHYSICS_CONFIG.failedLiftPosition)
@@ -191,10 +230,11 @@ export async function createN6Evidence() {
   const resetAdapter = await N6PhysicsAdapter.create()
   const resetBaseline = {
     claw: resetAdapter.baselineTransform('claw'),
+    head: resetAdapter.baselineTransform('head'),
     prize: resetAdapter.baselineTransform('prize'),
     environment: resetAdapter.baselineTransform('environment'),
   }
-  resetAdapter.moveClaw(N6_PHYSICS_CONFIG.gripPosition)
+  resetAdapter.moveClaw(PARK_POSITION)
   resetAdapter.stepMany(3)
   resetAdapter.attemptGrip()
   resetAdapter.moveClaw(N6_PHYSICS_CONFIG.resetTravelPosition)
@@ -214,6 +254,11 @@ export async function createN6Evidence() {
     prizeRestored: positionsMatch(
       resetAdapter.transform('prize'),
       resetBaseline.prize,
+      N6_PHYSICS_CONFIG.tolerances.repeatPosition,
+    ),
+    headRestored: positionsMatch(
+      resetAdapter.transform('head'),
+      resetBaseline.head,
       N6_PHYSICS_CONFIG.tolerances.repeatPosition,
     ),
     environmentRestored: positionsMatch(
@@ -252,7 +297,8 @@ export async function createN6Evidence() {
     node: 'N6',
     baseline: 'gate-4-state-approved + gate-3-rig-approved',
     deterministic: true,
-    fixture: 'one claw, one prize, one floor environment',
+    fixture:
+      'one carriage + dynamic head + 3 finger colliders, one prize, floor + chamber walls',
     physics: {
       revision: N6_PHYSICS_CONFIG.revision,
       dt: N6_PHYSICS_CONFIG.dt,

@@ -238,8 +238,8 @@ body {
   background: rgb(2 6 23 / 0.35);
 }
 
-[data-n7-coordinate-group] {
-  flex: 2 1 24rem;
+[data-n7-joystick-group] {
+  flex: 2 1 22rem;
 }
 
 [data-n7-action-group] {
@@ -253,6 +253,144 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #7d8ea1;
+}
+
+/* --- Joystick pad (N23) --- */
+
+.joystick-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.joystick-pad {
+  position: relative;
+  flex: 0 0 auto;
+  width: 7rem;
+  height: 7rem;
+  border-radius: 999px;
+  border: 1px solid rgb(125 211 252 / 0.35);
+  background:
+    radial-gradient(circle at 50% 38%, rgb(15 23 42 / 0.9) 0%, rgb(2 6 23 / 0.95) 68%),
+    rgb(2 6 23 / 0.6);
+  box-shadow:
+    inset 0 0.3rem 1.1rem rgb(0 0 0 / 0.55),
+    inset 0 0 0 1px rgb(148 163 184 / 0.12);
+  touch-action: none;
+  cursor: grab;
+  transition: border-color 160ms ease;
+}
+
+.joystick-pad:active {
+  cursor: grabbing;
+}
+
+[data-joystick-disabled='true'] .joystick-pad {
+  cursor: not-allowed;
+  border-color: rgb(148 163 184 / 0.2);
+}
+
+.joystick-knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin: -1.3rem 0 0 -1.3rem;
+  border-radius: 999px;
+  border: 1px solid rgb(165 243 252 / 0.75);
+  background: linear-gradient(180deg, #67e8f9 0%, #22d3ee 55%, #0891b2 100%);
+  box-shadow:
+    0 0.25rem 0.9rem rgb(34 211 238 / 0.45),
+    inset 0 1px 0 rgb(255 255 255 / 0.5),
+    inset 0 -0.4rem 0.8rem rgb(8 51 68 / 0.55);
+  transition: transform 90ms linear, opacity 160ms ease;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.joystick-axis {
+  position: absolute;
+  border-radius: 999px;
+  background: rgb(125 211 252 / 0.16);
+  pointer-events: none;
+}
+
+.joystick-axis-z {
+  top: 50%;
+  left: 18%;
+  width: 64%;
+  height: 1px;
+}
+
+.joystick-axis-z::before,
+.joystick-axis-z::after {
+  content: '';
+  position: absolute;
+  top: -0.18rem;
+  width: 1px;
+  height: 0.36rem;
+  background: rgb(125 211 252 / 0.3);
+}
+
+.joystick-axis-z::before {
+  left: 0.3rem;
+}
+
+.joystick-axis-z::after {
+  right: 0.3rem;
+}
+
+.joystick-axis-x {
+  top: 18%;
+  left: 50%;
+  width: 1px;
+  height: 64%;
+}
+
+.joystick-axis-x::before,
+.joystick-axis-x::after {
+  content: '';
+  position: absolute;
+  left: -0.18rem;
+  width: 0.36rem;
+  height: 1px;
+  background: rgb(125 211 252 / 0.3);
+}
+
+.joystick-axis-x::before {
+  top: 0.3rem;
+}
+
+.joystick-axis-x::after {
+  bottom: 0.3rem;
+}
+
+.joystick-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.joystick-readout {
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #a5f3fc;
+  white-space: nowrap;
+}
+
+.joystick-hint {
+  font-size: 0.68rem;
+  color: #7d8ea1;
+  white-space: nowrap;
+}
+
+[data-joystick-disabled='true'] .joystick-readout,
+[data-joystick-disabled='true'] .joystick-hint {
+  opacity: 0.55;
 }
 
 /* --- Coordinate fields (side-by-side sliders) --- */
@@ -450,11 +588,15 @@ body {
     padding: 0.6rem;
   }
 
-  [data-n7-coordinate-group],
+  [data-n7-joystick-group],
   [data-n7-action-group] {
     flex: 1 1 100%;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .joystick-wrap {
+    justify-content: center;
   }
 
   .coordinate-fields {

@@ -43,6 +43,19 @@ export interface ClawRigDefinition {
 export const FINGER_RING_RADIUS = 0.28
 
 /**
+ * Authoritative finger layout (N24): Right · Left · Back, viewed from the
+ * front (camera side, +Z toward the glass). Index 0 is the right finger
+ * (0 rad), index 1 the left (π rad), index 2 the back (3π/2 rad — pointing
+ * toward −Z). The open mouth faces the camera. This is the single source of
+ * truth consumed by the scene hierarchy and the physics finger colliders.
+ */
+export const FINGER_ANGLES: readonly [number, number, number] = [
+  0,
+  Math.PI,
+  (3 * Math.PI) / 2,
+]
+
+/**
  * Articulation is local to each named pivot; it never changes HeadRoot.
  * N22: values retuned for the grip-wrap geometry (ring 0.28, blades 0.50)
  * so closed tips land on the prize surface instead of sinking to the axis.
@@ -57,7 +70,9 @@ export const POSE_ARTICULATION_RADIANS: Readonly<
   home: 0,
   raised: 0,
   lowered: 0,
-  open: 0.1,
+  // N24: open widened ~40% (0.10 -> 0.14 rad) so the resting mouth reads as
+  // clearly open and gives the prize room to enter the cage before the close.
+  open: 0.14,
   closed: -0.05,
   reset: 0,
 })
@@ -82,7 +97,8 @@ function freezePose(pose: Record<PivotName, ClawTransformTarget>): ClawPose {
 }
 
 function baselineTarget(index: number): ClawTransformTarget {
-  const angle = (index * Math.PI * 2) / PIVOT_NAMES.length
+  // N24: explicit Right · Left · Back layout instead of even 120° spacing.
+  const angle = FINGER_ANGLES[index]
   const quaternion = new Quaternion().setFromEuler(
     new Euler(0, -angle, 0, 'XYZ'),
   )

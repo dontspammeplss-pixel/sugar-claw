@@ -21,9 +21,14 @@ function createFixture(): Group {
   const clawVisualRoot = new Group()
   clawVisualRoot.name = 'ClawVisualRoot'
   clawSystem.add(clawVisualRoot)
+  // N26: mirror the real hierarchy — the head hangs below the carriage and
+  // owns the finger rig (the pose adapter still resolves pivots by name).
+  const headRoot = new Group()
+  headRoot.name = 'HeadRoot'
+  clawVisualRoot.add(headRoot)
   const fingerRig = new Group()
   fingerRig.name = 'FingerRig'
-  clawVisualRoot.add(fingerRig)
+  headRoot.add(fingerRig)
   for (const name of PIVOT_NAMES) {
     const pivot = new Group()
     pivot.name = name
@@ -53,6 +58,7 @@ describe('N7 integrated effect coordinator', () => {
     expect(bindings.sceneRoot).toBe(scene)
     expect(bindings.clawSystem.name).toBe('ClawSystem')
     expect(bindings.clawVisualRoot.name).toBe('ClawVisualRoot')
+    expect(bindings.headVisualRoot.name).toBe('HeadRoot')
     expect(bindings.prizeRoot.name).toBe('PrizeRoot')
   })
 
@@ -254,10 +260,12 @@ describe('N7 integrated effect coordinator', () => {
         fixedDt: N6_PHYSICS_CONFIG.dt,
       },
     })
+    // N23: the claw drops straight down from its position at drop time — the
+    // stick was deflected but never ticked, so the drop is centered.
     expect(evidence.behavior.loweredTarget).toEqual([
-      0.25,
+      0,
       N6_PHYSICS_CONFIG.gripPosition[1],
-      0.2 * -0.35,
+      0,
     ])
     evidence.behavior.loweredClawPosition.forEach((value, axis) => {
       expect(value).toBeCloseTo(evidence.behavior.loweredTarget[axis], 5)
@@ -302,6 +310,55 @@ describe('N7 integrated effect coordinator', () => {
       coordinator.tick(-1)
       expect(coordinator.snapshot.state).toBe('error')
       expect(coordinator.snapshot.errorKind).toBe('invariant')
+    } finally {
+      coordinator.dispose()
+    }
+  })
+
+  it('glides the claw on joystick deflection and clamps at travel bounds (N23)', async () => {
+    const coordinator = await N7EffectCoordinator.create(createFixture())
+    try {
+      // First deflection enters aim space automatically.
+      expect(coordinator.dispatch({ type: 'beginAim' }).accepted).toBe(true)
+      coordinator.dispatch({ type: 'moveAim', axis: 'x', value: 1 })
+      coordinator.dispatch({ type: 'moveAim', axis: 'z', value: -1 })
+      const start = coordinator.physics.transform('claw').position
+      const { min, max } = N6_PHYSICS_CONFIG.travelBounds
+
+      // 120 ticks at full deflection: the claw must glide toward +X/-Z and be
+      // clamped by the travel bounds, never exceeding them.
+      for (let tick = 0; tick < 120; tick += 1) {
+        coordinator.tick(1000 / 60)
+      }
+      const glided = coordinator.physics.transform('claw').position
+      expect(glided[0]).toBeGreaterThan(start[0] + 0.5)
+      // The Z travel bound clamps at min.z = -0.35, so the claw cannot pass
+      // -0.5; assert it moved meaningfully toward the bound and parked there.
+      expect(glided[2]).toBeLessThan(start[2] - 0.2)
+      expect(glided[0]).toBeLessThanOrEqual(max.x + 1e-9)
+      expect(glided[2]).toBeGreaterThanOrEqual(min.z - 1e-9)
+      // Full deflection glides until the travel bounds clamp the claw.
+      expect(glided[0]).toBeCloseTo(max.x, 3)
+      expect(glided[2]).toBeCloseTo(min.z, 3)
+
+      // Releasing the stick (zero deflection) must stop the glide — no idle
+      // drift once the claw is parked.
+      coordinator.dispatch({ type: 'moveAim', axis: 'x', value: 0 })
+      coordinator.dispatch({ type: 'moveAim', axis: 'z', value: 0 })
+      const parked = coordinator.physics.transform('claw').position
+      coordinator.tick(1000 / 60)
+      coordinator.tick(1000 / 60)
+      const after = coordinator.physics.transform('claw').position
+      expect(after[0]).toBeCloseTo(parked[0], 4)
+      expect(after[2]).toBeCloseTo(parked[2], 4)
+
+      // Drop from the glided position still runs a full physical cycle. The
+      // stick was released, so aim is back at rest — but the claw drops from
+      // where it is, not from an aim-derived position (N23).
+      const drop = coordinator.dispatch({ type: 'confirmDrop' })
+      expect(drop.accepted).toBe(true)
+      expect(drop.snapshot.state).toBe('lowering')
+      expect(coordinator.snapshot.aim).toEqual({ x: 0, z: 0 })
     } finally {
       coordinator.dispose()
     }

@@ -33,3 +33,24 @@ The resolved numbers are recorded with the first physics scenario evidence; the 
 > "Scenario X repeated N times: outcome identical; max deviation within [tolerance] for [position/rotation/carry] under fixed-step rev 1."
 
 A claim without the configuration revision and tolerances is not repeatability evidence.
+
+## Implementation revision — N33 (2026-08-02)
+
+- **Physics configuration revision:** `fixed-step-rev3`.
+- **Unchanged fixed-step policy:** `dt = 1/60 s`; gravity, solver iterations,
+  additional friction iterations, friction, restitution, CCD, and sleeping
+  policy remain unchanged from the approved baseline.
+- **Candidate retained for bounded follow-up:** dynamic head angular damping is
+  `10.0` (baseline `0.6`), with no additional density/mass/inertia override.
+  Rapier derives the head mass and inertia from its existing colliders.
+- **Ratchet result:** damping candidates `3.0`, `5.0`, `10.0`, `12.0`,
+  `15.0`, `20.0`, and `30.0` were measured; `10.0` was the best observed
+  damping-only envelope but still failed the hard `R45`, `R60`, and/or
+  absolute settling gates. Additional mass candidates `0.5` and `2.0` also
+  failed and worsened the response envelope, so mass/inertia was not promoted.
+- **Node status:** `head-feel-failed`; the source remains a measured candidate,
+  not a promoted N33 pass. No threshold was weakened. A follow-up must either
+  find a physically valid candidate or propose a measured contract revision.
+- **Evidence:** `src/evidence/n33.test.ts` and
+  `records/evidence/n33-head-feel.json`; command `npm test -- --run
+src/evidence/n33.test.ts`.

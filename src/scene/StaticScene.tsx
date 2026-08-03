@@ -1,6 +1,7 @@
 import { useLayoutEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import type { PerspectiveCamera } from 'three'
+import { FINGER_ANGLES } from '../claw/rig'
 import { CLAW, LIGHTS, MACHINE, MATERIALS, REVIEW_CAMERA } from './config'
 
 function Box({
@@ -358,12 +359,8 @@ function ClawSystem() {
             </mesh>
           </group>
           <group name="FingerRig">
-            {[0, 1, 2].map((index) => (
-              <ClawFinger
-                key={index}
-                index={index}
-                angle={(index * Math.PI * 2) / 3}
-              />
+            {FINGER_ANGLES.map((angle, index) => (
+              <ClawFinger key={index} index={index} angle={angle} />
             ))}
           </group>
         </group>
@@ -394,9 +391,13 @@ function MachineRoot() {
 
 function PrizeRoot() {
   return (
+    // N26: prize radius 0.22 keeps the ball able to enter the finger cage, so
+    // the fingers can physically close around it (rigid prize 0.31 could not
+    // fit the 0.28 ring without pass-through). Kept in sync with
+    // N6_PHYSICS_CONFIG.prizeRadius.
     <group name="PrizeRoot" position={[0, 1.2, 0]}>
       <mesh name="PrizeBody" castShadow>
-        <sphereGeometry args={[0.31, 24, 16]} />
+        <sphereGeometry args={[0.22, 24, 16]} />
         <meshStandardMaterial
           color={MATERIALS.prizeIvory}
           roughness={0.3}
@@ -405,7 +406,7 @@ function PrizeRoot() {
       </mesh>
       <Box
         name="PrizeBand"
-        size={[0.5, 0.07, 0.5]}
+        size={[0.36, 0.06, 0.36]}
         position={[0, 0, 0]}
         color={MATERIALS.clawCyanAccent}
         roughness={0.2}

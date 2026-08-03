@@ -1,7 +1,32 @@
 import { describe, expect, it } from 'vitest'
 import { N6PhysicsAdapter } from '../physics/adapter'
-import { N6_PHYSICS_CONFIG } from '../physics/config'
+import { N6_PHYSICS_CONFIG, type Vec3 } from '../physics/config'
 import { createN6Evidence } from './n6-evidence'
+
+/**
+ * Grip park position (N26): the descent target where the prize top sits at
+ * the fingertip level — contact-free for the centered fixture, so the raw
+ * adapter can park directly and the sensor approves the grip.
+ */
+const PARK_POSITION = N6_PHYSICS_CONFIG.gripPosition
+
+/**
+ * Moves the claw to a target the way real travel does — a smooth glide over
+ * many small steps — so the dynamic head (N26) never swings violently. A
+ * teleport whips the pendulum head and can sweep the grip sensor across the
+ * prize; glide travel matches the coordinator and keeps the head calm.
+ */
+function glideTo(adapter: N6PhysicsAdapter, target: Vec3, steps = 90): void {
+  const start = adapter.transform('claw').position
+  for (let step = 1; step <= steps; step += 1) {
+    const progress = step / steps
+    const position = start.map(
+      (value, axis) => value + (target[axis] - value) * progress,
+    ) as unknown as Vec3
+    expect(adapter.moveClaw(position)).toBe(true)
+    adapter.step()
+  }
+}
 
 describe('N6 minimal Rapier physics scenario', () => {
   it('keeps the prize stable at rest under the fixed-step policy', async () => {
@@ -9,19 +34,23 @@ describe('N6 minimal Rapier physics scenario', () => {
     const records = adapter.stepMany(180)
     const tail = records.slice(-60)
     const maxJitter = Math.max(
-      ...tail.slice(1).map((record, index) =>
-        Math.max(
-          ...record.prize.position.map((value, axis) =>
-            Math.abs(value - tail[index].prize.position[axis]),
+      ...tail
+        .slice(1)
+        .map((record, index) =>
+          Math.max(
+            ...record.prize.position.map((value, axis) =>
+              Math.abs(value - tail[index].prize.position[axis]),
+            ),
           ),
         ),
-      ),
     )
     expect(adapter.config.dt).toBe(1 / 60)
-    expect(maxJitter).toBeLessThanOrEqual(N6_PHYSICS_CONFIG.tolerances.idlePosition)
-    expect(Math.max(...adapter.velocity('prize').map(Math.abs))).toBeLessThanOrEqual(
-      N6_PHYSICS_CONFIG.tolerances.idleVelocity,
+    expect(maxJitter).toBeLessThanOrEqual(
+      N6_PHYSICS_CONFIG.tolerances.idlePosition,
     )
+    expect(
+      Math.max(...adapter.velocity('prize').map(Math.abs)),
+    ).toBeLessThanOrEqual(N6_PHYSICS_CONFIG.tolerances.idleVelocity)
     expect(records.every((record) => record.runId === 0)).toBe(true)
     adapter.dispose()
   })
@@ -38,8 +67,10 @@ describe('N6 minimal Rapier physics scenario', () => {
 
   it('rejects visual overlap without sensor contact and never creates a carry joint', async () => {
     const adapter = await N6PhysicsAdapter.create()
-    expect(adapter.moveClaw(N6_PHYSICS_CONFIG.overlapPosition)).toBe(true)
-    adapter.stepMany(3)
+    // Glide in (real travel) instead of teleporting so the head stays calm
+    // and the sensor position is deterministic.
+    glideTo(adapter, N6_PHYSICS_CONFIG.overlapPosition)
+    adapter.stepMany(15)
     const observation = adapter.observeGrip()
     const attempt = adapter.attemptGrip()
     expect(observation.visualOverlap).toBe(true)
@@ -55,7 +86,7 @@ describe('N6 minimal Rapier physics scenario', () => {
 
   it('creates an explicit carry constraint only after physical contact', async () => {
     const adapter = await N6PhysicsAdapter.create()
-    expect(adapter.moveClaw(N6_PHYSICS_CONFIG.gripPosition)).toBe(true)
+    expect(adapter.moveClaw(PARK_POSITION)).toBe(true)
     adapter.stepMany(3)
     expect(adapter.observeGrip()).toMatchObject({
       physicalContact: true,
@@ -67,15 +98,22 @@ describe('N6 minimal Rapier physics scenario', () => {
       reason: 'contact-approved',
     })
     expect(adapter.state).toBe('carrying')
+    // The N27 carry anchor is adaptive (the prize's head-local offset at grip
+    // creation); record it so the lift deviation is measured against the real
+    // constraint frame instead of the classic sensor offset.
+    const gripClaw = adapter.transform('claw')
+    const gripPrize = adapter.transform('prize')
+    const gripOffset = gripPrize.position.map(
+      (value, axis) => value - gripClaw.position[axis],
+    )
     adapter.step()
     adapter.stepMany(N6_PHYSICS_CONFIG.carrySettleSteps)
     const records = []
     for (let step = 1; step <= N6_PHYSICS_CONFIG.carryLiftSteps; step += 1) {
       const progress = step / N6_PHYSICS_CONFIG.carryLiftSteps
-      const target = N6_PHYSICS_CONFIG.gripPosition.map(
+      const target = PARK_POSITION.map(
         (value, axis) =>
-          value +
-          (N6_PHYSICS_CONFIG.liftPosition[axis] - value) * progress,
+          value + (N6_PHYSICS_CONFIG.liftPosition[axis] - value) * progress,
       ) as [number, number, number]
       expect(adapter.moveClaw(target)).toBe(true)
       records.push(adapter.step())
@@ -84,9 +122,9 @@ describe('N6 minimal Rapier physics scenario', () => {
     const maxAnchorDeviation = Math.max(
       ...records.map((record) => {
         const expectedPrize = [
-          record.claw.position[0] + N6_PHYSICS_CONFIG.sensorOffset.x,
-          record.claw.position[1] + N6_PHYSICS_CONFIG.sensorOffset.y,
-          record.claw.position[2] + N6_PHYSICS_CONFIG.sensorOffset.z,
+          record.claw.position[0] + gripOffset[0],
+          record.claw.position[1] + gripOffset[1],
+          record.claw.position[2] + gripOffset[2],
         ]
         return Math.sqrt(
           expectedPrize.reduce(
@@ -110,10 +148,11 @@ describe('N6 minimal Rapier physics scenario', () => {
     const adapter = await N6PhysicsAdapter.create()
     const baseline = {
       claw: adapter.baselineTransform('claw'),
+      head: adapter.baselineTransform('head'),
       prize: adapter.baselineTransform('prize'),
       environment: adapter.baselineTransform('environment'),
     }
-    adapter.moveClaw(N6_PHYSICS_CONFIG.gripPosition)
+    adapter.moveClaw(PARK_POSITION)
     adapter.stepMany(3)
     adapter.attemptGrip()
     adapter.moveClaw(N6_PHYSICS_CONFIG.resetTravelPosition)
@@ -125,6 +164,7 @@ describe('N6 minimal Rapier physics scenario', () => {
     expect(adapter.steps).toBe(0)
     expect(adapter.logs).toEqual([])
     expect(adapter.transform('claw')).toEqual(baseline.claw)
+    expect(adapter.transform('head')).toEqual(baseline.head)
     expect(adapter.transform('prize')).toEqual(baseline.prize)
     expect(adapter.transform('environment')).toEqual(baseline.environment)
     expect(adapter.carryConstraintActive).toBe(false)
@@ -138,8 +178,9 @@ describe('N6 minimal Rapier physics scenario', () => {
     expect(evidence).toMatchObject({
       node: 'N6',
       deterministic: true,
-      fixture: 'one claw, one prize, one floor environment',
-      physics: { revision: 'fixed-step-rev1', dt: 1 / 60 },
+      fixture:
+        'one carriage + dynamic head + 3 finger colliders, one prize, floor + chamber walls',
+      physics: { revision: 'fixed-step-rev3', dt: 1 / 60 },
     })
     expect(evidence.idle.stable).toBe(true)
     expect(evidence.travel.boundsMatch).toBe(true)
@@ -153,7 +194,9 @@ describe('N6 minimal Rapier physics scenario', () => {
     expect(evidence.carry.grip.jointCreated).toBe(true)
     expect(evidence.carry.constraintCreatedAtRunId).toBe(0)
     expect(evidence.carry.constraintRemovedAtRunId).toBe(0)
-    expect(evidence.carry.measuredCarrySteps).toBe(N6_PHYSICS_CONFIG.carryLiftSteps)
+    expect(evidence.carry.measuredCarrySteps).toBe(
+      N6_PHYSICS_CONFIG.carryLiftSteps,
+    )
     expect(evidence.carry.carryDeviation).toBeLessThanOrEqual(
       N6_PHYSICS_CONFIG.tolerances.carryPosition,
     )
@@ -200,8 +243,8 @@ describe('N6 minimal Rapier physics scenario', () => {
 
   it('keeps the failed state when releaseGrip finds no active joint', async () => {
     const adapter = await N6PhysicsAdapter.create()
-    adapter.moveClaw(N6_PHYSICS_CONFIG.overlapPosition)
-    adapter.stepMany(3)
+    glideTo(adapter, N6_PHYSICS_CONFIG.overlapPosition)
+    adapter.stepMany(15)
     expect(adapter.attemptGrip().accepted).toBe(false)
     expect(adapter.state).toBe('failed')
     expect(adapter.releaseGrip()).toBeNull()
@@ -212,7 +255,7 @@ describe('N6 minimal Rapier physics scenario', () => {
 
   it('reports constraint creation only for the creating call', async () => {
     const adapter = await N6PhysicsAdapter.create()
-    adapter.moveClaw(N6_PHYSICS_CONFIG.gripPosition)
+    adapter.moveClaw(PARK_POSITION)
     adapter.stepMany(3)
     const created = adapter.attemptGrip()
     expect(created).toMatchObject({ accepted: true, jointCreated: true })
@@ -226,7 +269,7 @@ describe('N6 minimal Rapier physics scenario', () => {
     })
 
     expect(adapter.releaseGrip()).toBe(0)
-    adapter.moveClaw(N6_PHYSICS_CONFIG.gripPosition)
+    adapter.moveClaw(PARK_POSITION)
     adapter.stepMany(3)
     const recreated = adapter.attemptGrip()
     expect(recreated).toMatchObject({ accepted: true, jointCreated: true })
@@ -236,11 +279,11 @@ describe('N6 minimal Rapier physics scenario', () => {
 
   it('clears constraint creation state on reset', async () => {
     const adapter = await N6PhysicsAdapter.create()
-    adapter.moveClaw(N6_PHYSICS_CONFIG.gripPosition)
+    adapter.moveClaw(PARK_POSITION)
     adapter.stepMany(3)
     expect(adapter.attemptGrip().constraintCreatedAtRunId).toBe(0)
     adapter.reset()
-    adapter.moveClaw(N6_PHYSICS_CONFIG.gripPosition)
+    adapter.moveClaw(PARK_POSITION)
     adapter.stepMany(3)
     const afterReset = adapter.attemptGrip()
     expect(afterReset).toMatchObject({ accepted: true, jointCreated: true })
@@ -256,7 +299,9 @@ describe('N6 minimal Rapier physics scenario', () => {
       N6_PHYSICS_CONFIG.maxRetainedStepRecords,
     )
     expect(adapter.logs.length).toBe(N6_PHYSICS_CONFIG.maxRetainedStepRecords)
-    expect(adapter.logs[0].step).toBe(total - N6_PHYSICS_CONFIG.maxRetainedStepRecords + 1)
+    expect(adapter.logs[0].step).toBe(
+      total - N6_PHYSICS_CONFIG.maxRetainedStepRecords + 1,
+    )
     expect(adapter.logs.at(-1)!.step).toBe(total)
     expect(adapter.steps).toBe(total)
     adapter.dispose()

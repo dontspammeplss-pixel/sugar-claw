@@ -17,9 +17,14 @@ function createFixture(): Group {
   clawVisualRoot.name = 'ClawVisualRoot'
   clawSystem.add(clawVisualRoot)
 
+  // N26: mirror the real hierarchy (head owns the finger rig).
+  const headRoot = new Group()
+  headRoot.name = 'HeadRoot'
+  clawVisualRoot.add(headRoot)
+
   const fingerRig = new Group()
   fingerRig.name = 'FingerRig'
-  clawVisualRoot.add(fingerRig)
+  headRoot.add(fingerRig)
   for (const name of PIVOT_NAMES) {
     const pivot = new Group()
     pivot.name = name
@@ -65,10 +70,14 @@ export async function createN7Evidence() {
       value: -0.2,
     })
     const drop = coordinator.dispatch({ type: 'confirmDrop' })
+    // N23: the claw drops straight down from its position at drop time. The
+    // aim deflection is velocity, not position; no ticks ran between the aim
+    // and the drop, so the drop target is the centered start position.
+    const dropPosition = coordinator.physics.transform('claw').position
     const loweredTarget: Vec3 = [
-      0.2 * 1.25,
+      dropPosition[0],
       N6_PHYSICS_CONFIG.gripPosition[1],
-      -0.2 * 0.35,
+      dropPosition[2],
     ]
     // Travel is kinematic and animated; advance until the claw physically
     // reaches the lowered target rather than capturing a single warm-up tick.

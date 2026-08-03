@@ -1,0 +1,30 @@
+{
+  "node": "N31",
+  "evidence": "deterministic-keyboard-mapping",
+  "status": "pass",
+  "mapping": {
+    "KeyW": "back",
+    "ArrowUp": "back",
+    "KeyS": "front",
+    "ArrowDown": "front",
+    "KeyA": "left",
+    "ArrowLeft": "left",
+    "KeyD": "right",
+    "ArrowRight": "right"
+  },
+  "verified": [
+    "cardinal semantic deflection",
+    "opposing-key cancellation",
+    "diagonal normalization",
+    "key-repeat idempotence",
+    "orthogonal-key release preservation",
+    "aliased-direction release preservation"
+  ],
+  "tests": {
+    "command": "npm test -- --run src/ui/joystick-math.test.ts",
+    "testFiles": 1,
+    "tests": 13,
+    "passed": true
+  },
+  "browserNote": "The enabled-app browser run exercised W/A/S/D; the automation summary did not return its per-key samples, so no raw-code/claw-position browser trace is claimed here."
+}

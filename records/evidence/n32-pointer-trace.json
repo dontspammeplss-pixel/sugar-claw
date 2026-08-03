@@ -1,0 +1,76 @@
+{
+  "node": "N32",
+  "evidence": "enabled-app-pointer-touch-trace",
+  "status": "partial",
+  "environment": {
+    "url": "http://127.0.0.1:5175/",
+    "appTitle": "Claw Machine 3D",
+    "webglCanvasPresent": true,
+    "consoleErrors": [],
+    "initialState": "ready",
+    "joystickEnabled": true,
+    "touchAction": "none",
+    "padRect": {
+      "x": 104.59,
+      "y": 1908.61,
+      "width": 112,
+      "height": 112
+    }
+  },
+  "mouse": {
+    "pointerId": 1,
+    "eventCount": 35,
+    "path": [
+      "center down",
+      "right +120 CSS px in 8 moves",
+      "reverse left 120 CSS px in 8 moves",
+      "front/down +120 CSS px in 8 moves",
+      "back/up -120 CSS px in 8 moves",
+      "return center",
+      "release"
+    ],
+    "segmentMoveCounts": {
+      "right": 8,
+      "reverse": 8,
+      "front": 8,
+      "back": 8
+    },
+    "segmentNonIdenticalSamples": {
+      "right": 8,
+      "reverse": 8,
+      "front": 8,
+      "back": 8
+    },
+    "terminalEvent": "pointerup",
+    "pointerCancelCount": 0,
+    "scrollCount": 0,
+    "readoutReturnedToZero": true,
+    "stateStable": true
+  },
+  "touch": {
+    "available": true,
+    "pointerId": 2,
+    "eventCount": 6,
+    "sequence": [
+      "touchstart",
+      "pointerdown",
+      "touchmove/pointermove x4",
+      "touchend",
+      "pointerup"
+    ],
+    "touchActionPreserved": true
+  },
+  "keyboard": {
+    "exercised": ["KeyW", "KeyA", "KeyS", "KeyD"],
+    "perKeySamplesReturnedByAutomation": false
+  },
+  "limitations": [
+    "The browser automation result returned the aggregate trace summary but omitted the required per-event records: pointerId, event type, pad rect, pointer coordinate, emitted deflection, sample count, data-n7-state, and claw position for every event.",
+    "Because those records were not returned, this artifact does not claim full N32 promotion despite passing aggregate browser behavior checks."
+  ],
+  "deterministicChecks": {
+    "command": "npm test -- --run src/ui/joystick-math.test.ts",
+    "tests": 13,
+    "passed": true
+  }
+}
