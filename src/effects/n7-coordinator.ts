@@ -8,8 +8,14 @@ import type {
   Outcome,
   StateSnapshot,
 } from '../state/controller'
-import { createStateController, type StateController } from '../state/controller'
-import { createClawPoseAnimator, type ClawPoseAnimator } from '../animation/pose-animation'
+import {
+  createStateController,
+  type StateController,
+} from '../state/controller'
+import {
+  createClawPoseAnimator,
+  type ClawPoseAnimator,
+} from '../animation/pose-animation'
 import {
   createClawTravelAnimator,
   type ClawTravelAnimator,
@@ -31,6 +37,7 @@ import {
 } from '../physics/adapter'
 import { N6_PHYSICS_CONFIG, type Vec3 } from '../physics/config'
 import { DEFAULT_PRIZE_MANIFEST } from '../playfield/prize-manifest'
+import { clearPrizePersistence } from '../playfield/prize-persistence'
 import {
   errorMessage,
   publishN7RuntimeError,
@@ -150,7 +157,9 @@ function syncObjectToWorldTransform(
   const worldQuaternion = new Quaternion().fromArray([
     ...worldTransform.quaternion,
   ])
-  object.quaternion.copy(parentWorldQuaternion.invert().multiply(worldQuaternion))
+  object.quaternion.copy(
+    parentWorldQuaternion.invert().multiply(worldQuaternion),
+  )
 }
 
 export class N7EffectCoordinator {
@@ -163,7 +172,8 @@ export class N7EffectCoordinator {
   private target: Vec3 | null = null
   private returnLeg: 'traverse' | 'descent' | null = null
   /** N23: velocity glide while aiming (joystick). Null when not gliding. */
-  private glideVelocity: { readonly x: number; readonly z: number } | null = null
+  private glideVelocity: { readonly x: number; readonly z: number } | null =
+    null
   private alignmentSteps = 0
   private physicsAccumulatorMs = 0
   private gripAttempted = false
@@ -248,7 +258,8 @@ export class N7EffectCoordinator {
       sync: this.lastSync,
       grip: this.lastGrip,
       retention: this.physics.retention,
-      retentionRelease: this.lastRetentionRelease ?? this.physics.retentionRelease,
+      retentionRelease:
+        this.lastRetentionRelease ?? this.physics.retentionRelease,
       delivery: this.lastDelivery ?? this.physics.delivery,
       payoutHook: this.physics.payoutHookEvent,
       countdown: {
@@ -312,7 +323,9 @@ export class N7EffectCoordinator {
   tick(deltaMs = 1000 / 60): N7RuntimeReport {
     if (this.disposed) return this.runtimeReport
     if (!Number.isFinite(deltaMs) || deltaMs < 0) {
-      this.emitInvariantFailure(new Error('N7 integration: deltaMs must be finite and non-negative'))
+      this.emitInvariantFailure(
+        new Error('N7 integration: deltaMs must be finite and non-negative'),
+      )
       return this.runtimeReport
     }
     if (!this.epochsMatch()) {
@@ -327,7 +340,9 @@ export class N7EffectCoordinator {
     const fixedStepMs = this.physics.config.dt * 1000
     if (!Number.isFinite(fixedStepMs) || fixedStepMs <= 0) {
       this.emitInvariantFailure(
-        new Error('N7 integration: configured fixed step must be positive and finite'),
+        new Error(
+          'N7 integration: configured fixed step must be positive and finite',
+        ),
       )
       return this.runtimeReport
     }
@@ -367,7 +382,10 @@ export class N7EffectCoordinator {
         this.lastDelivery = this.physics.delivery
       }
       if (this.snapshot.state !== 'result') {
-        this.countdownRemainingSteps = Math.max(0, this.countdownRemainingSteps - 1)
+        this.countdownRemainingSteps = Math.max(
+          0,
+          this.countdownRemainingSteps - 1,
+        )
       }
       if (this.physics.retentionRelease) {
         this.lastRetentionRelease = this.physics.retentionRelease
@@ -413,9 +431,15 @@ export class N7EffectCoordinator {
     // Clamp per axis so hitting one travel bound does not freeze the free
     // axis: a diagonal full-deflection keeps sliding along the edge.
     const next: Vec3 = [
-      Math.min(max.x, Math.max(min.x, current[0] + this.glideVelocity.x * dtSeconds)),
+      Math.min(
+        max.x,
+        Math.max(min.x, current[0] + this.glideVelocity.x * dtSeconds),
+      ),
       current[1],
-      Math.min(max.z, Math.max(min.z, current[2] + this.glideVelocity.z * dtSeconds)),
+      Math.min(
+        max.z,
+        Math.max(min.z, current[2] + this.glideVelocity.z * dtSeconds),
+      ),
     ]
     if (this.physics.moveClaw(next)) this.target = next
   }
@@ -426,13 +450,18 @@ export class N7EffectCoordinator {
     // aim-derived position. The stick deflection is velocity, not position;
     // releasing it must not recenter the drop target.
     const current = this.physics.transform('claw').position
+    const { min, max } = this.physics.config.travelBounds
+    const clampedX = Math.min(max.x, Math.max(min.x, current[0]))
+    const clampedZ = Math.min(max.z, Math.max(min.z, current[2]))
     const target: Vec3 = [
-      current[0],
+      clampedX,
       N6_PHYSICS_CONFIG.clawClearance.baseInteractionY,
-      current[2],
+      clampedZ,
     ]
     if (!this.physics.moveClaw(target)) {
-      throw new Error(`N7 integration: derived lowering target is out of bounds`)
+      throw new Error(
+        `N7 integration: derived lowering target is out of bounds`,
+      )
     }
     this.target = target
     this.glideVelocity = null
@@ -441,18 +470,30 @@ export class N7EffectCoordinator {
     this.releaseOpened = false
     // Classic arcade: descend with fingers open.
     this.animator.start('open', 0)
-    this.travel.start(this.physics.transform('claw').position, target, TRAVEL_LOWERING_MS)
+    this.travel.start(
+      this.physics.transform('claw').position,
+      target,
+      TRAVEL_LOWERING_MS,
+    )
   }
 
   private beginLift(): void {
     // N23: lift straight up from wherever the grip happened.
     const current = this.physics.transform('claw').position
-    const target: Vec3 = [current[0], N6_PHYSICS_CONFIG.liftPosition[1], current[2]]
+    const target: Vec3 = [
+      current[0],
+      N6_PHYSICS_CONFIG.liftPosition[1],
+      current[2],
+    ]
     if (!this.physics.moveClaw(target)) {
       throw new Error(`N7 integration: derived lifting target is out of bounds`)
     }
     this.target = target
-    this.travel.start(this.physics.transform('claw').position, target, TRAVEL_LIFT_MS)
+    this.travel.start(
+      this.physics.transform('claw').position,
+      target,
+      TRAVEL_LIFT_MS,
+    )
   }
 
   private beginReturn(): void {
@@ -497,7 +538,10 @@ export class N7EffectCoordinator {
           this.target &&
           positionsMatch(
             this.physics.transform('claw'),
-            { position: this.target, quaternion: this.physics.transform('claw').quaternion },
+            {
+              position: this.target,
+              quaternion: this.physics.transform('claw').quaternion,
+            },
             N6_PHYSICS_CONFIG.tolerances.travel,
           ) &&
           !this.animator.state.active
@@ -540,7 +584,10 @@ export class N7EffectCoordinator {
           this.target &&
           positionsMatch(
             this.physics.transform('claw'),
-            { position: this.target, quaternion: this.physics.transform('claw').quaternion },
+            {
+              position: this.target,
+              quaternion: this.physics.transform('claw').quaternion,
+            },
             N6_PHYSICS_CONFIG.tolerances.travel,
           )
         ) {
@@ -553,22 +600,33 @@ export class N7EffectCoordinator {
           this.target &&
           positionsMatch(
             this.physics.transform('claw'),
-            { position: this.target, quaternion: this.physics.transform('claw').quaternion },
+            {
+              position: this.target,
+              quaternion: this.physics.transform('claw').quaternion,
+            },
             N6_PHYSICS_CONFIG.tolerances.travel,
           )
         ) {
           if (this.returnLeg === 'traverse') {
-            const descentTarget = N6_PHYSICS_CONFIG.chute.releasePosition
-            if (!this.physics.moveClaw(descentTarget)) {
-              throw new Error(`N7 integration: return descent target is out of bounds`)
+            if (this.physics.carryConstraintActive) {
+              const descentTarget = N6_PHYSICS_CONFIG.chute.releasePosition
+              if (!this.physics.moveClaw(descentTarget)) {
+                throw new Error(
+                  `N7 integration: return descent target is out of bounds`,
+                )
+              }
+              this.target = descentTarget
+              this.returnLeg = 'descent'
+              this.travel.start(
+                this.physics.transform('claw').position,
+                descentTarget,
+                TRAVEL_RETURN_DESCENT_MS,
+              )
+            } else {
+              // Failed grips still complete the cosmetic lift and traverse,
+              // but never enter the prize-delivery chute lane.
+              this.emit({ type: 'returnReached', runId })
             }
-            this.target = descentTarget
-            this.returnLeg = 'descent'
-            this.travel.start(
-              this.physics.transform('claw').position,
-              descentTarget,
-              TRAVEL_RETURN_DESCENT_MS,
-            )
           } else if (this.returnLeg === 'descent') {
             this.emit({ type: 'returnReached', runId })
           }
@@ -586,7 +644,8 @@ export class N7EffectCoordinator {
           this.releaseCompleted = true
           this.deliveryWaitSteps = 0
           const outcome: Outcome = {
-            ...(this.snapshot.outcome && typeof this.snapshot.outcome !== 'string'
+            ...(this.snapshot.outcome &&
+            typeof this.snapshot.outcome !== 'string'
               ? this.snapshot.outcome
               : {}),
             released: true,
@@ -596,7 +655,8 @@ export class N7EffectCoordinator {
                 ? 'it slipped!'
                 : 'released',
             retention: this.physics.retention,
-            retentionRelease: this.lastRetentionRelease ?? this.physics.retentionRelease,
+            retentionRelease:
+              this.lastRetentionRelease ?? this.physics.retentionRelease,
           }
           if (this.lastDelivery?.runId === runId) {
             this.completeDelivery(outcome, runId)
@@ -629,7 +689,9 @@ export class N7EffectCoordinator {
 
   private completeDelivery(outcome: Outcome, runId: number): void {
     if (!this.lastDelivery || this.lastDelivery.runId !== runId) {
-      throw new Error('N42 win-not-delivered: delivery evidence missing for active run')
+      throw new Error(
+        'N42 win-not-delivered: delivery evidence missing for active run',
+      )
     }
     this.countdownRemainingSteps = PLAY_COUNTDOWN_STEPS
     this.countdownResetCount += 1
@@ -663,6 +725,7 @@ export class N7EffectCoordinator {
 
   private resetTransaction(): void {
     this.animator.cancel()
+    clearPrizePersistence(this.physics.playfield.manifestRevision)
     this.physics.reset()
     this.pose.restoreBaseline()
     // Parked-open presentation after every reset.

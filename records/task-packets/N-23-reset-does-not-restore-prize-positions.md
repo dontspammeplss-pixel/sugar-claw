@@ -11,8 +11,8 @@
 ## Caveats
 
 - Root cause is verified from source: `reset()` calls `this.prizePersistence.load(this.prizeManifest.revision)` and then `this.savePrizeState()` at the end, creating a save→load→save cycle that preserves nudged positions.
-- The fix: coordinator calls `clearPrizePersistence()` before `this.physics.reset()`, then `reset()` falls through to the manifest-baseline branch.
-- Alternative: add a `clearPersistence()` method to the adapter. Recommended approach uses the existing `clearPrizePersistence` export from `prize-persistence.ts`.
+- **Implemented:** `resetTransaction()` in `src/effects/n7-coordinator.ts` calls `clearPrizePersistence(this.physics.playfield.manifestRevision)` immediately before `this.physics.reset()`. The startup/create-time `this.physics.reset()` remains unchanged, so resume-on-startup behavior is preserved. No adapter or persistence-format change was needed; after the clear, the existing adapter manifest-baseline branch restores all prize positions and flags, and the existing reset bookkeeping clears delivered IDs.
+- **Verified:** `src/evidence/n7.test.ts` adds `clears persisted prize positions and flags on coordinator reset (N-23)`. It nudges a multi-prize manifest, confirms a fresh adapter resumes the nudge, seeds persisted won/removed flags, dispatches `requestReset`, checks every prize against its authored baseline within tolerance, and confirms a fresh adapter reloads baselines with flags cleared.
 
 ## Do not infer
 
@@ -29,6 +29,7 @@
 - Contract: C-11
 - Task packet: `records/task-packets/C-11-post-n43-playfield-regression-fixes.md` §2 R4, §3 Phase 3
 
-**Status:** Approved — pending implementation
+**Status:** Implemented — verified
+**Implementation note:** Q3 resolved with a direct coordinator call to the existing `clearPrizePersistence` export; no adapter change was needed. Focused N7 suite: 13 tests passed. Focused C-11 gate (`n7.test.ts` + `n43.test.ts`): 14 tests passed; full suite: 16 files / 91 tests passed. `typecheck`, `lint`, focused tests, full tests, and build passed on 2026-08-04.
 **Last checked:** 2026-08-04
 **Review by:** 2026-11-04

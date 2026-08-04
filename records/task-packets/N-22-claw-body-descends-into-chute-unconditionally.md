@@ -12,7 +12,8 @@
 
 - Root cause is verified from source (`src/effects/n7-coordinator.ts`): `beginLift()` is called on the line immediately after `this.emit({ type: 'gripEvaluated', ... })` with no guard on `attempt.accepted` or `attempt.holdStarted`.
 - `beginReturn()` also has no hold guard — the full lift→return→descent cycle executes for every run.
-- The fix gates `beginLift()` on hold state, and skips the chute-descent leg in `returning` when no hold is active.
+- **Implemented:** `src/effects/n7-coordinator.ts` keeps `beginLift()` and the top traverse on every run for cosmetic arcade behavior, then gates only the chute-descent leg on `physics.carryConstraintActive`. A failed grip emits `returnReached` at the traverse endpoint, avoiding both the chute descent and a lifting/returning stall.
+- **Verified:** `src/evidence/n7.test.ts` adds `completes a no-hold cycle without descending into the chute (N-22)` and keeps `keeps the N42.1 return path L-shaped under fixed-step sampling` green. The no-hold fixture records the return phase, requires `lifting`/`returning`/`releasing`, asserts Y ≥ 2.0, and confirms the final claw Y is home height.
 
 ## Do not infer
 
@@ -29,6 +30,7 @@
 - Contract: C-11
 - Task packet: `records/task-packets/C-11-post-n43-playfield-regression-fixes.md` §2 R3, §3 Phase 3
 
-**Status:** Approved — pending implementation
+**Status:** Implemented — verified
+**Implementation note:** Q2 resolved by retaining cosmetic lift + top traverse for failed grips and gating only chute descent; no adapter change was needed. Focused N7 suite: 13 tests passed. Focused C-11 gate (`n7.test.ts` + `n43.test.ts`): 14 tests passed; full suite: 16 files / 91 tests passed. `typecheck`, `lint`, focused tests, full tests, and build passed on 2026-08-04.
 **Last checked:** 2026-08-04
 **Review by:** 2026-11-04

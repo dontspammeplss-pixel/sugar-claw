@@ -3,7 +3,7 @@
 > Four user-visible regressions introduced by or uncaught after N-43
 > (multi-prize manifest). Fixes grip onset (R1), drop dead zone (R2), chute
 > dive (R3), and reset (R4) in dependency order.
-> **Status:** Approved — pending implementation (2026-08-04).
+> **Status:** Partially implemented — R1/R2/R3/R4 deterministic gates pass; live-app confirmation pending (2026-08-04).
 > **Baseline:** `main` (post-N43; N-41/N-42/N-42.1/N-43 gates green).
 > **Source:** Idea Flush session + live-app observation by Eli (2026-08-04).
 > **Vault contract:** `C-11 — Post-N43 playfield regression fixes` (approved).
@@ -14,12 +14,12 @@
 
 ## 1. Observed vs. expected
 
-| Seed | Observed | Expected |
-|------|----------|----------|
-| **R1** | Claw descends and passes through all three manifest-spawned prizes as if they aren't there | Claw contacts any reachable prize → grip onset fires |
-| **R2** | Pressing drop near front of machine → claw doesn't move, appears stuck. Drop works near back | Drop triggers descent from any XY within playfield chamber bounds |
-| **R3** | Claw body descends into chute even when no prize is held | Claw stays at home Y elevation (~2.8); carry-to-delivery path only fires when prize is held |
-| **R4** | Reset re-homes claw but prizes stay in nudged positions. Positions survive `npm run dev` restart | Reset clears persisted prize state, reloads manifest-authored spawn layout for all prizes |
+| Seed   | Observed                                                                                         | Expected                                                                                    |
+| ------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| **R1** | Claw descends and passes through all three manifest-spawned prizes as if they aren't there       | Claw contacts any reachable prize → grip onset fires                                        |
+| **R2** | Pressing drop near front of machine → claw doesn't move, appears stuck. Drop works near back     | Drop triggers descent from any XY within playfield chamber bounds                           |
+| **R3** | Claw body descends into chute even when no prize is held                                         | Claw stays at home Y elevation (~2.8); carry-to-delivery path only fires when prize is held |
+| **R4** | Reset re-homes claw but prizes stay in nudged positions. Positions survive `npm run dev` restart | Reset clears persisted prize state, reloads manifest-authored spawn layout for all prizes   |
 
 ## 2. Root cause analysis
 
@@ -41,23 +41,19 @@
 
 ### R2 — Drop button front-edge dead zone
 
-- **[hypothesis]** A positional gate on the drop action has incorrect bounds.
-  Candidate locations: `moveClaw()` bounds check in `src/physics/adapter.ts`
-  (travel bounds: Z `[-0.35, 0.55]`); `beginLowering()` target derivation in
-  `src/effects/n7-coordinator.ts`; or the controller's `confirmDrop` transition
-  guard.
-- **[verified]** Travel bounds `min.z = -0.35`, `max.z = 0.55`. Front wall is at
-  `z = 0.88`. The claw can reach `z = 0.55` at most. `beginLowering()` uses
-  `current[2]` (current Z) and `baseInteractionY` (≈1.31) — both within bounds.
-  The simple lowering-path does not obviously reject front-edge positions.
-- **[verified]** Controller state machine: `{ from: 'aiming', event: 'confirmDrop',
-  to: 'lowering' }` — always legal from `aiming`. No state-based rejection.
-- **[hypothesis, needs live investigation]** The dead zone may be a
-  rendering-sync issue (claw visual position doesn't match physics position at
-  the front bound) or a joystick/glide-velocity stall where the claw hits
-  travelBounds at max Z and the glide continues to push against the wall without
-  a visible stall indication. The fix may need to clamp to travelBounds inside
-  `applyGlide()` — already done — or add a stall indicator.
+- **[verified]** `moveClaw()` intentionally enforces inclusive strict bounds, but
+  Rapier's f32 kinematic read-back can return an edge coordinate marginally
+  outside the bound after a legal edge move (for example, `z = 0.55000001`).
+- **[verified]** `beginLowering()` previously copied the read-back X/Z directly
+  into its target. The legal `confirmDrop` transition then entered invariant
+  failure when `moveClaw(target)` rejected that marginal coordinate.
+- **[fixed]** `beginLowering()` now clamps current X and Z to
+  `this.physics.config.travelBounds` before deriving the target. Y remains
+  `N6_PHYSICS_CONFIG.clawClearance.baseInteractionY`; `moveClaw()` and all
+  descent physics remain unchanged.
+- **[verified]** The controller transition `{ from: 'aiming', event:
+'confirmDrop', to: 'lowering' }` remains legal. `src/evidence/n7.test.ts`
+  covers all four travel-bound X/Z corners plus a mid-field control.
 
 ### R3 — Claw body descends into chute unconditionally
 
@@ -101,6 +97,7 @@ instead of only `this.selectedPrizeId`. When sensor intersection is found with
 any prize collider, set `this.selectedPrizeId` to that prize's ID and proceed.
 
 **Diff sketch:**
+
 ```text
 observeGrip():
 -  const activePrizeCollider = this.prizeColliders.get(this.selectedPrizeId)
@@ -128,22 +125,26 @@ retention model (N-41), delivery semantics (N-42), `attemptGrip()` hold setup
 
 ### Phase 2 — R2 (Seed D)
 
-**Files:** `src/effects/n7-coordinator.ts` (likely), `src/physics/adapter.ts` (possible)
+**Files:** `src/effects/n7-coordinator.ts`, `src/evidence/n7.test.ts`
 
-**Change:** TBD after live investigation. If root cause is a bounds issue in
-`moveClaw()`, tighten the bounds check. If a rendering desync, fix the sync.
-If a glide stall, add a stall indicator. **Requires live-app debugging first.**
+**Change:** In `beginLowering()`, clamp the current claw X/Z read-back into
+`this.physics.config.travelBounds` before building the lowering target. Keep the
+inclusive `moveClaw()` bounds check and the configured interaction Y unchanged.
+The committed N-21 regression fixture exercises all four corners and a
+mid-field control.
 
 ### Phase 3 — R3 + R4 (Seeds C + B)
 
 **Files:** `src/effects/n7-coordinator.ts`, `src/physics/adapter.ts`,
 `src/playfield/prize-persistence.ts`
 
-**R3 change:** In `advanceEffects()` gripping case, gate the carry-to-delivery
-path on hold state. When grip fails, skip the chute descent in the `returning`
-state handler.
+**R3 change:** Keep the cosmetic lift and top traverse for every run, then gate
+only chute descent on `physics.carryConstraintActive`. When grip fails, emit
+`returnReached` at the traverse endpoint so the state machine completes without
+entering the chute lane or stalling.
 
 **Diff sketch (R3):**
+
 ```text
 'gripping' case:
    this.emit({ type: 'gripEvaluated', outcome, runId })
@@ -163,13 +164,15 @@ state handler.
 +  }
 ```
 
-**R4 change:** In `resetTransaction()` in n7-coordinator.ts, clear the
-persistence store before calling `this.physics.reset()`. In `reset()` in
-adapter.ts, when no persisted state is found, use manifest baseline (already
-implemented — the `else if (baseline)` branch). Also clear `deliveredPrizeIds`
-and won/removed flags.
+**R4 change:** In `resetTransaction()` in `n7-coordinator.ts`, call
+`clearPrizePersistence(this.physics.playfield.manifestRevision)` before
+`this.physics.reset()`. The adapter's existing no-persisted-state manifest
+baseline branch restores authored positions; its existing reset bookkeeping
+clears delivered IDs and restores won/removed flags. No adapter change was
+needed.
 
 **Diff sketch (R4):**
+
 ```text
 resetTransaction():
 +  this.physics.clearPersistence()    // new method or use existing clearPrizePersistence
@@ -177,6 +180,7 @@ resetTransaction():
 ```
 
 And in adapter.ts:
+
 ```text
 reset():
 -  const persisted = this.persistPrizeState
@@ -190,6 +194,7 @@ reset():
 ```
 
 Then add a `clearPersistence()` method to the adapter:
+
 ```text
 clearPersistence(): void {
   this.prizePersistence.clear(this.prizeManifest.revision)
@@ -233,14 +238,17 @@ format, revision-keying logic, manifest schema, winnings tracking.
 
 1. **R1 fixture:** Multiple prizes on playfield. Claw descends over each →
    grip onset fires for each (3 grips, 3 fixtures). No pass-through.
-2. **R2 fixture:** Move claw to front-edge XY, press drop → claw descends.
-   Same for all four corners of travel bounds.
+2. **R2 fixture:** `src/evidence/n7.test.ts` test
+   `accepts Drop at all four travel-bound corners and mid-field (N-21)` moves
+   the claw to all four travel-bound X/Z corners and a mid-field control,
+   dispatches Drop, and verifies accepted `lowering` with an in-bounds target
+   and descent step.
 3. **R3 fixture:** Run a cycle without gripping any prize → claw returns to
    home Y (~2.8). Claw Y never drops below 2.0 during return.
 4. **R4 fixture:** Nudge a prize. Press reset. All prizes at manifest-authored
    positions. Restart dev server → prizes at manifest positions.
-5. **Regression gate:** All existing 84 tests green. `npm run typecheck`,
-   `npm run lint`, `npm test`, `npm run build` — all green.
+5. **Regression gate:** Current implementation gate is green: 16 test files / 89 tests;
+   `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build` all pass.
 6. **Live-app check:** R1: claw contacts any prize → grip; R2: drop from all
    playfield corners; R3: claw never dives into chute without prize; R4: reset
    restores manifest positions; restart confirms.
@@ -254,11 +262,10 @@ format, revision-keying logic, manifest schema, winnings tracking.
 - **R1 risk:** Setting `this.selectedPrizeId` inside `observeGrip()` could have
   side effects on downstream code that reads `selectedPrizeId`. Mitigation: only
   set when contact is found; preserve existing behavior when no contact.
-- **R3 risk:** Gating `beginLift()` creates a fast-path where `lifting` state
-  has no active travel target. The `advanceEffects()` lifting handler checks
-  `this.target && positionsMatch(...)` — if `this.target` is stale, no
-  `liftReached` is emitted and the claw stalls. Mitigation: also gate the
-  `beginReturn()` or emit a skip event when grip failed.
+- **R3 risk:** Gating only the descent avoids the stale-target stall risk. Failed
+  grips still run `beginLift()` and `beginReturn()`; once the traverse reaches
+  `chute.overPosition`, the coordinator emits `returnReached` directly when no
+  hold is active.
 - **R4 risk:** Clearing persistence on reset means nudged-play strategies can't
   survive a reset — this is intentional (the reset button should be a full
   reset). Mitigation: persistence still works across plays; only reset clears it.
@@ -268,16 +275,19 @@ format, revision-keying logic, manifest schema, winnings tracking.
 ## 8. Acceptance criteria (exact repro check)
 
 ### R1
+
 **Repro:** Start app with 3 prizes on playfield. Aim claw over any prize. Press
 drop. **Pass** = claw descends, contacts prize, grip onset fires, hold state
 active. **Fail** = claw passes through prize, no grip.
 
 ### R2
+
 **Repro:** Move claw to front-left corner of travel bounds (max Z, min X if
 asymmetric). Press drop. **Pass** = claw descends. **Fail** = claw stays still,
 no descent.
 
 ### R3
+
 **Repro:** Start a run. Aim the claw away from all prizes (empty space). Press
 drop. Let the full cycle complete. **Pass** = claw descends, closes on nothing
 (no prize), returns to home position without descending into the chute area.
@@ -285,6 +295,7 @@ Claw Y stays at ~2.8 during return. **Fail** = claw body descends into chute
 (Y < 2.0).
 
 ### R4
+
 **Repro:** Play one run — nudge a prize off its manifest position. Press reset.
 **Pass** = all prizes snap back to manifest-authored positions. Stop `npm run dev`,
 restart — prizes at manifest positions. **Fail** = prizes remain nudged after
@@ -293,6 +304,7 @@ reset, or positions survive restart.
 ## 9. Stop conditions
 
 Stop and open a contract revision if any fix requires:
+
 - Changing the state machine (C-02) beyond adding an event guard
 - Changing the collision matrix or collision groups
 - Changing the fixed-step policy or world convention
@@ -304,30 +316,29 @@ Stop and open a contract revision if any fix requires:
 
 ## 10. Open questions
 
-1. **R2 root cause (needs live investigation):** Is the front-edge dead zone
-   reproducible in a deterministic test fixture, or is it only visible in the
-   live app (pointing to a rendering-sync or input issue)?
-2. **R3 fast-forward:** When grip fails, should the claw lift-and-return
-   (cosmetic arcade behavior, no prize) or skip directly to result (fastest
-   path)? The proposed fix skips the chute descent only — the claw still lifts
-   and traverses. Confirm this is acceptable.
-3. **R4 persistence clear:** Should the `clearPersistence()` call live on the
-   adapter (adds a public method) or be done directly by the coordinator using
-   the existing `clearPrizePersistence` export from `prize-persistence.ts`?
-   Recommend: coordinator calls `clearPrizePersistence` directly (no adapter API
-   change).
-4. **Test count:** The existing suite is 84 tests (14 files). R1 may require
-   updating existing grip tests that assume a single prize. Confirm approach:
-   rework affected tests or add parallel multi-prize fixtures.
+1. **R2 root cause (resolved):** The dead zone is reproducible
+   deterministically when a legal edge move is read back as a marginally
+   out-of-bounds f32 coordinate. Clamping the derived lowering target fixes it;
+   live-app confirmation remains a separate pending check.
+2. **R3 fast-forward (resolved):** Retain cosmetic lift + top traverse and
+   skip only chute descent on failed grips. This preserves the approved
+   `lifting → returning` path while preventing a no-hold chute dive; the
+   coordinator emits `returnReached` at the traverse endpoint.
+3. **R4 persistence clear (resolved):** The coordinator calls the existing
+   `clearPrizePersistence` export directly with the public
+   `this.physics.playfield.manifestRevision`; no adapter API change is needed.
+4. **Test count:** The current suite is 89 tests (16 files), including the
+   committed N-20 multi-prize and N-21 corner regressions. R3/R4 may add further
+   focused fixtures without marking unrelated fixes complete.
 
 ## 11. Workstream
 
-| Phase | Seeds | Files | Dependency |
-|-------|-------|-------|------------|
-| 1 | R1 (A) | `src/physics/adapter.ts` | None |
-| 2 | R2 (D) | `src/effects/n7-coordinator.ts` (+ `adapter.ts` possible) | None |
-| 3 | R3 (C) | `src/effects/n7-coordinator.ts` | R1 (needs grip state to test) |
-| 3 | R4 (B) | `src/effects/n7-coordinator.ts`, `src/playfield/prize-persistence.ts` | None |
+| Phase | Seeds  | Files                                                                 | Dependency                                                                                                |
+| ----- | ------ | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1     | R1 (A) | `src/physics/adapter.ts`                                              | None — implemented and verified 2026-08-04; `src/evidence/n20.test.ts` adds committed regression coverage |
+| 2     | R2 (D) | `src/effects/n7-coordinator.ts`, `src/evidence/n7.test.ts`            | None — implemented and deterministically verified 2026-08-04; live-app confirmation pending               |
+| 3     | R3 (C) | `src/effects/n7-coordinator.ts`, `src/evidence/n7.test.ts`            | R1 — implemented and verified 2026-08-04; 13 focused N7 tests pass; no-hold return Y stays ≥ 2.0 |
+| 3     | R4 (B) | `src/effects/n7-coordinator.ts`, `src/evidence/n7.test.ts`            | None — implemented and verified 2026-08-04; reset + fresh-adapter persistence fixture passes; no adapter/persistence changes |
 
 **Definition of done:** All four acceptance criteria pass; full gate green
 (typecheck/lint/test/build); no protected boundary crossed; live-app check

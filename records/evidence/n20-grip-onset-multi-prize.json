@@ -1,0 +1,27 @@
+{
+  "node": "N20",
+  "status": "pass",
+  "fixtures": [
+    {
+      "contactedPrizeId": "prize",
+      "physicalContact": true,
+      "gripApproved": true,
+      "selectedPrizeId": "prize",
+      "holdStarted": true
+    },
+    {
+      "contactedPrizeId": "tag-prize",
+      "physicalContact": true,
+      "gripApproved": true,
+      "selectedPrizeId": "tag-prize",
+      "holdStarted": true
+    },
+    {
+      "contactedPrizeId": "pouch-prize",
+      "physicalContact": true,
+      "gripApproved": true,
+      "selectedPrizeId": "pouch-prize",
+      "holdStarted": true
+    }
+  ]
+}

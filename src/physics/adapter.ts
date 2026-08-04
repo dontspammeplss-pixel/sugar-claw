@@ -1410,12 +1410,19 @@ export class N6PhysicsAdapter {
   /** Reports Rapier contact facts separately from visual overlap. */
   observeGrip(): GripObservation {
     this.assertNotDisposed()
-    const activePrizeCollider = this.prizeColliders.get(this.selectedPrizeId)
-    if (!activePrizeCollider) throw new Error(`N43 selected prize is unavailable: ${this.selectedPrizeId}`)
-    const physicalContact = this.world.intersectionPair(
-      this.sensorCollider,
-      activePrizeCollider,
-    )
+    let physicalContact = false
+    let activePrizeCollider: RAPIER.Collider | null = null
+    for (const [id, collider] of this.prizeColliders) {
+      const state = this.prizeState.get(id)
+      if (!state || state.removed) continue
+      if (this.world.intersectionPair(this.sensorCollider, collider)) {
+        physicalContact = true
+        this.selectedPrizeId = id
+        activePrizeCollider = collider
+        break
+      }
+    }
+    activePrizeCollider ??= this.prizeColliders.get(this.selectedPrizeId) ?? null
     const clawColliders = [this.headCollider, ...this.fingerColliders]
     let solverContact = false
     let floorContact = false
@@ -1423,7 +1430,8 @@ export class N6PhysicsAdapter {
     const contacts: PhysicsContactFact[] = []
     for (const collider of clawColliders) {
       this.world.contactPairsWith(collider, (other) => {
-        const isPrize = other.handle === activePrizeCollider.handle
+        const isPrize =
+          activePrizeCollider !== null && other.handle === activePrizeCollider.handle
         const isFloor = other.handle === this.floorCollider.handle
         const isWall = this.wallColliderHandles.has(other.handle)
         if (!isPrize && !isFloor && !isWall) return
