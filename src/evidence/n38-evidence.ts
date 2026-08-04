@@ -4,6 +4,7 @@ import {
   type N38ContactTrace,
 } from '../physics/adapter'
 import { N6_PHYSICS_CONFIG, N38_COLLISION_MATRIX, type Vec3 } from '../physics/config'
+import { DEFAULT_PRIZE_MANIFEST } from '../playfield/prize-manifest'
 import { REQUIRED_HIERARCHY } from '../scene/report'
 
 const TRACE_LIMIT = 12
@@ -12,6 +13,20 @@ function trim<T>(values: readonly T[]): readonly T[] {
   return values.length <= TRACE_LIMIT
     ? values
     : [...values.slice(0, 3), ...values.slice(-3)]
+}
+
+const SINGLE_PRIZE_MANIFEST = {
+  ...DEFAULT_PRIZE_MANIFEST,
+  revision: 'n38-single-prize-fixture-rev1',
+  prizes: [DEFAULT_PRIZE_MANIFEST.prizes[0]],
+}
+
+function manifestWithPrizePosition(position?: Vec3) {
+  if (!position) return SINGLE_PRIZE_MANIFEST
+  return {
+    ...SINGLE_PRIZE_MANIFEST,
+    prizes: [{ ...SINGLE_PRIZE_MANIFEST.prizes[0], position }],
+  }
 }
 
 function glideTo(adapter: N6PhysicsAdapter, target: Vec3, steps = 90): void {
@@ -30,7 +45,10 @@ async function captureBarrierTrace(
   barrier: 'floor' | 'wall',
   target: Vec3,
 ): Promise<N38BarrierTrace> {
-  const adapter = await N6PhysicsAdapter.create()
+  const adapter = await N6PhysicsAdapter.create({
+    prizeManifest: SINGLE_PRIZE_MANIFEST,
+    persistPrizeState: false,
+  })
   try {
     const before = adapter.transform('head')
     glideTo(adapter, target)
@@ -65,7 +83,8 @@ async function captureBarrierTrace(
 
 async function runObjectWallFixture() {
   const adapter = await N6PhysicsAdapter.create({
-    prizePosition: [1.55, 1.2, 0],
+    prizeManifest: manifestWithPrizePosition([1.55, 1.2, 0]),
+    persistPrizeState: false,
   })
   try {
     adapter.step()
@@ -106,7 +125,10 @@ async function runCollisionFixture(
   readonly contactObserved: boolean
   readonly requiredPairObserved: boolean
 }> {
-  const adapter = await N6PhysicsAdapter.create({ prizePosition })
+  const adapter = await N6PhysicsAdapter.create({
+    prizeManifest: manifestWithPrizePosition(prizePosition),
+    persistPrizeState: false,
+  })
   try {
     glideTo(adapter, target)
     const tracesByStep: N38ContactTrace[][] = []
@@ -146,7 +168,7 @@ async function runCollisionFixture(
       visualOverlap: grip.visualOverlap,
       sensorIntersection: grip.physicalContact,
       solverContact: traces.some((trace) => exactPair(trace) && trace.solverContact),
-      carryConstraintCreated: attempt?.jointCreated ?? false,
+      carryConstraintCreated: attempt?.holdStarted ?? false,
       contactObserved: traces.length > 0,
       requiredPairObserved: traces.some(exactPair),
     }
@@ -156,7 +178,10 @@ async function runCollisionFixture(
 }
 
 export async function createN38Evidence() {
-  const inventoryAdapter = await N6PhysicsAdapter.create()
+  const inventoryAdapter = await N6PhysicsAdapter.create({
+    prizeManifest: DEFAULT_PRIZE_MANIFEST,
+    persistPrizeState: false,
+  })
   const inventoryBefore = inventoryAdapter.diagnosticInventory()
   const baselineTransforms = {
     claw: inventoryAdapter.baselineTransform('claw'),

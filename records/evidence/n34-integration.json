@@ -528,7 +528,7 @@
               ],
               "colliderRole": "head",
               "colliderHandle": 0,
-              "otherColliderHandle": 2.5e-323,
+              "otherColliderHandle": 3e-323,
               "otherColliderRole": "prize",
               "normal": [
                 3.2552235093147233e-19,
@@ -547,28 +547,97 @@
         "attempt": {
           "accepted": true,
           "reason": "contact-approved",
-          "jointCreated": true,
+          "jointCreated": false,
+          "holdStarted": true,
           "runId": 1,
-          "constraintCreatedAtRunId": 1
+          "constraintCreatedAtRunId": null,
+          "holdStartedAtRunId": 1
         }
       },
       "outcome": {
         "accepted": true,
-        "reason": "contact-approved",
-        "jointCreated": true,
+        "reason": "delivered",
+        "jointCreated": false,
+        "holdStarted": true,
         "physicalContact": true,
         "solverContact": true,
         "visualOverlap": true,
         "physicsRunId": 1,
+        "retention": {
+          "status": "released",
+          "voltage": 24,
+          "capacity": 40,
+          "required": 10,
+          "margin": 30,
+          "torque": 0,
+          "weight": 10,
+          "centerOfMass": [
+            0,
+            0,
+            0
+          ],
+          "gripPoint": [
+            0,
+            0,
+            0
+          ],
+          "contactCount": 1,
+          "releasedAt": 146
+        },
         "released": true,
-        "constraintRemovedAtPhysicsRunId": 1
+        "constraintRemovedAtPhysicsRunId": 1,
+        "retentionRelease": null,
+        "delivery": {
+          "delivered": true,
+          "removed": true,
+          "prizeId": "prize",
+          "runId": 1,
+          "step": 158,
+          "prize": {
+            "position": [
+              0.97736656665802,
+              1.4672057628631592,
+              0.20717765390872955
+            ],
+            "quaternion": [
+              0.18641115725040436,
+              0.7676448822021484,
+              -0.1722838580608368,
+              0.5884645581245422
+            ]
+          },
+          "sensor": {
+            "position": [
+              1.05,
+              1.1,
+              0.55
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "relativePosition": [
+            -0.07263343334198002,
+            0.3672057628631591,
+            -0.3428223460912705
+          ]
+        },
+        "payoutHook": {
+          "type": "payout/inventory-hook",
+          "prizeId": "prize",
+          "runId": 1,
+          "step": 158
+        }
       },
       "sync": {
         "claw": {
           "position": [
-            0,
-            2.799999952316284,
-            0
+            1.0499999523162842,
+            1.8700000047683716,
+            0.550000011920929
           ],
           "quaternion": [
             0,
@@ -579,29 +648,61 @@
         },
         "prize": {
           "position": [
-            3.0676644421261417e-19,
-            2.5363240242004395,
-            0.002319549908861518
+            0.97736656665802,
+            1.4672057628631592,
+            0.20717765390872955
           ],
           "quaternion": [
-            -0.005434309132397175,
-            6.971210015132691e-20,
-            7.693305473420011e-19,
-            0.9999852180480957
+            0.18641115725040436,
+            0.7676448822021484,
+            -0.1722838580608368,
+            0.5884645581245422
           ]
         },
         "clawVisualWorldPosition": [
-          0,
-          2.799999952316284,
-          0
+          1.0499999523162842,
+          1.8700000047683716,
+          0.550000011920929
         ],
         "prizeVisualWorldPosition": [
-          3.0676644421261417e-19,
-          2.5363240242004395,
-          0.002319549908861518
+          0.97736656665802,
+          1.4672057628631592,
+          0.20717765390872955
         ],
         "clawSynchronized": true,
-        "prizeSynchronized": true
+        "prizeSynchronized": true,
+        "playfield": {
+          "manifestRevision": "legacy-single-prize-rev1",
+          "freshLayout": true,
+          "winningsCount": 1,
+          "prizes": [
+            {
+              "id": "prize",
+              "position": [
+                0.97736656665802,
+                1.4672057628631592,
+                0.20717765390872955
+              ],
+              "orientation": {
+                "quaternion": [
+                  0.18641115725040436,
+                  0.7676448822021484,
+                  -0.1722838580608368,
+                  0.5884645581245422
+                ]
+              },
+              "won": true,
+              "removed": true,
+              "geometry": "sphere",
+              "weight": 10,
+              "centerOfMass": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
       },
       "ownership": {
         "controllerOwnsState": true,
@@ -613,22 +714,22 @@
     },
     "finalPrize": {
       "position": [
-        3.0676644421261417e-19,
-        2.5363240242004395,
-        0.002319549908861518
+        0.97736656665802,
+        1.4672057628631592,
+        0.20717765390872955
       ],
       "quaternion": [
-        -0.005434309132397175,
-        6.971210015132691e-20,
-        7.693305473420011e-19,
-        0.9999852180480957
+        0.18641115725040436,
+        0.7676448822021484,
+        -0.1722838580608368,
+        0.5884645581245422
       ]
     },
     "finalClaw": {
       "position": [
-        0,
-        2.799999952316284,
-        0
+        1.0499999523162842,
+        1.8700000047683716,
+        0.550000011920929
       ],
       "quaternion": [
         0,

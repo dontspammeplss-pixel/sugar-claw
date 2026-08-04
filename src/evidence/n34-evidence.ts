@@ -299,7 +299,7 @@ async function runIntegratedCycle() {
       finalClaw: coordinator.physics.transform('claw'),
       acceptedPhysicalCarry:
         report.grip?.attempt.accepted === true &&
-        report.grip.attempt.jointCreated === true,
+        report.grip.attempt.holdStarted === true,
       synchronized:
         report.sync?.clawSynchronized === true &&
         report.sync.prizeSynchronized === true,

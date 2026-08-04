@@ -143,6 +143,70 @@
           "runId": 0
         },
         {
+          "entity": "body",
+          "logicalBodyId": "prize",
+          "bodyHandle": 2e-323,
+          "colliderId": "body-prize",
+          "colliderHandle": null,
+          "role": "body",
+          "shapeType": "rigid-body",
+          "transform": {
+            "position": [
+              0,
+              1.2000000476837158,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 0,
+          "filterMask": 0,
+          "solverMask": 0,
+          "sourceRevision": "missing",
+          "profileRevision": "missing",
+          "colliderProfileId": "missing",
+          "derivationRevision": "missing",
+          "runId": 0
+        },
+        {
+          "entity": "body",
+          "logicalBodyId": "prize",
+          "bodyHandle": 2.5e-323,
+          "colliderId": "body-prize",
+          "colliderHandle": null,
+          "role": "body",
+          "shapeType": "rigid-body",
+          "transform": {
+            "position": [
+              0,
+              1.2000000476837158,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 0,
+          "filterMask": 0,
+          "solverMask": 0,
+          "sourceRevision": "missing",
+          "profileRevision": "missing",
+          "colliderProfileId": "missing",
+          "derivationRevision": "missing",
+          "runId": 0
+        },
+        {
           "entity": "collider",
           "logicalBodyId": "head",
           "bodyHandle": 5e-324,
@@ -304,10 +368,42 @@
         },
         {
           "entity": "collider",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "chute-delivery-sensor",
+          "colliderHandle": 2.5e-323,
+          "role": "sensor",
+          "shapeType": "ball",
+          "transform": {
+            "position": [
+              1.0499999523162842,
+              1.100000023841858,
+              0.550000011920929
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": true,
+          "mode": "sensor",
+          "collisionGroup": 16,
+          "filterMask": 6,
+          "solverMask": 0,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n42-authored-chute-sensor-rev1",
+          "colliderProfileId": "chute-delivery-sensor",
+          "derivationRevision": "canonical-release-point-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
           "logicalBodyId": "prize",
           "bodyHandle": 1e-323,
           "colliderId": "prize-collider",
-          "colliderHandle": 2.5e-323,
+          "colliderHandle": 3e-323,
           "role": "prize",
           "shapeType": "ball",
           "transform": {
@@ -326,11 +422,75 @@
           "sensor": false,
           "mode": "solver",
           "collisionGroup": 2,
-          "filterMask": 29,
-          "solverMask": 13,
+          "filterMask": 31,
+          "solverMask": 15,
           "sourceRevision": "fixed-step-rev3",
-          "profileRevision": "n38-authored-prize-rev1",
+          "profileRevision": "n43-prize-manifest-rev1",
           "colliderProfileId": "prize-collider",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "prize",
+          "bodyHandle": 2e-323,
+          "colliderId": "prize-tag-prize-collider",
+          "colliderHandle": 3.5e-323,
+          "role": "prize",
+          "shapeType": "ball",
+          "transform": {
+            "position": [
+              -0.7200000286102295,
+              1.2000000476837158,
+              0.07999999821186066
+            ],
+            "quaternion": [
+              0,
+              0.12999999523162842,
+              0,
+              0.9909999966621399
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 2,
+          "filterMask": 31,
+          "solverMask": 15,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n43-prize-manifest-rev1",
+          "colliderProfileId": "prize-tag-prize-collider",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 0
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "prize",
+          "bodyHandle": 2.5e-323,
+          "colliderId": "prize-pouch-prize-collider",
+          "colliderHandle": 4e-323,
+          "role": "prize",
+          "shapeType": "ball",
+          "transform": {
+            "position": [
+              0.7200000286102295,
+              1.2000000476837158,
+              0.07999999821186066
+            ],
+            "quaternion": [
+              0,
+              -0.10000000149011612,
+              0,
+              0.9950000047683716
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 2,
+          "filterMask": 31,
+          "solverMask": 15,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n43-prize-manifest-rev1",
+          "colliderProfileId": "prize-pouch-prize-collider",
           "derivationRevision": "authored-profile-rev1",
           "runId": 0
         },
@@ -339,7 +499,7 @@
           "logicalBodyId": "environment",
           "bodyHandle": 1.5e-323,
           "colliderId": "environment-floor",
-          "colliderHandle": 3e-323,
+          "colliderHandle": 4.4e-323,
           "role": "floor",
           "shapeType": "cuboid",
           "transform": {
@@ -371,7 +531,7 @@
           "logicalBodyId": "environment",
           "bodyHandle": 1.5e-323,
           "colliderId": "environment-wall-0",
-          "colliderHandle": 3.5e-323,
+          "colliderHandle": 5e-323,
           "role": "wall",
           "shapeType": "cuboid",
           "transform": {
@@ -403,7 +563,7 @@
           "logicalBodyId": "environment",
           "bodyHandle": 1.5e-323,
           "colliderId": "environment-wall-1",
-          "colliderHandle": 4e-323,
+          "colliderHandle": 5.4e-323,
           "role": "wall",
           "shapeType": "cuboid",
           "transform": {
@@ -435,7 +595,7 @@
           "logicalBodyId": "environment",
           "bodyHandle": 1.5e-323,
           "colliderId": "environment-wall-2",
-          "colliderHandle": 4.4e-323,
+          "colliderHandle": 6e-323,
           "role": "wall",
           "shapeType": "cuboid",
           "transform": {
@@ -467,7 +627,7 @@
           "logicalBodyId": "environment",
           "bodyHandle": 1.5e-323,
           "colliderId": "environment-wall-3",
-          "colliderHandle": 5e-323,
+          "colliderHandle": 6.4e-323,
           "role": "wall",
           "shapeType": "cuboid",
           "transform": {
@@ -690,6 +850,70 @@
           "runId": 1
         },
         {
+          "entity": "body",
+          "logicalBodyId": "prize",
+          "bodyHandle": 2e-323,
+          "colliderId": "body-prize",
+          "colliderHandle": null,
+          "role": "body",
+          "shapeType": "rigid-body",
+          "transform": {
+            "position": [
+              0,
+              1.2000000476837158,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 0,
+          "filterMask": 0,
+          "solverMask": 0,
+          "sourceRevision": "missing",
+          "profileRevision": "missing",
+          "colliderProfileId": "missing",
+          "derivationRevision": "missing",
+          "runId": 1
+        },
+        {
+          "entity": "body",
+          "logicalBodyId": "prize",
+          "bodyHandle": 2.5e-323,
+          "colliderId": "body-prize",
+          "colliderHandle": null,
+          "role": "body",
+          "shapeType": "rigid-body",
+          "transform": {
+            "position": [
+              0,
+              1.2000000476837158,
+              0
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 0,
+          "filterMask": 0,
+          "solverMask": 0,
+          "sourceRevision": "missing",
+          "profileRevision": "missing",
+          "colliderProfileId": "missing",
+          "derivationRevision": "missing",
+          "runId": 1
+        },
+        {
           "entity": "collider",
           "logicalBodyId": "head",
           "bodyHandle": 5e-324,
@@ -851,10 +1075,42 @@
         },
         {
           "entity": "collider",
+          "logicalBodyId": "environment",
+          "bodyHandle": 1.5e-323,
+          "colliderId": "chute-delivery-sensor",
+          "colliderHandle": 2.5e-323,
+          "role": "sensor",
+          "shapeType": "ball",
+          "transform": {
+            "position": [
+              1.0499999523162842,
+              1.100000023841858,
+              0.550000011920929
+            ],
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "sensor": true,
+          "mode": "sensor",
+          "collisionGroup": 16,
+          "filterMask": 6,
+          "solverMask": 0,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n42-authored-chute-sensor-rev1",
+          "colliderProfileId": "chute-delivery-sensor",
+          "derivationRevision": "canonical-release-point-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
           "logicalBodyId": "prize",
           "bodyHandle": 1e-323,
           "colliderId": "prize-collider",
-          "colliderHandle": 2.5e-323,
+          "colliderHandle": 3e-323,
           "role": "prize",
           "shapeType": "ball",
           "transform": {
@@ -873,11 +1129,75 @@
           "sensor": false,
           "mode": "solver",
           "collisionGroup": 2,
-          "filterMask": 29,
-          "solverMask": 13,
+          "filterMask": 31,
+          "solverMask": 15,
           "sourceRevision": "fixed-step-rev3",
-          "profileRevision": "n38-authored-prize-rev1",
+          "profileRevision": "n43-prize-manifest-rev1",
           "colliderProfileId": "prize-collider",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "prize",
+          "bodyHandle": 2e-323,
+          "colliderId": "prize-tag-prize-collider",
+          "colliderHandle": 3.5e-323,
+          "role": "prize",
+          "shapeType": "ball",
+          "transform": {
+            "position": [
+              -0.7200000286102295,
+              1.2000000476837158,
+              0.07999999821186066
+            ],
+            "quaternion": [
+              0,
+              0.13006627559661865,
+              0,
+              0.9915052652359009
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 2,
+          "filterMask": 31,
+          "solverMask": 15,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n43-prize-manifest-rev1",
+          "colliderProfileId": "prize-tag-prize-collider",
+          "derivationRevision": "authored-profile-rev1",
+          "runId": 1
+        },
+        {
+          "entity": "collider",
+          "logicalBodyId": "prize",
+          "bodyHandle": 2.5e-323,
+          "colliderId": "prize-pouch-prize-collider",
+          "colliderHandle": 4e-323,
+          "role": "prize",
+          "shapeType": "ball",
+          "transform": {
+            "position": [
+              0.7200000286102295,
+              1.2000000476837158,
+              0.07999999821186066
+            ],
+            "quaternion": [
+              0,
+              -0.09999874979257584,
+              0,
+              0.9949875473976135
+            ]
+          },
+          "sensor": false,
+          "mode": "solver",
+          "collisionGroup": 2,
+          "filterMask": 31,
+          "solverMask": 15,
+          "sourceRevision": "fixed-step-rev3",
+          "profileRevision": "n43-prize-manifest-rev1",
+          "colliderProfileId": "prize-pouch-prize-collider",
           "derivationRevision": "authored-profile-rev1",
           "runId": 1
         },
@@ -886,7 +1206,7 @@
           "logicalBodyId": "environment",
           "bodyHandle": 1.5e-323,
           "colliderId": "environment-floor",
-          "colliderHandle": 3e-323,
+          "colliderHandle": 4.4e-323,
           "role": "floor",
           "shapeType": "cuboid",
           "transform": {
@@ -918,7 +1238,7 @@
           "logicalBodyId": "environment",
           "bodyHandle": 1.5e-323,
           "colliderId": "environment-wall-0",
-          "colliderHandle": 3.5e-323,
+          "colliderHandle": 5e-323,
           "role": "wall",
           "shapeType": "cuboid",
           "transform": {
@@ -950,7 +1270,7 @@
           "logicalBodyId": "environment",
           "bodyHandle": 1.5e-323,
           "colliderId": "environment-wall-1",
-          "colliderHandle": 4e-323,
+          "colliderHandle": 5.4e-323,
           "role": "wall",
           "shapeType": "cuboid",
           "transform": {
@@ -982,7 +1302,7 @@
           "logicalBodyId": "environment",
           "bodyHandle": 1.5e-323,
           "colliderId": "environment-wall-2",
-          "colliderHandle": 4.4e-323,
+          "colliderHandle": 6e-323,
           "role": "wall",
           "shapeType": "cuboid",
           "transform": {
@@ -1014,7 +1334,7 @@
           "logicalBodyId": "environment",
           "bodyHandle": 1.5e-323,
           "colliderId": "environment-wall-3",
-          "colliderHandle": 5e-323,
+          "colliderHandle": 6.4e-323,
           "role": "wall",
           "shapeType": "cuboid",
           "transform": {
@@ -1166,13 +1486,13 @@
       {
         "a": "prize",
         "b": "prize",
-        "expected": "forbidden",
-        "eligible": false,
+        "expected": "solver",
+        "eligible": true,
         "observedContact": false,
         "sensorIntersection": false,
         "solverContact": false,
         "visualOverlap": false,
-        "result": "ineligible-pair"
+        "result": "eligible-no-contact"
       },
       {
         "a": "prize",
@@ -2102,7 +2422,7 @@
         ],
         "colliderRole": "head",
         "colliderHandle": 0,
-        "otherColliderHandle": 3e-323,
+        "otherColliderHandle": 3.5e-323,
         "otherColliderRole": "floor",
         "normal": [
           -6.950162667607174e-10,
@@ -2160,7 +2480,7 @@
         ],
         "colliderRole": "finger",
         "colliderHandle": 5e-324,
-        "otherColliderHandle": 5e-323,
+        "otherColliderHandle": 5.4e-323,
         "otherColliderRole": "wall",
         "normal": [
           1.0000000353929221,

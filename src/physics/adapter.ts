@@ -1,4 +1,16 @@
 import { Quaternion, Vector3 } from 'three'
+import {
+  DEFAULT_PRIZE_MANIFEST,
+  initialPrizeStates,
+  loadPrizeManifest,
+  type PrizeDefinition,
+  type PrizeManifest,
+  type PrizeState,
+} from '../playfield/prize-manifest'
+import {
+  createPrizePersistenceStore,
+  type PrizePersistenceStore,
+} from '../playfield/prize-persistence'
 import RAPIER from '@dimforge/rapier3d-compat'
 import {
   FINGER_COLLIDERS,
@@ -24,6 +36,19 @@ export type PhysicsRunState = 'ready' | 'carrying' | 'released' | 'failed'
 export interface PhysicsTransform {
   readonly position: Vec3
   readonly quaternion: readonly [number, number, number, number]
+}
+
+export interface PrizePlayfieldState extends PrizeState {
+  readonly geometry: PrizeDefinition['geometry']
+  readonly weight: number
+  readonly centerOfMass: Vec3
+}
+
+export interface PrizePlayfieldSnapshot {
+  readonly manifestRevision: string
+  readonly freshLayout: boolean
+  readonly winningsCount: number
+  readonly prizes: readonly PrizePlayfieldState[]
 }
 
 export type PhysicsVelocity = Vec3
@@ -152,6 +177,48 @@ export interface GripObservation {
   readonly contacts: readonly PhysicsContactFact[]
 }
 
+export type RetentionStatus = 'idle' | 'holding' | 'released'
+
+export interface RetentionState {
+  readonly status: RetentionStatus
+  readonly voltage: number
+  readonly capacity: number
+  readonly required: number
+  readonly margin: number
+  readonly torque: number
+  readonly weight: number
+  readonly centerOfMass: Vec3
+  readonly gripPoint: Vec3
+  readonly contactCount: number
+  readonly releasedAt: number | null
+}
+
+export interface RetentionReleaseEvent {
+  readonly state: 'released'
+  readonly step: number
+  readonly runId: number
+  readonly margin: number
+  readonly reason: 'hold-margin-negative'
+}
+
+export interface DeliveryObservation {
+  readonly delivered: boolean
+  readonly removed: boolean
+  readonly prizeId: string
+  readonly runId: number
+  readonly step: number
+  readonly prize: PhysicsTransform
+  readonly sensor: PhysicsTransform
+  readonly relativePosition: Vec3
+}
+
+export interface PayoutHookEvent {
+  readonly type: 'payout/inventory-hook'
+  readonly prizeId: string
+  readonly runId: number
+  readonly step: number
+}
+
 export interface PhysicsStepRecord {
   readonly step: number
   readonly runId: number
@@ -163,14 +230,21 @@ export interface PhysicsStepRecord {
   readonly visualOverlap: boolean
   readonly contacts: readonly PhysicsContactFact[]
   readonly jointActive: boolean
+  readonly holdActive: boolean
+  readonly retention: RetentionState
+  readonly retentionRelease: RetentionReleaseEvent | null
+  readonly delivery: DeliveryObservation | null
 }
 
 export interface GripAttempt {
   readonly accepted: boolean
   readonly reason: 'contact-approved' | 'no-physical-contact'
-  readonly jointCreated: boolean
+  /** Retained for evidence compatibility; N41 never creates a Rapier carry joint. */
+  readonly jointCreated: false
+  readonly holdStarted: boolean
   readonly runId: number
-  readonly constraintCreatedAtRunId: number | null
+  readonly constraintCreatedAtRunId: null
+  readonly holdStartedAtRunId: number | null
 }
 
 export interface CandidateGripAttempt {
@@ -180,6 +254,24 @@ export interface CandidateGripAttempt {
 
 export interface N6PhysicsAdapterOptions {
   readonly prizePosition?: Vec3
+  readonly prizeManifest?: PrizeManifest
+  readonly selectedPrizeId?: string
+  readonly persistence?: PrizePersistenceStore
+  readonly persistPrizeState?: boolean
+  readonly retention?: Partial<{
+    readonly gripVoltage: number
+    readonly padFriction: number
+    readonly maxHoldForceAtMinVoltage: number
+    readonly maxHoldForceAtMaxVoltage: number
+    readonly holdFailureThreshold: number
+    readonly gripLeverArm: number
+    readonly prizeWeight: number
+    readonly centerOfMass: Vec3
+    readonly gripPoint: Vec3
+    readonly pendulumSwingAcceleration: number
+    readonly travelAcceleration: number
+    readonly packingForce: number
+  }>
 }
 
 interface BodyBaseline {
@@ -188,7 +280,6 @@ interface BodyBaseline {
   readonly sleeping: boolean
 }
 
-const IDENTITY = { x: 0, y: 0, z: 0, w: 1 }
 const ZERO = { x: 0, y: 0, z: 0 }
 
 function vector([x, y, z]: Vec3): { x: number; y: number; z: number } {
@@ -303,26 +394,95 @@ export class N6PhysicsAdapter {
   private readonly clawBody: RAPIER.RigidBody
   private readonly headBody: RAPIER.RigidBody
   private readonly prizeBody: RAPIER.RigidBody
+  private readonly prizeBodies = new Map<string, RAPIER.RigidBody>()
+  private readonly prizeColliders = new Map<string, RAPIER.Collider>()
+  private readonly prizeDefinitions = new Map<string, PrizeDefinition>()
+  private readonly prizeBaselines = new Map<string, BodyBaseline>()
+  private readonly prizeState: Map<string, PrizeState>
+  private readonly prizeManifest: PrizeManifest
+  private readonly primaryPrizeId: string
+  private readonly prizePersistence: PrizePersistenceStore
+  private readonly persistPrizeState: boolean
+  private readonly useManifestPhysics: boolean
+  private selectedPrizeId: string
+  private readonly restoredPersistedState: boolean
   private readonly environmentBody: RAPIER.RigidBody
   private readonly headCollider: RAPIER.Collider
   private readonly fingerColliders: readonly RAPIER.Collider[]
   private readonly prizeCollider: RAPIER.Collider
   private readonly sensorCollider: RAPIER.Collider
+  private readonly chuteSensorCollider: RAPIER.Collider
   private readonly floorCollider: RAPIER.Collider
   private readonly wallColliders: readonly RAPIER.Collider[]
   private readonly wallColliderHandles: ReadonlySet<number>
   private readonly headJoint: RAPIER.ImpulseJoint
   private readonly baseline: Readonly<Record<PhysicsBodyId, BodyBaseline>>
   private readonly stepRecords: PhysicsStepRecord[] = []
-  private carryJoint: RAPIER.ImpulseJoint | null = null
-  private constraintRunId: number | null = null
+  private readonly retentionConfig: N6PhysicsAdapterOptions['retention'] & {
+    readonly gripVoltage: number
+    readonly padFriction: number
+    readonly maxHoldForceAtMinVoltage: number
+    readonly maxHoldForceAtMaxVoltage: number
+    readonly holdFailureThreshold: number
+    readonly gripLeverArm: number
+    readonly prizeWeight: number
+    readonly centerOfMass: Vec3
+    readonly gripPoint: Vec3
+    readonly pendulumSwingAcceleration: number
+    readonly travelAcceleration: number
+    readonly packingForce: number
+  }
+  private holdActive = false
+  private holdOffset: Vec3 = [0, 0, 0]
+  private holdContactCount = 0
+  private retentionState: RetentionState
+  private retentionReleaseEvent: RetentionReleaseEvent | null = null
+  private deliveryObservation: DeliveryObservation | null = null
+  private payoutHookEventValue: PayoutHookEvent | null = null
+  private deliveredPrizeIds = new Set<string>()
   private stepNumber = 0
   private runId = 0
   private logicalState: PhysicsRunState = 'ready'
   private disposed = false
 
   private constructor(options: N6PhysicsAdapterOptions = {}) {
-    const prizePosition = options.prizePosition ?? this.config.prizePosition
+    const legacyManifest: PrizeManifest = {
+      revision: 'legacy-single-prize-rev1',
+      spawnLayout: { density: 1, angle: 0, preset: 'legacy-single-prize' },
+      prizes: [{
+        ...DEFAULT_PRIZE_MANIFEST.prizes[0],
+        position: options.prizePosition ?? this.config.prizePosition,
+      }],
+    }
+    this.prizeManifest = loadPrizeManifest(options.prizeManifest ?? legacyManifest)
+    this.primaryPrizeId = this.prizeManifest.prizes[0].id
+    this.selectedPrizeId = options.selectedPrizeId ?? this.primaryPrizeId
+    if (!this.prizeManifest.prizes.some((prize) => prize.id === this.selectedPrizeId)) {
+      throw new Error(`manifest-invalid: selected prize is not declared: ${this.selectedPrizeId}`)
+    }
+    this.prizePersistence = options.persistence ?? createPrizePersistenceStore()
+    this.persistPrizeState = options.persistPrizeState ?? options.prizeManifest !== undefined
+    this.useManifestPhysics = options.prizeManifest !== undefined
+    const persisted = this.persistPrizeState
+      ? this.prizePersistence.load(this.prizeManifest.revision)
+      : null
+    this.restoredPersistedState = persisted !== null
+    this.prizeState = new Map(
+      (persisted?.prizes ?? initialPrizeStates(this.prizeManifest)).map((state) => [state.id, state]),
+    )
+    for (const definition of this.prizeManifest.prizes) {
+      this.prizeDefinitions.set(definition.id, definition)
+    }
+    const prizePosition = this.prizeState.get(this.primaryPrizeId)?.position ?? this.config.prizePosition
+    const defaults = this.config.retention
+    this.retentionConfig = {
+      ...defaults,
+      ...options.retention,
+      centerOfMass: options.retention?.centerOfMass ?? [...defaults.centerOfMass] as Vec3,
+      gripPoint: options.retention?.gripPoint ?? [...defaults.gripPoint] as Vec3,
+    }
+    this.validateRetentionConfig()
+    this.retentionState = this.createRetentionState('idle', null)
     this.world = new RAPIER.World(rapierVector(this.config.gravity))
     this.world.timestep = this.config.dt
     this.world.numSolverIterations = this.config.solverIterations
@@ -355,6 +515,7 @@ export class N6PhysicsAdapter {
       .setCanSleep(this.config.sleeping)
       .setCcdEnabled(this.config.ccd)
     this.prizeBody = this.world.createRigidBody(prizeBodyDesc)
+    this.prizeBodies.set(this.primaryPrizeId, this.prizeBody)
     this.prizeBody.userData = { id: 'prize', authority: 'N6PhysicsAdapter' }
 
     this.environmentBody = this.world.createRigidBody(
@@ -435,6 +596,24 @@ export class N6PhysicsAdapter {
       derivationRevision: 'authored-profile-rev1',
     })
 
+    this.chuteSensorCollider = this.world.createCollider(
+      RAPIER.ColliderDesc.ball(this.config.chute.sensorRadius)
+        .setTranslation(...this.config.chute.sensorPosition)
+        .setSensor(true)
+        .setCollisionGroups(n38CollisionGroups('sensor'))
+        .setSolverGroups(n38SolverGroups('sensor')),
+      this.environmentBody,
+    )
+    setColliderUserData(this.chuteSensorCollider, {
+      logicalBodyId: 'environment',
+      colliderId: 'chute-delivery-sensor',
+      role: 'sensor',
+      sourceRevision: this.config.revision,
+      profileRevision: 'n42-authored-chute-sensor-rev1',
+      colliderProfileId: 'chute-delivery-sensor',
+      derivationRevision: 'canonical-release-point-rev1',
+    })
+
     this.prizeCollider = this.world.createCollider(
       RAPIER.ColliderDesc.ball(this.config.prizeRadius)
         .setCollisionGroups(n38CollisionGroups('prize'))
@@ -445,13 +624,53 @@ export class N6PhysicsAdapter {
     )
     setColliderUserData(this.prizeCollider, {
       logicalBodyId: 'prize',
+      prizeId: this.primaryPrizeId,
       colliderId: 'prize-collider',
       role: 'prize',
       sourceRevision: this.config.revision,
-      profileRevision: 'n38-authored-prize-rev1',
+      profileRevision: 'n43-prize-manifest-rev1',
       colliderProfileId: 'prize-collider',
       derivationRevision: 'authored-profile-rev1',
     })
+    this.prizeColliders.set(this.primaryPrizeId, this.prizeCollider)
+    if (this.prizeState.get(this.primaryPrizeId)?.removed) {
+      this.prizeBody.setEnabled(false)
+      this.prizeCollider.setEnabled(false)
+    }
+
+    for (const definition of this.prizeManifest.prizes) {
+      if (definition.id === this.primaryPrizeId) continue
+      const state = this.prizeState.get(definition.id)
+      if (!state || state.removed) continue
+      const body = this.world.createRigidBody(
+        RAPIER.RigidBodyDesc.dynamic()
+          .setTranslation(...state.position)
+          .setRotation(rotation(state.orientation.quaternion))
+          .setLinearDamping(this.config.linearDamping)
+          .setAngularDamping(this.config.angularDamping)
+          .setCanSleep(this.config.sleeping)
+          .setCcdEnabled(this.config.ccd),
+      )
+      body.userData = { id: 'prize', prizeId: definition.id, authority: 'N6PhysicsAdapter' }
+      const collider = this.world.createCollider(
+        RAPIER.ColliderDesc.ball(this.config.prizeRadius)
+          .setCollisionGroups(n38CollisionGroups('prize'))
+          .setSolverGroups(n38SolverGroups('prize'))
+          .setFriction(this.config.friction)
+          .setRestitution(this.config.restitution),
+        body,
+      )
+      setColliderUserData(collider, {
+        logicalBodyId: 'prize', prizeId: definition.id,
+        colliderId: `prize-${definition.id}-collider`, role: 'prize',
+        sourceRevision: this.config.revision,
+        profileRevision: 'n43-prize-manifest-rev1',
+        colliderProfileId: `prize-${definition.id}-collider`,
+        derivationRevision: 'authored-profile-rev1',
+      })
+      this.prizeBodies.set(definition.id, body)
+      this.prizeColliders.set(definition.id, collider)
+    }
 
     const floorCollider = RAPIER.ColliderDesc.cuboid(
       ...this.config.floorHalfExtents,
@@ -553,6 +772,10 @@ export class N6PhysicsAdapter {
       prize: this.captureBody(this.prizeBody),
       environment: this.captureBody(this.environmentBody),
     })
+    for (const [id, body] of this.prizeBodies) {
+      this.prizeBaselines.set(id, this.captureBody(body))
+    }
+    this.savePrizeState()
   }
 
   /** Rapier WASM must be initialized once before an adapter can be created. */
@@ -575,8 +798,46 @@ export class N6PhysicsAdapter {
     return this.stepNumber
   }
 
+  /** Compatibility name: N41 exposes active hold state, never a Rapier joint. */
   get carryConstraintActive(): boolean {
-    return this.carryJoint !== null
+    return this.holdActive
+  }
+
+  get retention(): RetentionState {
+    return this.cloneRetentionState(this.retentionState)
+  }
+
+  get retentionRelease(): RetentionReleaseEvent | null {
+    return this.retentionReleaseEvent ? { ...this.retentionReleaseEvent } : null
+  }
+
+  get delivery(): DeliveryObservation | null {
+    return this.deliveryObservation
+      ? {
+          ...this.deliveryObservation,
+          prize: cloneTransform(this.deliveryObservation.prize),
+          sensor: cloneTransform(this.deliveryObservation.sensor),
+          relativePosition: [...this.deliveryObservation.relativePosition] as Vec3,
+        }
+      : null
+  }
+
+  get payoutHookEvent(): PayoutHookEvent | null {
+    return this.payoutHookEventValue ? { ...this.payoutHookEventValue } : null
+  }
+
+  get playfield(): PrizePlayfieldSnapshot {
+    const freshLayout = !this.restoredPersistedState
+    const prizes = [...this.prizeState].flatMap(([id, state]) => {
+        const definition = this.prizeDefinitions.get(id)
+        return definition ? [{ ...state, position: [...state.position] as Vec3, geometry: definition.geometry, weight: definition.weight, centerOfMass: [...definition.centerOfMass] as Vec3 }] : []
+      })
+    return {
+      manifestRevision: this.prizeManifest.revision,
+      freshLayout,
+      winningsCount: prizes.filter((prize) => prize.won).length,
+      prizes,
+    }
   }
 
   get logs(): readonly PhysicsStepRecord[] {
@@ -584,6 +845,20 @@ export class N6PhysicsAdapter {
       ...record,
       claw: cloneTransform(record.claw),
       prize: cloneTransform(record.prize),
+      retention: this.cloneRetentionState(record.retention),
+      ...(record.retentionRelease
+        ? { retentionRelease: { ...record.retentionRelease } }
+        : { retentionRelease: null }),
+      ...(record.delivery
+        ? {
+            delivery: {
+              ...record.delivery,
+              prize: cloneTransform(record.delivery.prize),
+              sensor: cloneTransform(record.delivery.sensor),
+              relativePosition: [...record.delivery.relativePosition] as Vec3,
+            },
+          }
+        : { delivery: null }),
     }))
   }
 
@@ -848,6 +1123,42 @@ export class N6PhysicsAdapter {
     return traces
   }
 
+  /** Returns one manifest prize transform without exposing Rapier bodies. */
+  transformPrize(id: string): PhysicsTransform {
+    const body = this.prizeBodies.get(id)
+    if (!body) throw new Error(`N43 unknown or removed prize: ${id}`)
+    return {
+      position: tuple(body.translation()),
+      quaternion: quaternionTuple(body.rotation()),
+    }
+  }
+
+  get prizeIds(): readonly string[] {
+    return [...this.prizeDefinitions.keys()]
+  }
+
+  get selectedPrize(): string {
+    return this.selectedPrizeId
+  }
+
+  selectPrize(id: string): boolean {
+    const state = this.prizeState.get(id)
+    if (!state || state.removed || !this.prizeBodies.get(id)?.isEnabled()) return false
+    this.selectedPrizeId = id
+    return true
+  }
+
+  /** Adapter-owned nudge fixture/operator operation; persistence occurs on the next fixed step. */
+  movePrize(id: string, position: Vec3, orientation?: PrizeState['orientation']): boolean {
+    const body = this.prizeBodies.get(id)
+    const state = this.prizeState.get(id)
+    if (!body || !state || state.removed) return false
+    body.setTranslation(vector(position), true)
+    if (orientation) body.setRotation(rotation(orientation.quaternion), true)
+    body.wakeUp()
+    return true
+  }
+
   /** Sets a kinematic target; all bounds and body writes remain adapter-owned. */
   moveClaw(position: Vec3): boolean {
     this.assertNotDisposed()
@@ -865,13 +1176,18 @@ export class N6PhysicsAdapter {
   /** Advances exactly one configured fixed step and records the resulting pose. */
   step(): PhysicsStepRecord {
     this.assertNotDisposed()
-    // N26: no self-righting controller is needed — the head is a physical
-    // pendulum (its center of mass hangs below the joint pivot, on the sensor
-    // and finger colliders), so gravity rights it and angular damping settles
-    // it. A torque spring here destabilizes the tiny head body (per-step
-    // torque overshoots the upright), so none is applied.
+    // N41: holding is an adapter-owned force correction, not a Rapier joint.
+    if (this.holdActive) this.applyHoldImpulse()
     this.world.step()
     this.stepNumber += 1
+    this.observeDelivery()
+    if (this.holdActive) {
+      const retention = this.createRetentionState('holding', null)
+      this.retentionState = retention
+      if (retention.margin < this.retentionConfig.holdFailureThreshold) {
+        this.breakHold(retention.margin)
+      }
+    }
     const observation = this.observeGrip()
     const record: PhysicsStepRecord = {
       step: this.stepNumber,
@@ -883,8 +1199,23 @@ export class N6PhysicsAdapter {
       floorContact: observation.floorContact,
       visualOverlap: observation.visualOverlap,
       contacts: observation.contacts,
-      jointActive: this.carryJoint !== null,
+      jointActive: false,
+      holdActive: this.holdActive,
+      retention: this.cloneRetentionState(this.retentionState),
+      retentionRelease: this.retentionReleaseEvent
+        ? { ...this.retentionReleaseEvent }
+        : null,
+      delivery: this.deliveryObservation
+        ? {
+            ...this.deliveryObservation,
+            prize: cloneTransform(this.deliveryObservation.prize),
+            sensor: cloneTransform(this.deliveryObservation.sensor),
+            relativePosition: [...this.deliveryObservation.relativePosition] as Vec3,
+          }
+        : null,
     }
+    this.updatePrizeStateFromBodies()
+    this.savePrizeState()
     this.stepRecords.push(record)
     const maxRetained = this.config.maxRetainedStepRecords
     if (this.stepRecords.length > maxRetained) {
@@ -1008,18 +1339,82 @@ export class N6PhysicsAdapter {
           ? 'contact-approved'
           : 'no-physical-contact',
         jointCreated: false,
+        holdStarted: false,
         runId: this.runId,
         constraintCreatedAtRunId: null,
+        holdStartedAtRunId: null,
       },
     }
+  }
+
+  /** Reports delivery from the adapter-owned chute sensor, never render overlap. */
+  private observeDelivery(): DeliveryObservation | null {
+    const selectedId = this.selectedPrizeId
+    const selectedBody = this.prizeBodies.get(selectedId)
+    const selectedCollider = this.prizeColliders.get(selectedId)
+    if (!selectedBody || !selectedCollider || this.deliveredPrizeIds.has(selectedId)) {
+      return this.deliveryObservation
+    }
+    // A sensor overlap while the hold is active is not a win. Re-evaluate on
+    // the next fixed step after release so a delivered prize can never produce
+    // a win-ghost while still attached to the claw.
+    if (this.holdActive) return null
+    const intersects = this.world.intersectionPair(
+      this.chuteSensorCollider,
+      selectedCollider,
+    )
+    if (!intersects) return null
+    const prize = this.transform('prize')
+    const sensor = {
+      position: [...this.config.chute.sensorPosition] as Vec3,
+      quaternion: [0, 0, 0, 1] as [number, number, number, number],
+    }
+    const relativePosition: Vec3 = [
+      prize.position[0] - sensor.position[0],
+      prize.position[1] - sensor.position[1],
+      prize.position[2] - sensor.position[2],
+    ]
+    this.deliveredPrizeIds.add(selectedId)
+    const deliveredState = this.prizeState.get(selectedId)
+    if (deliveredState) {
+      this.prizeState.set(selectedId, {
+        ...deliveredState,
+        position: [...prize.position] as Vec3,
+        orientation: { quaternion: [...prize.quaternion] as PrizeState['orientation']['quaternion'] },
+        won: true,
+        removed: true,
+      })
+    }
+    this.deliveryObservation = {
+      delivered: true,
+      removed: true,
+      prizeId: selectedId,
+      runId: this.runId,
+      step: this.stepNumber,
+      prize,
+      sensor,
+      relativePosition,
+    }
+    this.payoutHookEventValue = {
+      type: 'payout/inventory-hook',
+      prizeId: selectedId,
+      runId: this.runId,
+      step: this.stepNumber,
+    }
+    selectedBody.setEnabled(false)
+    selectedCollider.setEnabled(false)
+    this.savePrizeState()
+    return this.deliveryObservation
   }
 
   /** Reports Rapier contact facts separately from visual overlap. */
   observeGrip(): GripObservation {
     this.assertNotDisposed()
+    const activePrizeCollider = this.prizeColliders.get(this.selectedPrizeId)
+    if (!activePrizeCollider) throw new Error(`N43 selected prize is unavailable: ${this.selectedPrizeId}`)
     const physicalContact = this.world.intersectionPair(
       this.sensorCollider,
-      this.prizeCollider,
+      activePrizeCollider,
     )
     const clawColliders = [this.headCollider, ...this.fingerColliders]
     let solverContact = false
@@ -1028,7 +1423,7 @@ export class N6PhysicsAdapter {
     const contacts: PhysicsContactFact[] = []
     for (const collider of clawColliders) {
       this.world.contactPairsWith(collider, (other) => {
-        const isPrize = other.handle === this.prizeCollider.handle
+        const isPrize = other.handle === activePrizeCollider.handle
         const isFloor = other.handle === this.floorCollider.handle
         const isWall = this.wallColliderHandles.has(other.handle)
         if (!isPrize && !isFloor && !isWall) return
@@ -1150,7 +1545,7 @@ export class N6PhysicsAdapter {
     return Math.min(headBottom, ...fingerBottoms)
   }
 
-  /** Creates the approved explicit carry constraint only after contact approval. */
+  /** Starts the approved hold after grip-onset contact approval. */
   attemptGrip(): GripAttempt {
     this.assertNotDisposed()
     const observation = this.observeGrip()
@@ -1160,60 +1555,51 @@ export class N6PhysicsAdapter {
         accepted: false,
         reason: 'no-physical-contact',
         jointCreated: false,
+        holdStarted: false,
         runId: this.runId,
         constraintCreatedAtRunId: null,
+        holdStartedAtRunId: null,
       }
     }
-    return this.createCarryConstraint()
-  }
-
-  private createCarryConstraint(): GripAttempt {
-    const createdNow = this.carryJoint === null
-    if (createdNow) {
-      // N27: the prize is carried from the dynamic head. The anchor is the
-      // prize's CURRENT head-local offset (adaptive), so creating the fixed
-      // constraint never snaps the prize — the claw may park slightly above
-      // the classic grip height after the N26 contact stop.
-      const head = this.transform('head')
-      const prize = this.transform('prize')
-      const headQuat = new Quaternion().fromArray([...head.quaternion])
-      const localOffset = new Vector3()
-        .fromArray([...prize.position])
-        .sub(new Vector3().fromArray([...head.position]))
-        .applyQuaternion(headQuat.clone().invert())
-      this.carryJoint = this.world.createImpulseJoint(
-        RAPIER.JointData.fixed(
-          rapierVector(localOffset),
-          IDENTITY,
-          ZERO,
-          IDENTITY,
-        ),
-        this.headBody,
-        this.prizeBody,
-        true,
-      )
-      this.constraintRunId = this.runId
-    }
+    const head = this.transform('head')
+    const prize = this.transform('prize')
+    const activePrizeBody = this.prizeBodies.get(this.selectedPrizeId)
+    if (!activePrizeBody) throw new Error(`N43 selected prize is unavailable: ${this.selectedPrizeId}`)
+    const headQuaternion = new Quaternion().fromArray([...head.quaternion])
+    this.holdOffset = new Vector3()
+      .fromArray([...prize.position])
+      .sub(new Vector3().fromArray([...head.position]))
+      .applyQuaternion(headQuaternion.clone().invert())
+      .toArray() as Vec3
+    this.holdActive = true
+    this.holdContactCount = Math.max(
+      1,
+      observation.contacts.filter((contact) => contact.otherColliderRole === 'prize').length,
+    )
     this.logicalState = 'carrying'
+    this.retentionReleaseEvent = null
+    this.retentionState = this.createRetentionState('holding', null)
     return {
       accepted: true,
       reason: 'contact-approved',
-      jointCreated: createdNow,
+      jointCreated: false,
+      holdStarted: true,
       runId: this.runId,
-      constraintCreatedAtRunId: createdNow ? this.runId : this.constraintRunId,
+      constraintCreatedAtRunId: null,
+      holdStartedAtRunId: this.runId,
     }
   }
 
+  /** Ends a manual release; balance-triggered releases use breakHold(). */
   releaseGrip(): number | null {
     this.assertNotDisposed()
-    const removedAtRunId = this.carryJoint ? this.runId : null
-    if (this.carryJoint) {
-      this.world.removeImpulseJoint(this.carryJoint, true)
-      this.carryJoint = null
-      this.constraintRunId = null
+    const releasedAtRunId = this.holdActive ? this.runId : null
+    if (this.holdActive) {
+      this.holdActive = false
       this.logicalState = 'released'
+      this.retentionState = this.createRetentionState('released', this.stepNumber)
     }
-    return removedAtRunId
+    return releasedAtRunId
   }
 
   /** Applies one world-space angular impulse through the physics authority. */
@@ -1245,7 +1631,7 @@ export class N6PhysicsAdapter {
         : body === 'head'
           ? this.headBody
           : body === 'prize'
-            ? this.prizeBody
+            ? this.prizeBodies.get(this.selectedPrizeId) ?? this.prizeBody
             : this.environmentBody
     return {
       position: tuple(source.translation()),
@@ -1265,19 +1651,43 @@ export class N6PhysicsAdapter {
     }
   }
 
-  /** Removes the carry joint and restores body, velocity, contact, and logical state. */
+  /** Restores bodies, hold state, logs, and run epoch from baseline snapshots. */
   reset(): void {
     this.assertNotDisposed()
-    if (this.carryJoint) {
-      this.world.removeImpulseJoint(this.carryJoint, true)
-      this.carryJoint = null
+    this.holdActive = false
+    this.retentionReleaseEvent = null
+    this.deliveryObservation = null
+    this.payoutHookEventValue = null
+    this.deliveredPrizeIds.clear()
+    const persisted = this.persistPrizeState
+      ? this.prizePersistence.load(this.prizeManifest.revision)
+      : null
+    for (const [id, body] of this.prizeBodies) {
+      const state = persisted?.prizes.find((entry) => entry.id === id)
+      const baseline = this.prizeBaselines.get(id)
+      body.setEnabled(!state?.removed)
+      this.prizeColliders.get(id)?.setEnabled(!state?.removed)
+      if (state) {
+        this.restoreBody(body, { position: state.position, quaternion: state.orientation.quaternion, sleeping: false })
+        this.prizeState.set(id, state)
+      } else if (baseline) {
+        this.restoreBody(body, baseline)
+        this.prizeState.set(id, {
+          id,
+          position: [...baseline.position] as Vec3,
+          orientation: { quaternion: [...baseline.quaternion] as PrizeState['orientation']['quaternion'] },
+          won: false,
+          removed: false,
+        })
+      }
     }
+    this.retentionState = this.createRetentionState('idle', null)
+    this.holdContactCount = 0
     this.restoreBaselinePose()
     this.stepNumber = 0
     this.runId += 1
     this.logicalState = 'ready'
     this.stepRecords.length = 0
-    this.constraintRunId = null
     this.world.propagateModifiedBodyPositionsToColliders()
     this.world.updateSceneQueries()
     // Rapier's narrow phase is refreshed by a world step; this step is part of
@@ -1286,6 +1696,16 @@ export class N6PhysicsAdapter {
     this.restoreBaselinePose()
     this.world.propagateModifiedBodyPositionsToColliders()
     this.world.updateSceneQueries()
+    for (const [id, body] of this.prizeBodies) {
+      const state = this.prizeState.get(id)
+      if (!state) continue
+      this.restoreBody(body, { position: state.position, quaternion: state.orientation.quaternion, sleeping: false })
+      body.setEnabled(!state.removed)
+      this.prizeColliders.get(id)?.setEnabled(!state.removed)
+    }
+    this.world.propagateModifiedBodyPositionsToColliders()
+    this.world.updateSceneQueries()
+    this.savePrizeState()
   }
 
   /** Idempotent: frees the Rapier world at most once. */
@@ -1293,6 +1713,26 @@ export class N6PhysicsAdapter {
     if (this.disposed) return
     this.disposed = true
     this.world.free()
+  }
+
+  private updatePrizeStateFromBodies(): void {
+    for (const [id, body] of this.prizeBodies) {
+      const previous = this.prizeState.get(id)
+      if (!previous || !body.isEnabled()) continue
+      this.prizeState.set(id, {
+        ...previous,
+        position: tuple(body.translation()),
+        orientation: { quaternion: quaternionTuple(body.rotation()) },
+      })
+    }
+  }
+
+  private savePrizeState(): void {
+    if (!this.persistPrizeState) return
+    this.prizePersistence.save({
+      manifestRevision: this.prizeManifest.revision,
+      prizes: [...this.prizeState.values()],
+    })
   }
 
   private captureBody(body: RAPIER.RigidBody): BodyBaseline {
@@ -1307,7 +1747,6 @@ export class N6PhysicsAdapter {
   private restoreBaselinePose(): void {
     this.restoreBody(this.clawBody, this.baseline.claw)
     this.restoreBody(this.headBody, this.baseline.head)
-    this.restoreBody(this.prizeBody, this.baseline.prize)
     this.restoreBody(this.environmentBody, this.baseline.environment)
     this.clawBody.setNextKinematicTranslation(
       vector(this.baseline.claw.position),
@@ -1315,6 +1754,152 @@ export class N6PhysicsAdapter {
     this.clawBody.setNextKinematicRotation(
       rotation(this.baseline.claw.quaternion),
     )
+  }
+
+  private validateRetentionConfig(): void {
+    const config = this.retentionConfig
+    if (
+      !Number.isFinite(config.gripVoltage) ||
+      config.gripVoltage < this.config.retention.minGripVoltage ||
+      config.gripVoltage > this.config.retention.maxGripVoltage ||
+      !Number.isFinite(config.padFriction) ||
+      config.padFriction < 0 ||
+      !Number.isFinite(config.prizeWeight) ||
+      config.prizeWeight <= 0 ||
+      !Number.isFinite(config.gripLeverArm) ||
+      config.gripLeverArm <= 0 ||
+      config.centerOfMass.some((value) => !Number.isFinite(value)) ||
+      config.gripPoint.some((value) => !Number.isFinite(value))
+    ) {
+      throw new Error('N41 hold-undefined-capacity: invalid voltage, friction, weight, CoM, or grip geometry')
+    }
+  }
+
+  private activePrizeDefinition(): PrizeDefinition {
+    const definition = this.prizeDefinitions.get(this.selectedPrizeId)
+    if (!definition) {
+      throw new Error(`N43 selected prize is unavailable: ${this.selectedPrizeId}`)
+    }
+    return definition
+  }
+
+  private activePrizeWeight(): number {
+    return this.useManifestPhysics
+      ? this.activePrizeDefinition().weight
+      : this.retentionConfig.prizeWeight
+  }
+
+  private activePrizeCenterOfMass(): Vec3 {
+    return this.useManifestPhysics
+      ? ([...this.activePrizeDefinition().centerOfMass] as Vec3)
+      : ([...this.retentionConfig.centerOfMass] as Vec3)
+  }
+
+  private holdCapacity(): number {
+    const config = this.retentionConfig
+    const voltageRange = this.config.retention.maxGripVoltage - this.config.retention.minGripVoltage
+    const voltageRatio =
+      (config.gripVoltage - this.config.retention.minGripVoltage) / voltageRange
+    const maxHoldForce =
+      config.maxHoldForceAtMinVoltage +
+      voltageRatio *
+        (config.maxHoldForceAtMaxVoltage - config.maxHoldForceAtMinVoltage)
+    const contactGeometryFactor =
+      0.75 + 0.25 * Math.min(1, this.holdContactCount / 3)
+    return maxHoldForce * config.padFriction * contactGeometryFactor
+  }
+
+  private holdRequiredForce(): { readonly required: number; readonly torque: number } {
+    const config = this.retentionConfig
+    const prizeWeight = this.activePrizeWeight()
+    const centerOfMass = this.activePrizeCenterOfMass()
+    const mass = prizeWeight / Math.abs(this.config.gravity.y)
+    const offset = new Vector3(...centerOfMass).sub(new Vector3(...config.gripPoint))
+    const distance = offset.length()
+    const torque = mass * Math.abs(this.config.gravity.y) * distance
+    const accelerationForce =
+      prizeWeight *
+      (config.pendulumSwingAcceleration + config.travelAcceleration) /
+      Math.abs(this.config.gravity.y)
+    return {
+      torque,
+      required:
+        prizeWeight +
+        accelerationForce +
+        config.packingForce +
+        Math.abs(torque) / config.gripLeverArm,
+    }
+  }
+
+  private createRetentionState(
+    status: RetentionStatus,
+    releasedAt: number | null,
+  ): RetentionState {
+    const { required, torque } = this.holdRequiredForce()
+    return {
+      status,
+      voltage: this.retentionConfig.gripVoltage,
+      capacity: this.holdCapacity(),
+      required,
+      margin: this.holdCapacity() - required,
+      torque,
+      weight: this.activePrizeWeight(),
+      centerOfMass: this.activePrizeCenterOfMass(),
+      gripPoint: [...this.retentionConfig.gripPoint] as Vec3,
+      contactCount: this.holdContactCount,
+      releasedAt,
+    }
+  }
+
+  private cloneRetentionState(state: RetentionState): RetentionState {
+    return {
+      ...state,
+      centerOfMass: [...state.centerOfMass] as Vec3,
+      gripPoint: [...state.gripPoint] as Vec3,
+      contactCount: state.contactCount,
+    }
+  }
+
+  private applyHoldImpulse(): void {
+    const head = this.transform('head')
+    const desired = new Vector3()
+      .fromArray([...this.holdOffset])
+      .applyQuaternion(new Quaternion().fromArray([...head.quaternion]))
+      .add(new Vector3(...head.position))
+    const current = new Vector3(...this.transform('prize').position)
+    const delta = desired.sub(current)
+    const activePrizeBody = this.prizeBodies.get(this.selectedPrizeId)
+    if (!activePrizeBody) return
+    const mass = activePrizeBody.mass()
+    const velocity = activePrizeBody.linvel()
+    activePrizeBody.applyImpulse(
+      {
+        x: (delta.x / this.config.dt - velocity.x) * mass,
+        y: (delta.y / this.config.dt - velocity.y) * mass,
+        z: (delta.z / this.config.dt - velocity.z) * mass,
+      },
+      true,
+    )
+  }
+
+  private breakHold(margin: number): void {
+    this.holdActive = false
+    this.logicalState = 'released'
+    this.retentionState = this.createRetentionState('released', this.stepNumber)
+    this.retentionReleaseEvent = {
+      state: 'released',
+      step: this.stepNumber,
+      runId: this.runId,
+      margin,
+      reason: 'hold-margin-negative',
+    }
+    const torque = this.retentionState.torque
+    if (torque > 0) {
+      this.prizeBodies.get(this.selectedPrizeId)?.applyTorqueImpulse(
+        { x: 0, y: 0, z: torque * this.config.dt },
+        true,
+      )
+    }
   }
 
   private assertNotDisposed(): void {

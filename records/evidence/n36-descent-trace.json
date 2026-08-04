@@ -139,7 +139,7 @@
           ],
           "colliderRole": "head",
           "colliderHandle": 0,
-          "otherColliderHandle": 2.5e-323,
+          "otherColliderHandle": 3e-323,
           "otherColliderRole": "prize",
           "normal": [
             8.546285892264281e-18,
@@ -209,7 +209,31 @@
           "floorContact": false,
           "visualOverlap": false,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 3,
@@ -245,7 +269,31 @@
           "floorContact": false,
           "visualOverlap": false,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 4,
@@ -281,7 +329,31 @@
           "floorContact": false,
           "visualOverlap": false,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 172,
@@ -324,7 +396,7 @@
               ],
               "colliderRole": "head",
               "colliderHandle": 0,
-              "otherColliderHandle": 2.5e-323,
+              "otherColliderHandle": 3e-323,
               "otherColliderRole": "prize",
               "normal": [
                 4.459695770119963e-18,
@@ -339,7 +411,31 @@
               "distance": -0.07682222127914429
             }
           ],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 173,
@@ -382,7 +478,7 @@
               ],
               "colliderRole": "head",
               "colliderHandle": 0,
-              "otherColliderHandle": 2.5e-323,
+              "otherColliderHandle": 3e-323,
               "otherColliderRole": "prize",
               "normal": [
                 6.769028663632645e-18,
@@ -397,7 +493,31 @@
               "distance": -0.07683253288269043
             }
           ],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 174,
@@ -440,7 +560,7 @@
               ],
               "colliderRole": "head",
               "colliderHandle": 0,
-              "otherColliderHandle": 2.5e-323,
+              "otherColliderHandle": 3e-323,
               "otherColliderRole": "prize",
               "normal": [
                 8.546285892264281e-18,
@@ -455,7 +575,31 @@
               "distance": -0.07682892680168152
             }
           ],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         }
       ]
     },
@@ -546,7 +690,31 @@
           "floorContact": false,
           "visualOverlap": false,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 3,
@@ -582,7 +750,31 @@
           "floorContact": false,
           "visualOverlap": false,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 4,
@@ -618,7 +810,31 @@
           "floorContact": false,
           "visualOverlap": false,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 42,
@@ -654,7 +870,31 @@
           "floorContact": false,
           "visualOverlap": false,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 43,
@@ -690,7 +930,31 @@
           "floorContact": false,
           "visualOverlap": false,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 44,
@@ -726,7 +990,31 @@
           "floorContact": false,
           "visualOverlap": false,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         }
       ]
     },
@@ -769,7 +1057,7 @@
           ],
           "colliderRole": "head",
           "colliderHandle": 0,
-          "otherColliderHandle": 3.5e-323,
+          "otherColliderHandle": 4e-323,
           "otherColliderRole": "wall",
           "normal": [
             -2.0399021916084337e-9,
@@ -846,7 +1134,7 @@
               ],
               "colliderRole": "head",
               "colliderHandle": 0,
-              "otherColliderHandle": 3.5e-323,
+              "otherColliderHandle": 4e-323,
               "otherColliderRole": "wall",
               "normal": [
                 -2.0399021916084337e-9,
@@ -861,7 +1149,31 @@
               "distance": 0.00036801426904276013
             }
           ],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         }
       ]
     },
@@ -904,7 +1216,7 @@
           ],
           "colliderRole": "finger",
           "colliderHandle": 5e-324,
-          "otherColliderHandle": 3e-323,
+          "otherColliderHandle": 3.5e-323,
           "otherColliderRole": "floor",
           "normal": [
             -0.000002222293649323248,
@@ -974,7 +1286,31 @@
           "floorContact": false,
           "visualOverlap": false,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 3,
@@ -1010,7 +1346,31 @@
           "floorContact": false,
           "visualOverlap": false,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 4,
@@ -1046,7 +1406,31 @@
           "floorContact": false,
           "visualOverlap": false,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 30,
@@ -1082,7 +1466,31 @@
           "floorContact": false,
           "visualOverlap": true,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 31,
@@ -1118,7 +1526,31 @@
           "floorContact": false,
           "visualOverlap": true,
           "contacts": [],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         },
         {
           "step": 32,
@@ -1161,7 +1593,7 @@
               ],
               "colliderRole": "finger",
               "colliderHandle": 5e-324,
-              "otherColliderHandle": 3e-323,
+              "otherColliderHandle": 3.5e-323,
               "otherColliderRole": "floor",
               "normal": [
                 -0.000002222293649323248,
@@ -1176,7 +1608,31 @@
               "distance": 0.0009190179407596588
             }
           ],
-          "jointActive": false
+          "jointActive": false,
+          "holdActive": false,
+          "retention": {
+            "status": "idle",
+            "voltage": 24,
+            "capacity": 36,
+            "required": 10,
+            "margin": 26,
+            "torque": 0,
+            "weight": 10,
+            "centerOfMass": [
+              0,
+              0,
+              0
+            ],
+            "gripPoint": [
+              0,
+              0,
+              0
+            ],
+            "contactCount": 0,
+            "releasedAt": null
+          },
+          "retentionRelease": null,
+          "delivery": null
         }
       ]
     }

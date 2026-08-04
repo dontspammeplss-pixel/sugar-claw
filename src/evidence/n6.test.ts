@@ -84,7 +84,7 @@ describe('N6 minimal Rapier physics scenario', () => {
     adapter.dispose()
   })
 
-  it('creates an explicit carry constraint only after physical contact', async () => {
+  it('starts a hold only after physical contact and keeps the prize within hold tolerance', async () => {
     const adapter = await N6PhysicsAdapter.create()
     expect(adapter.moveClaw(PARK_POSITION)).toBe(true)
     adapter.stepMany(3)
@@ -94,7 +94,8 @@ describe('N6 minimal Rapier physics scenario', () => {
     })
     expect(adapter.attemptGrip()).toMatchObject({
       accepted: true,
-      jointCreated: true,
+      jointCreated: false,
+      holdStarted: true,
       reason: 'contact-approved',
     })
     expect(adapter.state).toBe('carrying')
@@ -118,7 +119,8 @@ describe('N6 minimal Rapier physics scenario', () => {
       expect(adapter.moveClaw(target)).toBe(true)
       records.push(adapter.step())
     }
-    expect(records.every((record) => record.jointActive)).toBe(true)
+    expect(records.every((record) => record.holdActive)).toBe(true)
+    expect(records.every((record) => record.retention.status === 'holding')).toBe(true)
     const maxAnchorDeviation = Math.max(
       ...records.map((record) => {
         const expectedPrize = [
@@ -140,7 +142,7 @@ describe('N6 minimal Rapier physics scenario', () => {
     )
     adapter.releaseGrip()
     expect(adapter.state).toBe('released')
-    expect(adapter.step().jointActive).toBe(false)
+    expect(adapter.step().holdActive).toBe(false)
     adapter.dispose()
   })
 
@@ -191,8 +193,9 @@ describe('N6 minimal Rapier physics scenario', () => {
       falsePositivePrevented: true,
     })
     expect(evidence.carry.grip.accepted).toBe(true)
-    expect(evidence.carry.grip.jointCreated).toBe(true)
-    expect(evidence.carry.constraintCreatedAtRunId).toBe(0)
+    expect(evidence.carry.grip.jointCreated).toBe(false)
+    expect(evidence.carry.grip.holdStarted).toBe(true)
+    expect(evidence.carry.constraintCreatedAtRunId).toBeNull()
     expect(evidence.carry.constraintRemovedAtRunId).toBe(0)
     expect(evidence.carry.measuredCarrySteps).toBe(
       N6_PHYSICS_CONFIG.carryLiftSteps,
@@ -253,42 +256,132 @@ describe('N6 minimal Rapier physics scenario', () => {
     adapter.dispose()
   })
 
-  it('reports constraint creation only for the creating call', async () => {
+  it('reports hold onset only for the creating call', async () => {
     const adapter = await N6PhysicsAdapter.create()
     adapter.moveClaw(PARK_POSITION)
     adapter.stepMany(3)
     const created = adapter.attemptGrip()
-    expect(created).toMatchObject({ accepted: true, jointCreated: true })
-    expect(created.constraintCreatedAtRunId).toBe(0)
+    expect(created).toMatchObject({ accepted: true, jointCreated: false, holdStarted: true })
+    expect(created.constraintCreatedAtRunId).toBeNull()
 
     const repeated = adapter.attemptGrip()
     expect(repeated).toMatchObject({
       accepted: true,
       jointCreated: false,
-      constraintCreatedAtRunId: 0,
+      holdStarted: true,
+      constraintCreatedAtRunId: null,
     })
 
     expect(adapter.releaseGrip()).toBe(0)
     adapter.moveClaw(PARK_POSITION)
     adapter.stepMany(3)
     const recreated = adapter.attemptGrip()
-    expect(recreated).toMatchObject({ accepted: true, jointCreated: true })
-    expect(recreated.constraintCreatedAtRunId).toBe(0)
+    expect(recreated).toMatchObject({ accepted: true, jointCreated: false, holdStarted: true })
+    expect(recreated.constraintCreatedAtRunId).toBeNull()
     adapter.dispose()
   })
 
-  it('clears constraint creation state on reset', async () => {
+  it('clears hold state on reset', async () => {
     const adapter = await N6PhysicsAdapter.create()
     adapter.moveClaw(PARK_POSITION)
     adapter.stepMany(3)
-    expect(adapter.attemptGrip().constraintCreatedAtRunId).toBe(0)
+    expect(adapter.attemptGrip().holdStartedAtRunId).toBe(0)
     adapter.reset()
     adapter.moveClaw(PARK_POSITION)
     adapter.stepMany(3)
     const afterReset = adapter.attemptGrip()
-    expect(afterReset).toMatchObject({ accepted: true, jointCreated: true })
-    expect(afterReset.constraintCreatedAtRunId).toBe(1)
+    expect(afterReset).toMatchObject({ accepted: true, jointCreated: false, holdStarted: true })
+    expect(afterReset.holdStartedAtRunId).toBe(1)
     adapter.dispose()
+  })
+
+  it('releases deterministically when voltage capacity is insufficient', async () => {
+    const adapter = await N6PhysicsAdapter.create({
+      retention: { gripVoltage: 12, prizeWeight: 40 },
+    })
+    adapter.moveClaw(PARK_POSITION)
+    adapter.stepMany(3)
+    expect(adapter.attemptGrip().holdStarted).toBe(true)
+    const records = adapter.stepMany(5)
+    expect(records.some((record) => record.retentionRelease !== null)).toBe(true)
+    expect(adapter.state).toBe('released')
+    expect(adapter.retentionRelease).toMatchObject({
+      state: 'released',
+      reason: 'hold-margin-negative',
+      step: expect.any(Number),
+      margin: expect.any(Number),
+    })
+    expect(adapter.retention.margin).toBeLessThan(0)
+    adapter.dispose()
+  })
+
+  it('holds centered CoM and releases an off-center heavy prize under torque', async () => {
+    const centered = await N6PhysicsAdapter.create({
+      retention: { gripVoltage: 36, prizeWeight: 40, centerOfMass: [0, 0, 0] },
+    })
+    centered.moveClaw(PARK_POSITION)
+    centered.stepMany(3)
+    centered.attemptGrip()
+    centered.stepMany(5)
+    expect(centered.state).toBe('carrying')
+    expect(centered.retention.torque).toBe(0)
+
+    const offCenter = await N6PhysicsAdapter.create({
+      retention: { gripVoltage: 36, prizeWeight: 40, centerOfMass: [0.5, 0, 0] },
+    })
+    offCenter.moveClaw(PARK_POSITION)
+    offCenter.stepMany(3)
+    offCenter.attemptGrip()
+    offCenter.stepMany(5)
+    expect(offCenter.state).toBe('released')
+    expect(offCenter.retention.torque).toBeGreaterThan(0)
+    expect(offCenter.retentionRelease?.reason).toBe('hold-margin-negative')
+    const releasedOrientation = offCenter.transform('prize').quaternion
+    offCenter.stepMany(10)
+    const settledOrientation = offCenter.transform('prize').quaternion
+    expect(
+      Math.max(
+        ...settledOrientation.map((value, axis) =>
+          Math.abs(value - releasedOrientation[axis]),
+        ),
+      ),
+    ).toBeGreaterThan(0.000001)
+    centered.dispose()
+    offCenter.dispose()
+  })
+
+  it('publishes deterministic voltage sweep margins at fixed steps', async () => {
+    async function trace(): Promise<readonly { voltage: number; values: readonly number[] }[]> {
+      const margins: { voltage: number; values: readonly number[] }[] = []
+      for (const gripVoltage of [12, 24, 36]) {
+        const adapter = await N6PhysicsAdapter.create({ retention: { gripVoltage } })
+        adapter.moveClaw(PARK_POSITION)
+        adapter.stepMany(3)
+        adapter.attemptGrip()
+        const records = adapter.stepMany(3)
+        margins.push({
+          voltage: gripVoltage,
+          values: records.map((record) => record.retention.margin),
+        })
+        adapter.dispose()
+      }
+      return margins
+    }
+
+    const first = await trace()
+    const second = await trace()
+    expect(second).toEqual(first)
+    expect(first[0].values[0]).toBeLessThan(first[1].values[0])
+    expect(first[1].values[0]).toBeLessThan(first[2].values[0])
+  })
+
+  it('rejects retention voltage outside the declared 12-36V band', async () => {
+    await expect(
+      N6PhysicsAdapter.create({ retention: { gripVoltage: 11 } }),
+    ).rejects.toThrow('hold-undefined-capacity')
+    await expect(
+      N6PhysicsAdapter.create({ retention: { gripVoltage: 37 } }),
+    ).rejects.toThrow('hold-undefined-capacity')
   })
 
   it('retains only the newest bounded step records', async () => {

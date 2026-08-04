@@ -94,7 +94,8 @@ describe('N7 integrated effect coordinator', () => {
       })
       expect(report.grip?.attempt).toMatchObject({
         accepted: true,
-        jointCreated: true,
+        jointCreated: false,
+        holdStarted: true,
       })
       expect(report.state.outcome).toMatchObject({
         accepted: true,
@@ -154,6 +155,62 @@ describe('N7 integrated effect coordinator', () => {
         kind: 'stale-callback',
         callbackRunId: oldControllerRunId,
       })
+    } finally {
+      coordinator.dispose()
+    }
+  })
+
+  it('keeps the N42.1 return path L-shaped under fixed-step sampling', async () => {
+    const coordinator = await N7EffectCoordinator.create(createFixture())
+    try {
+      coordinator.dispatch({ type: 'beginAim' })
+      coordinator.dispatch({ type: 'moveAim', axis: 'x', value: 0.2 })
+      coordinator.dispatch({ type: 'confirmDrop' })
+
+      const returnPositions: Array<readonly [number, number, number]> = []
+      for (let tick = 0; tick < 220; tick += 1) {
+        const state = coordinator.snapshot.state
+        const wasReturning = state === 'returning'
+        coordinator.tick(1000 / 60)
+        const nextState = coordinator.snapshot.state
+        if (wasReturning || nextState === 'returning') {
+          returnPositions.push([...coordinator.physics.transform('claw').position])
+        }
+        if (coordinator.snapshot.state === 'result') break
+      }
+
+      const tolerance = N6_PHYSICS_CONFIG.tolerances.travel
+      const topY = N6_PHYSICS_CONFIG.liftPosition[1]
+      const overPosition = N6_PHYSICS_CONFIG.chute.overPosition
+      const releasePosition = N6_PHYSICS_CONFIG.chute.releasePosition
+      const firstDescent = returnPositions.findIndex(
+        ([, y]) => Math.abs(y - topY) > tolerance,
+      )
+
+      expect(returnPositions.length).toBeGreaterThan(2)
+      expect(firstDescent).toBeGreaterThan(0)
+      expect(
+        returnPositions.slice(0, firstDescent).every(([, y]) => Math.abs(y - topY) <= tolerance),
+      ).toBe(true)
+      expect(
+        returnPositions[firstDescent - 1].every(
+          (value, axis) => Math.abs(value - overPosition[axis]) <= tolerance,
+        ),
+      ).toBe(true)
+      expect(
+        returnPositions.slice(firstDescent).every(
+          ([x, , z]) =>
+            Math.abs(x - overPosition[0]) <= tolerance &&
+            Math.abs(z - overPosition[2]) <= tolerance,
+        ),
+      ).toBe(true)
+      const finalPosition = returnPositions.at(-1)!
+      expect(
+        finalPosition.every(
+          (value, axis) => Math.abs(value - releasePosition[axis]) <= tolerance,
+        ),
+      ).toBe(true)
+      expect(coordinator.snapshot.state).toBe('result')
     } finally {
       coordinator.dispose()
     }
@@ -242,7 +299,7 @@ describe('N7 integrated effect coordinator', () => {
         prizeSynchronized: true,
       },
       grip: {
-        attempt: { accepted: true, jointCreated: true },
+        attempt: { accepted: true, jointCreated: false, holdStarted: true },
       },
       reset: {
         stateAfterTransaction: 'ready',

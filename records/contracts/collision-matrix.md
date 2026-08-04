@@ -1,9 +1,9 @@
-# Collision Matrix (rev 2)
+# Collision Matrix (rev 3)
 
 | Field           | Value                                              |
 | --------------- | -------------------------------------------------- |
-| **Status**      | Revised 2026-08-02 — N25/N26/N28 (fingers physical, head dynamic, walls) |
-| **Baseline**    | `gate-1-baseline-rev1` → rev 2                    |
+| **Status**      | Revised 2026-08-04 — N43 multi-prize playfield; N25/N26/N28 retained |
+| **Baseline**    | `main` → rev 3                                     |
 | **Resolves**    | A-22, A-23 (revised), A-01, A-26 (see decision ledger) |
 | **Consumed by** | Physics implementation nodes (N6 and later)        |
 
@@ -35,7 +35,7 @@
 | Group         |      Bit | Contents                                                    |
 | ------------- | -------: | ----------------------------------------------------------- |
 | `environment` | `1 << 0` | floor + four chamber wall colliders (N28)                   |
-| `prize`       | `1 << 1` | dynamic prize collider (single prize in v1, A-08)           |
+| `prize`       | `1 << 1` | dynamic collider for every manifest prize (N43)              |
 | `clawBody`    | `1 << 2` | dynamic head cuboid proxy on the hybrid claw (N26)          |
 | `clawFinger`  | `1 << 3` | physical finger capsule colliders, one per pivot (N25)      |
 | `sensor`      | `1 << 4` | grip/contact sensor proxy; sensor-type, observation only    |
@@ -55,7 +55,7 @@
 
 ## Rationale for the resolved cells
 
-- **Prize × Prize —** one prize in v1; no prize self-collision needed.
+- **Prize × Prize ✓ —** manifest prizes are independent dynamic bodies and may physically push/nudge one another; N43 evidence records a solver contact between two distinct prize colliders.
 - **Environment × Sensor —** sensors observe the prize only; they do not sense static env geometry in v1.
 - **Claw finger × Prize ✓ and Claw finger × Environment ✓ —** physical finger
   capsules take full solver response: they push the prize during descent
@@ -69,6 +69,12 @@
   `clawBody`; a finger-capable sensor would double-count the same geometry.
 - **Sensor × Claw body ✓** keeps the sensor carried by the head body without
   solver response.
+
+## N43 revision
+
+- Prize-vs-prize membership and solver masks are enabled for every manifest prize.
+- Prize-vs-claw remains distinguishable through the same `prize` versus `clawBody`/`clawFinger` group cells.
+- The matrix remains the single source of collision truth; adding a manifest prize creates another member of the existing `prize` group and requires no code change.
 
 ## Binding rules
 

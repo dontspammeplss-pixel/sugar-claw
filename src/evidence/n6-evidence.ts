@@ -117,7 +117,7 @@ async function runSuccessfulCarry() {
     afterReleasePrize: afterRelease.prize,
     stateAfterRelease: adapter.state,
     constraintRemovedAtRunId: removedAtRunId,
-    jointRemoved: !afterRelease.jointActive,
+    jointRemoved: !afterRelease.holdActive,
     totalSteps: adapter.retainedStepRecords,
     logs: trimLogs(adapter.logs),
   }
@@ -213,7 +213,7 @@ export async function createN6Evidence() {
     observation: overlapObservation,
     grip: failedGrip,
     state: overlapAdapter.state,
-    jointNeverCreated: failedCarryRecords.every((record) => !record.jointActive),
+    jointNeverCreated: failedCarryRecords.every((record) => !record.holdActive),
     prizeRemainsRapierOwned:
       prizeMaxHeight <=
       N6_PHYSICS_CONFIG.failedLiftPosition[1] -

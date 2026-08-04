@@ -44,6 +44,24 @@ const APPROVED_BASE_DESCENT_Y =
 export const N6_PHYSICS_CONFIG = Object.freeze({
   revision: 'fixed-step-rev3',
   dt: 1 / 60,
+  /** N41: deterministic voltage/friction retention candidates. */
+  retention: Object.freeze({
+    revision: 'n41-retention-rev1',
+    minGripVoltage: 12,
+    maxGripVoltage: 36,
+    gripVoltage: 24,
+    maxHoldForceAtMinVoltage: 30,
+    maxHoldForceAtMaxVoltage: 90,
+    padFriction: 0.8,
+    holdFailureThreshold: 0,
+    gripLeverArm: 0.5,
+    prizeWeight: 10,
+    centerOfMass: Object.freeze([0, 0, 0]) as Vec3,
+    gripPoint: Object.freeze([0, 0, 0]) as Vec3,
+    pendulumSwingAcceleration: 0,
+    travelAcceleration: 0,
+    packingForce: 0,
+  }),
   gravity: Object.freeze({ x: 0, y: -9.81, z: 0 }),
   solverIterations: 8,
   additionalFrictionIterations: 2,
@@ -88,6 +106,16 @@ export const N6_PHYSICS_CONFIG = Object.freeze({
     completion: 'base-clearance',
   }),
   clawPosition: Object.freeze([0, 2.8, 0]) as Vec3,
+  /** N42: canonical delivery lane shared by physics and chute visuals. */
+  chute: Object.freeze({
+    sensorPosition: Object.freeze([1.05, 1.1, 0.55]) as Vec3,
+    sensorRadius: 0.3,
+    releasePosition: Object.freeze([1.05, 1.87, 0.55]) as Vec3,
+    /** N42.1: top-height waypoint for the return traverse. */
+    overPosition: Object.freeze([1.05, 2.8, 0.55]) as Vec3,
+    coordinateLayer: 'world/ClawMount',
+    source: 'N42 authored release-point sensor',
+  }),
   // N26: retained grip candidate for low-level contact/carry fixtures. N36
   // descent no longer uses this fixed value as its completion endpoint.
   // N26: the descent parks the claw at 1.97, where the sensor (at head-local
@@ -219,11 +247,13 @@ export const N38_COLLISION_POLICY: Readonly<
     group: N6_COLLISION_GROUPS.prize,
     collisionMask:
       N6_COLLISION_GROUPS.environment |
+      N6_COLLISION_GROUPS.prize |
       N6_COLLISION_GROUPS.clawBody |
       N6_COLLISION_GROUPS.clawFinger |
       N6_COLLISION_GROUPS.sensor,
     solverMask:
       N6_COLLISION_GROUPS.environment |
+      N6_COLLISION_GROUPS.prize |
       N6_COLLISION_GROUPS.clawBody |
       N6_COLLISION_GROUPS.clawFinger,
   }),
@@ -249,7 +279,7 @@ export const N38_COLLISION_POLICY: Readonly<
 
 export type N38PairExpectation = 'solver' | 'sensor' | 'forbidden'
 
-/** All unordered cells from records/contracts/collision-matrix.md rev 2. */
+/** All unordered cells from records/contracts/collision-matrix.md rev 3. */
 export const N38_COLLISION_MATRIX: readonly {
   readonly a: N38CollisionRole
   readonly b: N38CollisionRole
@@ -260,7 +290,7 @@ export const N38_COLLISION_MATRIX: readonly {
   { a: 'environment', b: 'clawBody', expectation: 'solver' },
   { a: 'environment', b: 'clawFinger', expectation: 'solver' },
   { a: 'environment', b: 'sensor', expectation: 'forbidden' },
-  { a: 'prize', b: 'prize', expectation: 'forbidden' },
+  { a: 'prize', b: 'prize', expectation: 'solver' },
   { a: 'prize', b: 'clawBody', expectation: 'solver' },
   { a: 'prize', b: 'clawFinger', expectation: 'solver' },
   { a: 'prize', b: 'sensor', expectation: 'sensor' },

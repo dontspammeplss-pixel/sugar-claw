@@ -1,0 +1,324 @@
+{
+  "node": "N43",
+  "status": "pass",
+  "deterministic": true,
+  "physics": {
+    "revision": "fixed-step-rev3",
+    "fixedDt": 0.016666666666666666
+  },
+  "manifest": {
+    "revision": "n43-default-playfield-rev1",
+    "prizeCount": 3,
+    "geometries": [
+      "sphere",
+      "tag",
+      "soft-pouch"
+    ],
+    "validationErrors": [],
+    "invalidManifestRejected": true,
+    "invalidManifestError": "manifest-invalid: duplicate prize ID: tag-prize"
+  },
+  "persistence": {
+    "firstSnapshot": {
+      "manifestRevision": "n43-default-playfield-rev1",
+      "freshLayout": true,
+      "winningsCount": 0,
+      "prizes": [
+        {
+          "id": "prize",
+          "position": [
+            0,
+            1.187237024307251,
+            0
+          ],
+          "orientation": {
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "won": false,
+          "removed": false,
+          "geometry": "sphere",
+          "weight": 10,
+          "centerOfMass": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "id": "tag-prize",
+          "position": [
+            -0.41999998688697815,
+            1.2272369861602783,
+            0.1599999964237213
+          ],
+          "orientation": {
+            "quaternion": [
+              0,
+              0.13006627559661865,
+              0,
+              0.9915052652359009
+            ]
+          },
+          "won": false,
+          "removed": false,
+          "geometry": "tag",
+          "weight": 8,
+          "centerOfMass": [
+            0.02,
+            0.01,
+            0
+          ]
+        },
+        {
+          "id": "pouch-prize",
+          "position": [
+            0.7200000286102295,
+            1.187237024307251,
+            0.07999999821186066
+          ],
+          "orientation": {
+            "quaternion": [
+              0,
+              -0.09999874979257584,
+              0,
+              0.9949875473976135
+            ]
+          },
+          "won": false,
+          "removed": false,
+          "geometry": "soft-pouch",
+          "weight": 12,
+          "centerOfMass": [
+            -0.02,
+            0,
+            0.01
+          ]
+        }
+      ]
+    },
+    "nudgedPosition": [
+      -0.41999998688697815,
+      1.2272369861602783,
+      0.1599999964237213
+    ],
+    "resumedSnapshot": {
+      "manifestRevision": "n43-default-playfield-rev1",
+      "freshLayout": false,
+      "winningsCount": 0,
+      "prizes": [
+        {
+          "id": "prize",
+          "position": [
+            0,
+            1.187237024307251,
+            0
+          ],
+          "orientation": {
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "won": false,
+          "removed": false,
+          "geometry": "sphere",
+          "weight": 10,
+          "centerOfMass": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "id": "tag-prize",
+          "position": [
+            -0.41999998688697815,
+            1.2272369861602783,
+            0.1599999964237213
+          ],
+          "orientation": {
+            "quaternion": [
+              0,
+              0.13006627559661865,
+              0,
+              0.9915052652359009
+            ]
+          },
+          "won": false,
+          "removed": false,
+          "geometry": "tag",
+          "weight": 8,
+          "centerOfMass": [
+            0.02,
+            0.01,
+            0
+          ]
+        },
+        {
+          "id": "pouch-prize",
+          "position": [
+            0.7200000286102295,
+            1.187237024307251,
+            0.07999999821186066
+          ],
+          "orientation": {
+            "quaternion": [
+              0,
+              -0.09999874979257584,
+              0,
+              0.9949875473976135
+            ]
+          },
+          "won": false,
+          "removed": false,
+          "geometry": "soft-pouch",
+          "weight": 12,
+          "centerOfMass": [
+            -0.02,
+            0,
+            0.01
+          ]
+        }
+      ]
+    },
+    "sameRevisionRestored": true
+  },
+  "winRemoval": {
+    "delivered": true,
+    "removed": true,
+    "selectedPrizeId": "tag-prize",
+    "selectedWeight": 8,
+    "selectedCenterOfMass": [
+      0.02,
+      0.01,
+      0
+    ],
+    "winningsCount": 1,
+    "reloadRemoved": true,
+    "reloadWinningsCount": 1
+  },
+  "resetSemantics": {
+    "freshSnapshot": {
+      "manifestRevision": "n43-new-machine-rev2",
+      "freshLayout": true,
+      "winningsCount": 0,
+      "prizes": [
+        {
+          "id": "prize",
+          "position": [
+            0,
+            1.2,
+            0
+          ],
+          "orientation": {
+            "quaternion": [
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "won": false,
+          "removed": false,
+          "geometry": "sphere",
+          "weight": 10,
+          "centerOfMass": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "id": "tag-prize",
+          "position": [
+            -0.72,
+            1.2,
+            0.08
+          ],
+          "orientation": {
+            "quaternion": [
+              0,
+              0.13,
+              0,
+              0.991
+            ]
+          },
+          "won": false,
+          "removed": false,
+          "geometry": "tag",
+          "weight": 8,
+          "centerOfMass": [
+            0.02,
+            0.01,
+            0
+          ]
+        },
+        {
+          "id": "pouch-prize",
+          "position": [
+            0.72,
+            1.2,
+            0.08
+          ],
+          "orientation": {
+            "quaternion": [
+              0,
+              -0.1,
+              0,
+              0.995
+            ]
+          },
+          "won": false,
+          "removed": false,
+          "geometry": "soft-pouch",
+          "weight": 12,
+          "centerOfMass": [
+            -0.02,
+            0,
+            0.01
+          ]
+        }
+      ]
+    },
+    "freshRevisionReset": true,
+    "noWonPrizesOnFreshRevision": true
+  },
+  "collision": {
+    "prizeColliderCount": 3,
+    "distinctFromClaw": true,
+    "prizeVsPrizeEligible": true,
+    "prizeVsClawEligible": true,
+    "prizeCollision": {
+      "observed": true,
+      "traceCount": 1
+    }
+  },
+  "repeatability": {
+    "thirtyFixedStepsMatch": true
+  },
+  "performance": {
+    "methodology": "N21 / records/contracts/performance-thresholds.md",
+    "thresholdReference": "p95 frame <= 20ms; average physics step <= 2ms; sustained >= 50fps",
+    "measured": {
+      "steps": 120,
+      "elapsedMs": 36.09450400000014,
+      "averagePhysicsStepMs": 0.3007875333333345,
+      "thresholdMs": 2,
+      "withinPhysicsStepBudget": true
+    },
+    "browserFps": "not claimed; reference-device browser profiling remains required"
+  },
+  "verificationCommands": [
+    "npm run typecheck",
+    "npm run lint",
+    "npm test",
+    "npm run build"
+  ]
+}

@@ -2,6 +2,7 @@ import { useLayoutEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import type { PerspectiveCamera } from 'three'
 import { FINGER_ANGLES } from '../claw/rig'
+import { DEFAULT_PRIZE_MANIFEST } from '../playfield/prize-manifest'
 import { CLAW, LIGHTS, MACHINE, MATERIALS, REVIEW_CAMERA } from './config'
 
 function Box({
@@ -241,7 +242,7 @@ function MachineVisuals() {
       <Box
         name="ChuteOpening"
         size={[0.52, 0.025, 0.3]}
-        position={[1.05, 0.78, 1.03]}
+        position={MACHINE.chute.openingPosition}
         color={MATERIALS.rubberDark}
         roughness={0.72}
       />
@@ -389,13 +390,19 @@ function MachineRoot() {
   )
 }
 
-function PrizeRoot() {
+function PrizeRoot({
+  id = 'prize',
+  position = [0, 1.2, 0],
+}: {
+  readonly id?: string
+  readonly position?: readonly [number, number, number]
+}) {
   return (
     // N26: prize radius 0.22 keeps the ball able to enter the finger cage, so
     // the fingers can physically close around it (rigid prize 0.31 could not
     // fit the 0.28 ring without pass-through). Kept in sync with
     // N6_PHYSICS_CONFIG.prizeRadius.
-    <group name="PrizeRoot" position={[0, 1.2, 0]}>
+    <group name={id === 'prize' ? 'PrizeRoot' : `PrizeRoot-${id}`} position={position}>
       <mesh name="PrizeBody" castShadow>
         <sphereGeometry args={[0.22, 24, 16]} />
         <meshStandardMaterial
@@ -435,7 +442,13 @@ export function StaticScene() {
       <LightingRoot />
       <CameraRig />
       <MachineRoot />
-      <PrizeRoot />
+      {DEFAULT_PRIZE_MANIFEST.prizes.map((prize) => (
+        <PrizeRoot
+          key={prize.id}
+          id={prize.id}
+          position={prize.position}
+        />
+      ))}
       <PlayfieldRoot />
       <group name="DebugRoot" visible={false} userData={{ readOnly: true }} />
     </group>

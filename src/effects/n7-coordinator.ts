@@ -22,8 +22,15 @@ import {
   type GripAttempt,
   type PhysicsTransform,
   type DescentObservation,
+  type RetentionState,
+  type RetentionReleaseEvent,
+  type DeliveryObservation,
+  type PayoutHookEvent,
+  type N6PhysicsAdapterOptions,
+  type PrizePlayfieldSnapshot,
 } from '../physics/adapter'
 import { N6_PHYSICS_CONFIG, type Vec3 } from '../physics/config'
+import { DEFAULT_PRIZE_MANIFEST } from '../playfield/prize-manifest'
 import {
   errorMessage,
   publishN7RuntimeError,
@@ -36,6 +43,7 @@ export interface N7SceneBindings {
   readonly clawVisualRoot: Object3D
   readonly headVisualRoot: Object3D
   readonly prizeRoot: Object3D
+  readonly prizeRoots: ReadonlyMap<string, Object3D>
 }
 
 export interface N7SyncReport {
@@ -45,6 +53,7 @@ export interface N7SyncReport {
   readonly prizeVisualWorldPosition: readonly [number, number, number]
   readonly clawSynchronized: boolean
   readonly prizeSynchronized: boolean
+  readonly playfield: PrizePlayfieldSnapshot
 }
 
 export type N7Completion = Extract<
@@ -60,6 +69,13 @@ export type N7Completion = Extract<
   }
 >
 
+export interface N7Countdown {
+  readonly durationSteps: number
+  readonly remainingSteps: number
+  readonly resetCount: number
+  readonly lastResetRunId: number | null
+}
+
 export interface N7RuntimeReport {
   readonly node: 'N7'
   readonly baseline: 'gate-2-n3-approved + gate-3-n4-approved + gate-4-n5-approved + gate-5-n6-approved'
@@ -71,6 +87,11 @@ export interface N7RuntimeReport {
     readonly observation: GripObservation
     readonly attempt: GripAttempt
   } | null
+  readonly retention: RetentionState
+  readonly retentionRelease: RetentionReleaseEvent | null
+  readonly delivery: DeliveryObservation | null
+  readonly payoutHook: PayoutHookEvent | null
+  readonly countdown: N7Countdown
   readonly descent: DescentObservation | null
   readonly ownership: {
     readonly controllerOwnsState: true
@@ -104,6 +125,14 @@ export function resolveN7SceneBindings(scene: Object3D): N7SceneBindings {
     clawVisualRoot: findRequired(scene, 'ClawVisualRoot'),
     headVisualRoot: findRequired(scene, 'HeadRoot'),
     prizeRoot: findRequired(scene, 'PrizeRoot'),
+    prizeRoots: new Map(
+      DEFAULT_PRIZE_MANIFEST.prizes.flatMap((prize) => {
+        const object = scene.getObjectByName(
+          prize.id === 'prize' ? 'PrizeRoot' : `PrizeRoot-${prize.id}`,
+        )
+        return object ? [[prize.id, object] as const] : []
+      }),
+    ),
   }
 }
 
@@ -132,6 +161,7 @@ export class N7EffectCoordinator {
   readonly animator: ClawPoseAnimator
 
   private target: Vec3 | null = null
+  private returnLeg: 'traverse' | 'descent' | null = null
   /** N23: velocity glide while aiming (joystick). Null when not gliding. */
   private glideVelocity: { readonly x: number; readonly z: number } | null = null
   private alignmentSteps = 0
@@ -139,9 +169,17 @@ export class N7EffectCoordinator {
   private gripAttempted = false
   /** Whether the releasing-state open animation has started this run. */
   private releaseOpened = false
+  private releaseCompleted = false
+  private deliveryWaitSteps = 0
   private lastGrip: N7RuntimeReport['grip'] = null
+  private lastDelivery: DeliveryObservation | null = null
+  private pendingReleaseOutcome: Outcome | null = null
+  private lastRetentionRelease: RetentionReleaseEvent | null = null
   private lastDescent: DescentObservation | null = null
   private lastSync: N7SyncReport | null = null
+  private countdownRemainingSteps = PLAY_COUNTDOWN_STEPS
+  private countdownResetCount = 0
+  private countdownLastResetRunId: number | null = null
   private disposed = false
   /** Kinematic claw travel between two absolute positions (see travel-animator). */
   private readonly travel: ClawTravelAnimator = createClawTravelAnimator()
@@ -174,9 +212,19 @@ export class N7EffectCoordinator {
     }
   }
 
-  static async create(scene: Object3D): Promise<N7EffectCoordinator> {
+  static async create(
+    scene: Object3D,
+    physicsOptions: N6PhysicsAdapterOptions = {},
+  ): Promise<N7EffectCoordinator> {
     const bindings = resolveN7SceneBindings(scene)
-    const physics = await N6PhysicsAdapter.create()
+    const physics = await N6PhysicsAdapter.create({
+      ...physicsOptions,
+      prizeManifest:
+        physicsOptions.prizeManifest ??
+        (typeof window === 'undefined' ? undefined : DEFAULT_PRIZE_MANIFEST),
+      persistPrizeState:
+        physicsOptions.persistPrizeState ?? typeof window !== 'undefined',
+    })
     try {
       return new N7EffectCoordinator(bindings, physics)
     } catch (error) {
@@ -199,6 +247,16 @@ export class N7EffectCoordinator {
       physicsRunId: this.physics.currentRunId,
       sync: this.lastSync,
       grip: this.lastGrip,
+      retention: this.physics.retention,
+      retentionRelease: this.lastRetentionRelease ?? this.physics.retentionRelease,
+      delivery: this.lastDelivery ?? this.physics.delivery,
+      payoutHook: this.physics.payoutHookEvent,
+      countdown: {
+        durationSteps: PLAY_COUNTDOWN_STEPS,
+        remainingSteps: this.countdownRemainingSteps,
+        resetCount: this.countdownResetCount,
+        lastResetRunId: this.countdownLastResetRunId,
+      },
       descent: this.lastDescent,
       ownership: {
         controllerOwnsState: true,
@@ -305,6 +363,15 @@ export class N7EffectCoordinator {
         }
       }
       this.physics.step()
+      if (this.physics.delivery) {
+        this.lastDelivery = this.physics.delivery
+      }
+      if (this.snapshot.state !== 'result') {
+        this.countdownRemainingSteps = Math.max(0, this.countdownRemainingSteps - 1)
+      }
+      if (this.physics.retentionRelease) {
+        this.lastRetentionRelease = this.physics.retentionRelease
+      }
       if (this.animator.state.active) this.animator.advance(fixedStepMs)
       this.syncVisuals()
 
@@ -389,14 +456,19 @@ export class N7EffectCoordinator {
   }
 
   private beginReturn(): void {
-    const target = N6_PHYSICS_CONFIG.clawPosition
+    const target = N6_PHYSICS_CONFIG.chute.overPosition
     if (!this.physics.moveClaw(target)) {
-      throw new Error(`N7 integration: return target is out of bounds`)
+      throw new Error(`N7 integration: return traverse target is out of bounds`)
     }
     this.target = target
+    this.returnLeg = 'traverse'
     // Classic arcade: keep fingers closed while carrying the prize home; the
     // open (release) pose happens in the releasing state, not during return.
-    this.travel.start(this.physics.transform('claw').position, target, TRAVEL_RETURN_MS)
+    this.travel.start(
+      this.physics.transform('claw').position,
+      target,
+      TRAVEL_RETURN_TRAVERSE_MS,
+    )
   }
 
   private advanceEffects(): void {
@@ -446,15 +518,18 @@ export class N7EffectCoordinator {
           const observation = this.physics.observeGrip()
           const attempt = this.physics.attemptGrip()
           this.lastGrip = { observation, attempt }
+          this.lastRetentionRelease = null
           this.gripAttempted = true
           const outcome: Outcome = {
             accepted: attempt.accepted,
             reason: attempt.reason,
             jointCreated: attempt.jointCreated,
+            holdStarted: attempt.holdStarted,
             physicalContact: observation.physicalContact,
             solverContact: observation.solverContact,
             visualOverlap: observation.visualOverlap,
             physicsRunId: attempt.runId,
+            retention: this.physics.retention,
           }
           this.emit({ type: 'gripEvaluated', outcome, runId })
           this.beginLift()
@@ -482,30 +557,94 @@ export class N7EffectCoordinator {
             N6_PHYSICS_CONFIG.tolerances.travel,
           )
         ) {
-          this.emit({ type: 'returnReached', runId })
+          if (this.returnLeg === 'traverse') {
+            const descentTarget = N6_PHYSICS_CONFIG.chute.releasePosition
+            if (!this.physics.moveClaw(descentTarget)) {
+              throw new Error(`N7 integration: return descent target is out of bounds`)
+            }
+            this.target = descentTarget
+            this.returnLeg = 'descent'
+            this.travel.start(
+              this.physics.transform('claw').position,
+              descentTarget,
+              TRAVEL_RETURN_DESCENT_MS,
+            )
+          } else if (this.returnLeg === 'descent') {
+            this.emit({ type: 'returnReached', runId })
+          }
         }
         break
       case 'releasing':
-        // Classic arcade: open the fingers first so the prize drops visually,
-        // then remove the carry constraint once the open pose completes.
+        // Delivery, not grip approval, decides the result. Open first, release
+        // the hold, then allow a short fixed-step fall-through window for the
+        // prize to cross the chute sensor.
         if (!this.releaseOpened) {
           this.releaseOpened = true
           this.animator.start('open', RELEASE_OPEN_MS)
-        } else if (!this.animator.state.active) {
+        } else if (!this.releaseCompleted && !this.animator.state.active) {
           const removedAtRunId = this.physics.releaseGrip()
+          this.releaseCompleted = true
+          this.deliveryWaitSteps = 0
           const outcome: Outcome = {
             ...(this.snapshot.outcome && typeof this.snapshot.outcome !== 'string'
               ? this.snapshot.outcome
               : {}),
             released: true,
             constraintRemovedAtPhysicsRunId: removedAtRunId,
+            reason:
+              this.lastRetentionRelease?.state === 'released'
+                ? 'it slipped!'
+                : 'released',
+            retention: this.physics.retention,
+            retentionRelease: this.lastRetentionRelease ?? this.physics.retentionRelease,
           }
-          this.emit({ type: 'releaseComplete', outcome, runId })
+          if (this.lastDelivery?.runId === runId) {
+            this.completeDelivery(outcome, runId)
+          } else {
+            this.pendingReleaseOutcome = outcome
+          }
+        } else if (this.releaseCompleted) {
+          if (this.lastDelivery?.runId === runId) {
+            this.completeDelivery(this.pendingReleaseOutcome ?? {}, runId)
+          } else if (++this.deliveryWaitSteps >= DELIVERY_WAIT_STEPS) {
+            this.emit({
+              type: 'releaseComplete',
+              outcome: {
+                ...(this.pendingReleaseOutcome &&
+                typeof this.pendingReleaseOutcome !== 'string'
+                  ? this.pendingReleaseOutcome
+                  : {}),
+                accepted: false,
+                reason: 'not-delivered',
+              },
+              runId,
+            })
+          }
         }
         break
       default:
         break
     }
+  }
+
+  private completeDelivery(outcome: Outcome, runId: number): void {
+    if (!this.lastDelivery || this.lastDelivery.runId !== runId) {
+      throw new Error('N42 win-not-delivered: delivery evidence missing for active run')
+    }
+    this.countdownRemainingSteps = PLAY_COUNTDOWN_STEPS
+    this.countdownResetCount += 1
+    this.countdownLastResetRunId = runId
+    this.emit({
+      type: 'releaseComplete',
+      outcome: {
+        ...(outcome && typeof outcome !== 'string' ? outcome : {}),
+        accepted: true,
+        reason: 'delivered',
+        delivery: this.lastDelivery,
+        payoutHook: this.physics.payoutHookEvent,
+      },
+      runId,
+    })
   }
 
   private emit(action: N7Completion): void {
@@ -529,14 +668,23 @@ export class N7EffectCoordinator {
     // Parked-open presentation after every reset.
     this.pose.applyPoseTarget('open')
     this.target = null
+    this.returnLeg = null
     this.glideVelocity = null
     this.travel.cancel()
     this.alignmentSteps = 0
     this.physicsAccumulatorMs = 0
     this.gripAttempted = false
     this.releaseOpened = false
+    this.releaseCompleted = false
+    this.deliveryWaitSteps = 0
+    this.pendingReleaseOutcome = null
     this.lastGrip = null
+    this.lastDelivery = null
+    this.lastRetentionRelease = null
     this.lastDescent = null
+    this.countdownRemainingSteps = PLAY_COUNTDOWN_STEPS
+    this.countdownResetCount = 0
+    this.countdownLastResetRunId = null
     this.syncVisuals()
     const runId = this.snapshot.runId
     const baselineRestored = this.controller.dispatch({
@@ -580,6 +728,15 @@ export class N7EffectCoordinator {
     // HeadRoot from the head transform relative to the synced carriage root.
     syncObjectToWorldTransform(this.bindings.headVisualRoot, head)
     syncObjectToWorldTransform(this.bindings.prizeRoot, prize)
+    this.bindings.prizeRoot.visible = !this.physics.playfield.prizes.find(
+      (entry) => entry.id === 'prize',
+    )?.removed
+    for (const entry of this.physics.playfield.prizes) {
+      const root = this.bindings.prizeRoots.get(entry.id)
+      if (!root) continue
+      syncObjectToWorldTransform(root, this.physics.transformPrize(entry.id))
+      root.visible = !entry.removed
+    }
     this.bindings.sceneRoot.updateWorldMatrix(true, true)
 
     const clawVisualPosition = tuple(
@@ -615,6 +772,7 @@ export class N7EffectCoordinator {
         prize,
         N6_PHYSICS_CONFIG.tolerances.repeatPosition,
       ),
+      playfield: this.physics.playfield,
     }
   }
 }
@@ -627,13 +785,17 @@ export interface N7RuntimeProps {
 const MAX_CATCH_UP_MS = 250
 /** How long the releasing-state finger-open animation runs before release. */
 const RELEASE_OPEN_MS = 250
+const DELIVERY_WAIT_STEPS = 30
+const PLAY_COUNTDOWN_STEPS = 1800
 const INITIAL_SIGNATURE = ''
 /** N23: full-deflection glide speeds (units/second) in aim space. */
 const GLIDE_SPEED_X = 1.8
 const GLIDE_SPEED_Z = 0.9
 const TRAVEL_LOWERING_MS = 800
 const TRAVEL_LIFT_MS = 700
-const TRAVEL_RETURN_MS = 700
+/** N42.1: preserve the 700ms return budget across top traverse + descent. */
+const TRAVEL_RETURN_TRAVERSE_MS = 450
+const TRAVEL_RETURN_DESCENT_MS = 250
 
 export function reportSignature(report: N7RuntimeReport): string {
   return [
@@ -645,6 +807,12 @@ export function reportSignature(report: N7RuntimeReport): string {
     report.sync?.clawSynchronized === true,
     report.sync?.prizeSynchronized === true,
     JSON.stringify(report.state.outcome ?? null),
+    report.retention.status,
+    report.retention.margin,
+    JSON.stringify(report.retentionRelease),
+    JSON.stringify(report.delivery),
+    JSON.stringify(report.payoutHook),
+    JSON.stringify(report.countdown),
   ].join('|')
 }
 

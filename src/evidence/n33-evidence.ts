@@ -230,16 +230,17 @@ async function runCarryRegression() {
       )
     }),
   )
-  const released = adapter.releaseGrip() !== null && !adapter.step().jointActive
+  const released = adapter.releaseGrip() !== null && !adapter.step().holdActive
   const result = {
     gripAccepted: grip.accepted,
-    jointCreated: grip.jointCreated,
+    // N41: grip onset starts the hold model; no Rapier carry joint is created.
+    jointCreated: grip.holdStarted,
     liftSteps: records.length,
     maxAnchorDeviation,
     released,
     passed:
       grip.accepted &&
-      grip.jointCreated &&
+      grip.holdStarted &&
       maxAnchorDeviation <= N6_PHYSICS_CONFIG.tolerances.carryPosition &&
       released,
   }
@@ -337,7 +338,7 @@ export async function createN33Evidence(): Promise<N33Evidence> {
       physicalContact: record.physicalContact,
       solverContact: record.solverContact,
       visualOverlap: record.visualOverlap,
-      jointActive: record.jointActive,
+      jointActive: record.holdActive,
     })
   }
   adapter.dispose()

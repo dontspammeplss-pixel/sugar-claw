@@ -3495,7 +3495,7 @@
     "gripAccepted": true,
     "jointCreated": true,
     "liftSteps": 120,
-    "maxAnchorDeviation": 0.011542177142903698,
+    "maxAnchorDeviation": 0.019196687825596425,
     "released": true,
     "passed": true
   },

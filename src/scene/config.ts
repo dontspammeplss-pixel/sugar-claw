@@ -1,4 +1,5 @@
 import { FINGER_RING_RADIUS } from '../claw/rig'
+import { N6_PHYSICS_CONFIG } from '../physics/config'
 
 export type Vec3 = readonly [number, number, number]
 
@@ -96,7 +97,16 @@ export const MACHINE = {
   },
   chute: {
     size: [0.72, 0.22, 0.52] as Vec3,
-    position: [1.05, 0.66, 1.02] as Vec3,
+    position: [
+      N6_PHYSICS_CONFIG.chute.sensorPosition[0],
+      0.66,
+      N6_PHYSICS_CONFIG.chute.sensorPosition[2],
+    ] as Vec3,
+    openingPosition: [
+      N6_PHYSICS_CONFIG.chute.sensorPosition[0],
+      0.78,
+      N6_PHYSICS_CONFIG.chute.sensorPosition[2],
+    ] as Vec3,
   },
 } as const
 
