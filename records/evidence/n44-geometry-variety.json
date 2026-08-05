@@ -1,0 +1,372 @@
+{
+  "node": "N44",
+  "status": "pass",
+  "deterministic": true,
+  "colliderPolicy": "authored convex sphere/box/capsule primitives; no cloth or concave mesh physics",
+  "fixtures": [
+    {
+      "fixture": "body-cage",
+      "caughtRegion": "body",
+      "retentionFactor": 1,
+      "evaluation": {
+        "approved": true,
+        "reason": "approved",
+        "diagnostics": {
+          "profileRevision": "n44-fixture-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [
+            "finger-right",
+            "finger-left",
+            "finger-back"
+          ],
+          "caughtGeometry": {
+            "prizeId": "fixture-prize",
+            "primitiveIds": [
+              "body-primitive"
+            ],
+            "regions": [
+              "body"
+            ],
+            "retentionFactor": 1
+          },
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "fixture-prize",
+          "solverContacts": [
+            {
+              "objectBodyId": "fixture-prize",
+              "contactRegionId": "finger-right",
+              "approachDirection": "right",
+              "solverContact": true,
+              "collisionGroupEligible": true,
+              "primitiveId": "body-primitive"
+            },
+            {
+              "objectBodyId": "fixture-prize",
+              "contactRegionId": "finger-left",
+              "approachDirection": "left",
+              "solverContact": true,
+              "collisionGroupEligible": true,
+              "primitiveId": "body-primitive"
+            },
+            {
+              "objectBodyId": "fixture-prize",
+              "contactRegionId": "finger-back",
+              "approachDirection": "back",
+              "solverContact": true,
+              "collisionGroupEligible": true,
+              "primitiveId": "body-primitive"
+            }
+          ],
+          "objectBodyId": "fixture-prize",
+          "runId": 44,
+          "expectedRunId": 44,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        },
+        "quality": {
+          "caughtRegion": "body",
+          "retentionFactor": 1,
+          "contactGeometry": "body-cage"
+        }
+      },
+      "fixedStepRepeatable": true
+    },
+    {
+      "fixture": "corner-catch",
+      "caughtRegion": "corner",
+      "retentionFactor": 0.7,
+      "evaluation": {
+        "approved": true,
+        "reason": "approved",
+        "diagnostics": {
+          "profileRevision": "n44-fixture-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [
+            "finger-right",
+            "finger-left",
+            "finger-back"
+          ],
+          "caughtGeometry": {
+            "prizeId": "fixture-prize",
+            "primitiveIds": [
+              "corner-primitive"
+            ],
+            "regions": [
+              "corner"
+            ],
+            "retentionFactor": 0.7
+          },
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "fixture-prize",
+          "solverContacts": [
+            {
+              "objectBodyId": "fixture-prize",
+              "contactRegionId": "finger-right",
+              "approachDirection": "right",
+              "solverContact": true,
+              "collisionGroupEligible": true,
+              "primitiveId": "corner-primitive"
+            },
+            {
+              "objectBodyId": "fixture-prize",
+              "contactRegionId": "finger-left",
+              "approachDirection": "left",
+              "solverContact": true,
+              "collisionGroupEligible": true,
+              "primitiveId": "corner-primitive"
+            },
+            {
+              "objectBodyId": "fixture-prize",
+              "contactRegionId": "finger-back",
+              "approachDirection": "back",
+              "solverContact": true,
+              "collisionGroupEligible": true,
+              "primitiveId": "corner-primitive"
+            }
+          ],
+          "objectBodyId": "fixture-prize",
+          "runId": 44,
+          "expectedRunId": 44,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        },
+        "quality": {
+          "caughtRegion": "corner",
+          "retentionFactor": 0.7,
+          "contactGeometry": "packaging-catch"
+        }
+      },
+      "fixedStepRepeatable": true
+    },
+    {
+      "fixture": "tag-catch",
+      "caughtRegion": "tag",
+      "retentionFactor": 0.45,
+      "evaluation": {
+        "approved": true,
+        "reason": "approved",
+        "diagnostics": {
+          "profileRevision": "n44-fixture-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [
+            "finger-right",
+            "finger-left",
+            "finger-back"
+          ],
+          "caughtGeometry": {
+            "prizeId": "fixture-prize",
+            "primitiveIds": [
+              "tag-primitive"
+            ],
+            "regions": [
+              "tag"
+            ],
+            "retentionFactor": 0.45
+          },
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "fixture-prize",
+          "solverContacts": [
+            {
+              "objectBodyId": "fixture-prize",
+              "contactRegionId": "finger-right",
+              "approachDirection": "right",
+              "solverContact": true,
+              "collisionGroupEligible": true,
+              "primitiveId": "tag-primitive"
+            },
+            {
+              "objectBodyId": "fixture-prize",
+              "contactRegionId": "finger-left",
+              "approachDirection": "left",
+              "solverContact": true,
+              "collisionGroupEligible": true,
+              "primitiveId": "tag-primitive"
+            },
+            {
+              "objectBodyId": "fixture-prize",
+              "contactRegionId": "finger-back",
+              "approachDirection": "back",
+              "solverContact": true,
+              "collisionGroupEligible": true,
+              "primitiveId": "tag-primitive"
+            }
+          ],
+          "objectBodyId": "fixture-prize",
+          "runId": 44,
+          "expectedRunId": 44,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        },
+        "quality": {
+          "caughtRegion": "tag",
+          "retentionFactor": 0.45,
+          "contactGeometry": "packaging-catch"
+        }
+      },
+      "fixedStepRepeatable": true
+    },
+    {
+      "fixture": "strap-catch",
+      "caughtRegion": "strap",
+      "retentionFactor": 0.45,
+      "evaluation": {
+        "approved": true,
+        "reason": "approved",
+        "diagnostics": {
+          "profileRevision": "n44-fixture-profile-rev1",
+          "captureEnvelope": {
+            "center": [
+              0,
+              0,
+              0
+            ],
+            "halfExtents": [
+              0.34,
+              0.34,
+              0.34
+            ],
+            "margin": 0.02
+          },
+          "objectReferencePoint": [
+            0,
+            0,
+            0
+          ],
+          "contactRegionIds": [
+            "finger-right",
+            "finger-left",
+            "finger-back"
+          ],
+          "caughtGeometry": {
+            "prizeId": "fixture-prize",
+            "primitiveIds": [
+              "strap-primitive"
+            ],
+            "regions": [
+              "strap"
+            ],
+            "retentionFactor": 0.45
+          },
+          "sensorIntersection": true,
+          "sensorObjectBodyId": "fixture-prize",
+          "solverContacts": [
+            {
+              "objectBodyId": "fixture-prize",
+              "contactRegionId": "finger-right",
+              "approachDirection": "right",
+              "solverContact": true,
+              "collisionGroupEligible": true,
+              "primitiveId": "strap-primitive"
+            },
+            {
+              "objectBodyId": "fixture-prize",
+              "contactRegionId": "finger-left",
+              "approachDirection": "left",
+              "solverContact": true,
+              "collisionGroupEligible": true,
+              "primitiveId": "strap-primitive"
+            },
+            {
+              "objectBodyId": "fixture-prize",
+              "contactRegionId": "finger-back",
+              "approachDirection": "back",
+              "solverContact": true,
+              "collisionGroupEligible": true,
+              "primitiveId": "strap-primitive"
+            }
+          ],
+          "objectBodyId": "fixture-prize",
+          "runId": 44,
+          "expectedRunId": 44,
+          "fixedStepWindow": 3,
+          "fixedSteps": [
+            10,
+            11,
+            12
+          ]
+        },
+        "quality": {
+          "caughtRegion": "strap",
+          "retentionFactor": 0.45,
+          "contactGeometry": "packaging-catch"
+        }
+      },
+      "fixedStepRepeatable": true
+    }
+  ],
+  "negativeFixture": {
+    "fixture": "overlap-without-valid-sub-geometry-capture",
+    "rejected": true,
+    "reason": "pseudo-capture",
+    "caughtRegion": null
+  },
+  "verificationCommands": [
+    "npm run typecheck",
+    "npm run lint",
+    "npm test",
+    "npm run build"
+  ]
+}

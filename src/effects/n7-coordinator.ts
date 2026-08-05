@@ -186,6 +186,7 @@ export class N7EffectCoordinator {
   private pendingReleaseOutcome: Outcome | null = null
   private lastRetentionRelease: RetentionReleaseEvent | null = null
   private lastDescent: DescentObservation | null = null
+  private dropStartedInBarrierContact = false
   private lastSync: N7SyncReport | null = null
   private countdownRemainingSteps = PLAY_COUNTDOWN_STEPS
   private countdownResetCount = 0
@@ -458,6 +459,7 @@ export class N7EffectCoordinator {
       N6_PHYSICS_CONFIG.clawClearance.baseInteractionY,
       clampedZ,
     ]
+    this.dropStartedInBarrierContact = this.physics.observeDescent().barrierContact
     if (!this.physics.moveClaw(target)) {
       throw new Error(
         `N7 integration: derived lowering target is out of bounds`,
@@ -523,7 +525,10 @@ export class N7EffectCoordinator {
         // N36: object contact is observed but does not terminate a base-first
         // descent. Only a physical floor/wall barrier or approved base
         // clearance can normalize lowering completion.
-        if (descent.completionReason === 'barrier-contact') {
+        if (
+          descent.completionReason === 'barrier-contact' &&
+          !this.dropStartedInBarrierContact
+        ) {
           this.travel.cancel()
           this.target = this.physics.transform('claw').position
         } else if (
@@ -745,6 +750,7 @@ export class N7EffectCoordinator {
     this.lastDelivery = null
     this.lastRetentionRelease = null
     this.lastDescent = null
+    this.dropStartedInBarrierContact = false
     this.countdownRemainingSteps = PLAY_COUNTDOWN_STEPS
     this.countdownResetCount = 0
     this.countdownLastResetRunId = null

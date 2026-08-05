@@ -3,9 +3,11 @@ import {
   DEFAULT_PRIZE_MANIFEST,
   initialPrizeStates,
   loadPrizeManifest,
+  prizeSubGeometries,
   type PrizeDefinition,
   type PrizeManifest,
   type PrizeState,
+  type PrizeSubGeometry,
 } from '../playfield/prize-manifest'
 import {
   createPrizePersistenceStore,
@@ -26,6 +28,7 @@ import {
 import {
   evaluateGrip,
   type GripCandidateObservation,
+  type GripContactRegionObservation,
   type GripEvaluation,
   type GripProfile,
 } from './grip-evaluator'
@@ -40,6 +43,7 @@ export interface PhysicsTransform {
 
 export interface PrizePlayfieldState extends PrizeState {
   readonly geometry: PrizeDefinition['geometry']
+  readonly mass: number
   readonly weight: number
   readonly centerOfMass: Vec3
 }
@@ -59,6 +63,8 @@ export interface PhysicsContactFact {
   readonly colliderHandle: number
   readonly otherColliderHandle: number
   readonly otherColliderRole: 'prize' | 'floor' | 'wall'
+  readonly otherColliderRegion?: PrizeSubGeometry['region']
+  readonly otherColliderPrimitiveId?: string
   readonly normal: Vec3
   readonly point: Vec3
   readonly distance: number
@@ -175,6 +181,9 @@ export interface GripObservation {
   readonly claw: PhysicsTransform
   readonly prize: PhysicsTransform
   readonly contacts: readonly PhysicsContactFact[]
+  readonly caughtRegion: PrizeSubGeometry['region'] | null
+  readonly caughtPrimitiveIds: readonly string[]
+  readonly retentionFactor: number
 }
 
 export type RetentionStatus = 'idle' | 'holding' | 'released'
@@ -309,6 +318,29 @@ function tuple(value: { x: number; y: number; z: number }): Vec3 {
 
 type ColliderWithUserData = RAPIER.Collider & { userData?: unknown }
 
+type PrizeColliderMetadata = {
+  readonly prizeId: string
+  readonly primitiveId: string
+  readonly region: PrizeSubGeometry['region']
+  readonly retentionFactor: number
+}
+
+function prizeColliderDescriptor(
+  primitive: PrizeSubGeometry,
+): RAPIER.ColliderDesc {
+  const descriptor =
+    primitive.shape === 'sphere'
+      ? RAPIER.ColliderDesc.ball(primitive.radius!)
+      : primitive.shape === 'capsule'
+        ? RAPIER.ColliderDesc.capsule(primitive.halfHeight!, primitive.radius!)
+        : RAPIER.ColliderDesc.cuboid(...primitive.halfExtents!)
+  return descriptor
+    .setTranslation(...primitive.position)
+    .setRotation(rotation(primitive.quaternion as [number, number, number, number]))
+    .setCollisionGroups(n38CollisionGroups('prize'))
+    .setSolverGroups(n38SolverGroups('prize'))
+}
+
 function colliderUserData(collider: RAPIER.Collider): unknown {
   return (collider as ColliderWithUserData).userData
 }
@@ -396,6 +428,8 @@ export class N6PhysicsAdapter {
   private readonly prizeBody: RAPIER.RigidBody
   private readonly prizeBodies = new Map<string, RAPIER.RigidBody>()
   private readonly prizeColliders = new Map<string, RAPIER.Collider>()
+  private readonly prizeSubGeometryColliders = new Map<string, readonly RAPIER.Collider[]>()
+  private readonly prizeColliderMetadata = new Map<number, PrizeColliderMetadata>()
   private readonly prizeDefinitions = new Map<string, PrizeDefinition>()
   private readonly prizeBaselines = new Map<string, BodyBaseline>()
   private readonly prizeState: Map<string, PrizeState>
@@ -410,6 +444,8 @@ export class N6PhysicsAdapter {
   private readonly headCollider: RAPIER.Collider
   private readonly fingerColliders: readonly RAPIER.Collider[]
   private readonly prizeCollider: RAPIER.Collider
+
+
   private readonly sensorCollider: RAPIER.Collider
   private readonly chuteSensorCollider: RAPIER.Collider
   private readonly floorCollider: RAPIER.Collider
@@ -435,6 +471,7 @@ export class N6PhysicsAdapter {
   private holdActive = false
   private holdOffset: Vec3 = [0, 0, 0]
   private holdContactCount = 0
+  private holdRetentionFactor = 1
   private retentionState: RetentionState
   private retentionReleaseEvent: RetentionReleaseEvent | null = null
   private deliveryObservation: DeliveryObservation | null = null
@@ -508,6 +545,7 @@ export class N6PhysicsAdapter {
     this.headBody = this.world.createRigidBody(headBodyDesc)
     this.headBody.userData = { id: 'head', authority: 'N6PhysicsAdapter' }
 
+    const primaryDefinition = this.prizeManifest.prizes[0]
     const prizeBodyDesc = RAPIER.RigidBodyDesc.dynamic()
       .setTranslation(...prizePosition)
       .setLinearDamping(this.config.linearDamping)
@@ -614,24 +652,43 @@ export class N6PhysicsAdapter {
       derivationRevision: 'canonical-release-point-rev1',
     })
 
-    this.prizeCollider = this.world.createCollider(
-      RAPIER.ColliderDesc.ball(this.config.prizeRadius)
-        .setCollisionGroups(n38CollisionGroups('prize'))
-        .setSolverGroups(n38SolverGroups('prize'))
-        .setFriction(this.config.friction)
-        .setRestitution(this.config.restitution),
-      this.prizeBody,
-    )
-    setColliderUserData(this.prizeCollider, {
-      logicalBodyId: 'prize',
-      prizeId: this.primaryPrizeId,
-      colliderId: 'prize-collider',
-      role: 'prize',
-      sourceRevision: this.config.revision,
-      profileRevision: 'n43-prize-manifest-rev1',
-      colliderProfileId: 'prize-collider',
-      derivationRevision: 'authored-profile-rev1',
+    const primaryPrimitives = prizeSubGeometries(primaryDefinition)
+    const primaryColliders = primaryPrimitives.map((primitive) => {
+      const collider = this.world.createCollider(
+        prizeColliderDescriptor(primitive)
+          .setFriction(this.config.friction)
+          .setRestitution(this.config.restitution),
+        this.prizeBody,
+      )
+      const metadata: PrizeColliderMetadata = {
+        prizeId: this.primaryPrizeId,
+        primitiveId: primitive.id,
+        region: primitive.region,
+        retentionFactor: primitive.retentionFactor,
+      }
+      this.prizeColliderMetadata.set(collider.handle, metadata)
+      setColliderUserData(collider, {
+        logicalBodyId: 'prize',
+        prizeId: this.primaryPrizeId,
+        primitiveId: primitive.id,
+        region: primitive.region,
+        retentionFactor: primitive.retentionFactor,
+        colliderId: primitive.id === 'body'
+          ? 'prize-collider'
+          : `prize-${this.primaryPrizeId}-${primitive.id}`,
+        role: 'prize',
+        sourceRevision: this.config.revision,
+        profileRevision: 'n44-prize-subgeometry-rev1',
+        colliderProfileId: primitive.id === 'body'
+          ? 'prize-collider'
+          : `prize-${this.primaryPrizeId}-${primitive.id}`,
+        derivationRevision: 'authored-convex-primitive-rev1',
+      })
+      return collider
     })
+    this.prizeCollider = primaryColliders[0]
+    if (this.useManifestPhysics) this.applyDeclaredMass(this.prizeBody, primaryDefinition)
+    this.prizeSubGeometryColliders.set(this.primaryPrizeId, primaryColliders)
     this.prizeColliders.set(this.primaryPrizeId, this.prizeCollider)
     if (this.prizeState.get(this.primaryPrizeId)?.removed) {
       this.prizeBody.setEnabled(false)
@@ -652,24 +709,40 @@ export class N6PhysicsAdapter {
           .setCcdEnabled(this.config.ccd),
       )
       body.userData = { id: 'prize', prizeId: definition.id, authority: 'N6PhysicsAdapter' }
-      const collider = this.world.createCollider(
-        RAPIER.ColliderDesc.ball(this.config.prizeRadius)
-          .setCollisionGroups(n38CollisionGroups('prize'))
-          .setSolverGroups(n38SolverGroups('prize'))
-          .setFriction(this.config.friction)
-          .setRestitution(this.config.restitution),
-        body,
-      )
-      setColliderUserData(collider, {
-        logicalBodyId: 'prize', prizeId: definition.id,
-        colliderId: `prize-${definition.id}-collider`, role: 'prize',
-        sourceRevision: this.config.revision,
-        profileRevision: 'n43-prize-manifest-rev1',
-        colliderProfileId: `prize-${definition.id}-collider`,
-        derivationRevision: 'authored-profile-rev1',
+      const colliders = prizeSubGeometries(definition).map((primitive) => {
+        const collider = this.world.createCollider(
+          prizeColliderDescriptor(primitive)
+            .setFriction(this.config.friction)
+            .setRestitution(this.config.restitution),
+          body,
+        )
+        const metadata: PrizeColliderMetadata = {
+          prizeId: definition.id,
+          primitiveId: primitive.id,
+          region: primitive.region,
+          retentionFactor: primitive.retentionFactor,
+        }
+        this.prizeColliderMetadata.set(collider.handle, metadata)
+        setColliderUserData(collider, {
+          logicalBodyId: 'prize', prizeId: definition.id,
+          primitiveId: primitive.id, region: primitive.region,
+          retentionFactor: primitive.retentionFactor,
+          colliderId: definition.id === this.primaryPrizeId && primitive.id === 'body'
+          ? 'prize-collider'
+          : `prize-${definition.id}-${primitive.id}`, role: 'prize',
+          sourceRevision: this.config.revision,
+          profileRevision: 'n44-prize-subgeometry-rev1',
+          colliderProfileId: definition.id === this.primaryPrizeId && primitive.id === 'body'
+          ? 'prize-collider'
+          : `prize-${definition.id}-${primitive.id}`,
+          derivationRevision: 'authored-convex-primitive-rev1',
+        })
+        return collider
       })
+      if (this.useManifestPhysics) this.applyDeclaredMass(body, definition)
       this.prizeBodies.set(definition.id, body)
-      this.prizeColliders.set(definition.id, collider)
+      this.prizeSubGeometryColliders.set(definition.id, colliders)
+      this.prizeColliders.set(definition.id, colliders[0])
     }
 
     const floorCollider = RAPIER.ColliderDesc.cuboid(
@@ -830,7 +903,7 @@ export class N6PhysicsAdapter {
     const freshLayout = !this.restoredPersistedState
     const prizes = [...this.prizeState].flatMap(([id, state]) => {
         const definition = this.prizeDefinitions.get(id)
-        return definition ? [{ ...state, position: [...state.position] as Vec3, geometry: definition.geometry, weight: definition.weight, centerOfMass: [...definition.centerOfMass] as Vec3 }] : []
+        return definition ? [{ ...state, position: [...state.position] as Vec3, geometry: definition.geometry, mass: definition.mass, weight: definition.weight, centerOfMass: [...definition.centerOfMass] as Vec3 }] : []
       })
     return {
       manifestRevision: this.prizeManifest.revision,
@@ -1163,13 +1236,24 @@ export class N6PhysicsAdapter {
   moveClaw(position: Vec3): boolean {
     this.assertNotDisposed()
     const { min, max } = this.config.travelBounds
-    const inBounds = position.every(
-      (value, index) =>
-        value >= min[['x', 'y', 'z'][index] as keyof typeof min] &&
-        value <= max[['x', 'y', 'z'][index] as keyof typeof max],
+    const epsilon = this.config.tolerances.travel
+    const axes = ['x', 'y', 'z'] as const
+    const clampedPosition = position.map((value, index) => {
+      const axis = axes[index]
+      const lower = min[axis]
+      const upper = max[axis]
+      if (value < lower && lower - value <= epsilon) return lower
+      if (value > upper && value - upper <= epsilon) return upper
+      return value
+    }) as unknown as Vec3
+    const inBounds = clampedPosition.every(
+      (value, index) => {
+        const axis = axes[index]
+        return value >= min[axis] && value <= max[axis]
+      },
     )
     if (!inBounds) return false
-    this.clawBody.setNextKinematicTranslation(vector(position))
+    this.clawBody.setNextKinematicTranslation(vector(clampedPosition))
     return true
   }
 
@@ -1180,6 +1264,8 @@ export class N6PhysicsAdapter {
     if (this.holdActive) this.applyHoldImpulse()
     this.world.step()
     this.stepNumber += 1
+    // Release/drop paths are allowed to carry a composed prize down to the
+    // chute; retain the same fixed-step sensor authority for delivery.
     this.observeDelivery()
     if (this.holdActive) {
       const retention = this.createRetentionState('holding', null)
@@ -1263,6 +1349,14 @@ export class N6PhysicsAdapter {
       sensorObjectBodyId: observation.physicalContact
         ? profile.objectBodyId
         : null,
+      contactRegions: observation.contacts
+        .filter((contact) => contact.otherColliderRole === 'prize' && contact.otherColliderPrimitiveId && contact.otherColliderRegion)
+        .map((contact) => ({
+          prizeId: profile.objectBodyId,
+          primitiveId: contact.otherColliderPrimitiveId!,
+          region: contact.otherColliderRegion!,
+          retentionFactor: this.prizeColliderMetadata.get(contact.otherColliderHandle)?.retentionFactor ?? 1,
+        } satisfies GripContactRegionObservation)),
       collisionGroupEligible:
         observation.physicalContact || observation.solverContact,
       colliderMappingValid:
@@ -1309,6 +1403,7 @@ export class N6PhysicsAdapter {
                   : 'back',
             solverContact: true,
             collisionGroupEligible: true,
+            primitiveId: contact.otherColliderPrimitiveId,
           }
         }),
     }
@@ -1411,18 +1506,20 @@ export class N6PhysicsAdapter {
   observeGrip(): GripObservation {
     this.assertNotDisposed()
     let physicalContact = false
-    let activePrizeCollider: RAPIER.Collider | null = null
-    for (const [id, collider] of this.prizeColliders) {
+    let activePrizeColliders: readonly RAPIER.Collider[] = []
+    for (const [id, colliders] of this.prizeSubGeometryColliders) {
       const state = this.prizeState.get(id)
       if (!state || state.removed) continue
-      if (this.world.intersectionPair(this.sensorCollider, collider)) {
+      if (colliders.some((collider) => this.world.intersectionPair(this.sensorCollider, collider))) {
         physicalContact = true
         this.selectedPrizeId = id
-        activePrizeCollider = collider
+        activePrizeColliders = colliders
         break
       }
     }
-    activePrizeCollider ??= this.prizeColliders.get(this.selectedPrizeId) ?? null
+    activePrizeColliders = activePrizeColliders.length > 0
+      ? activePrizeColliders
+      : (this.prizeSubGeometryColliders.get(this.selectedPrizeId) ?? [])
     const clawColliders = [this.headCollider, ...this.fingerColliders]
     let solverContact = false
     let floorContact = false
@@ -1430,8 +1527,7 @@ export class N6PhysicsAdapter {
     const contacts: PhysicsContactFact[] = []
     for (const collider of clawColliders) {
       this.world.contactPairsWith(collider, (other) => {
-        const isPrize =
-          activePrizeCollider !== null && other.handle === activePrizeCollider.handle
+        const isPrize = activePrizeColliders.some((candidate) => other.handle === candidate.handle)
         const isFloor = other.handle === this.floorCollider.handle
         const isWall = this.wallColliderHandles.has(other.handle)
         if (!isPrize && !isFloor && !isWall) return
@@ -1455,6 +1551,7 @@ export class N6PhysicsAdapter {
           const count = manifold.numSolverContacts()
           if (count === 0) return
           const point = manifold.solverContactPoint(0)
+          const metadata = isPrize ? this.prizeColliderMetadata.get(other.handle) : undefined
           contacts.push({
             pair: ['claw', pairBody],
             colliderRole:
@@ -1462,6 +1559,7 @@ export class N6PhysicsAdapter {
             colliderHandle: collider.handle,
             otherColliderHandle: other.handle,
             otherColliderRole: isPrize ? 'prize' : isFloor ? 'floor' : 'wall',
+            ...(metadata ? { otherColliderRegion: metadata.region, otherColliderPrimitiveId: metadata.primitiveId } : {}),
             normal: [normal.x, normal.y, normal.z],
             point: [point.x, point.y, point.z],
             distance: manifold.solverContactDist(0),
@@ -1474,20 +1572,35 @@ export class N6PhysicsAdapter {
     }
     const claw = this.transform('claw')
     const prize = this.transform('prize')
+    const activeDefinition = this.prizeDefinitions.get(this.selectedPrizeId)
+    const visualRadius = activeDefinition?.geometry === 'soft-pouch' ? 0.26 : this.config.prizeRadius
     const visualOverlap = this.visualEnvelopeOverlaps(
       claw.position,
       prize.position,
+      visualRadius,
     )
+    const prizeContacts = contacts.filter((contact) => contact.otherColliderRole === 'prize' && contact.otherColliderPrimitiveId)
+    const caughtRegions = [...new Set(prizeContacts.map((contact) => contact.otherColliderRegion).filter((region): region is PrizeSubGeometry['region'] => region !== undefined))]
+    const caughtPrimitiveIds = [...new Set(prizeContacts.map((contact) => contact.otherColliderPrimitiveId!))]
+    const retentionFactor = prizeContacts.reduce((minimum, contact) => {
+      const metadata = this.prizeColliderMetadata.get(contact.otherColliderHandle)
+      return Math.min(minimum, metadata?.retentionFactor ?? 1)
+    }, caughtRegions.length > 0 ? 1 : 0)
     return {
       physicalContact,
       solverContact,
       floorContact,
       barrierContact,
       visualOverlap,
+      // A-24 remains the active runtime onset rule. N44's stricter
+      // sub-geometry predicate is exposed through observeCandidateGrip().
       gripApproved: physicalContact,
       claw,
       prize,
       contacts,
+      caughtRegion: caughtRegions.length === 1 ? caughtRegions[0] : null,
+      caughtPrimitiveIds,
+      retentionFactor,
     }
   }
 
@@ -1557,6 +1670,24 @@ export class N6PhysicsAdapter {
   attemptGrip(): GripAttempt {
     this.assertNotDisposed()
     const observation = this.observeGrip()
+    if (
+      this.useManifestPhysics &&
+      this.prizeManifest.prizes.some((prize) => prize.subGeometries !== undefined) &&
+      (!observation.physicalContact ||
+        !observation.solverContact ||
+        observation.caughtRegion === null)
+    ) {
+      this.logicalState = 'failed'
+      return {
+        accepted: false,
+        reason: 'no-physical-contact',
+        jointCreated: false,
+        holdStarted: false,
+        runId: this.runId,
+        constraintCreatedAtRunId: null,
+        holdStartedAtRunId: null,
+      }
+    }
     if (!observation.gripApproved) {
       this.logicalState = 'failed'
       return {
@@ -1584,6 +1715,7 @@ export class N6PhysicsAdapter {
       1,
       observation.contacts.filter((contact) => contact.otherColliderRole === 'prize').length,
     )
+    this.holdRetentionFactor = observation.retentionFactor || 1
     this.logicalState = 'carrying'
     this.retentionReleaseEvent = null
     this.retentionState = this.createRetentionState('holding', null)
@@ -1691,6 +1823,7 @@ export class N6PhysicsAdapter {
     }
     this.retentionState = this.createRetentionState('idle', null)
     this.holdContactCount = 0
+    this.holdRetentionFactor = 1
     this.restoreBaselinePose()
     this.stepNumber = 0
     this.runId += 1
@@ -1764,6 +1897,17 @@ export class N6PhysicsAdapter {
     )
   }
 
+  private applyDeclaredMass(body: RAPIER.RigidBody, definition: PrizeDefinition): void {
+    const additionalMass = definition.mass - body.mass()
+    body.setAdditionalMassProperties(
+      additionalMass,
+      vector(definition.centerOfMass),
+      ZERO,
+      rotation([0, 0, 0, 1]),
+      false,
+    )
+  }
+
   private validateRetentionConfig(): void {
     const config = this.retentionConfig
     if (
@@ -1814,7 +1958,7 @@ export class N6PhysicsAdapter {
         (config.maxHoldForceAtMaxVoltage - config.maxHoldForceAtMinVoltage)
     const contactGeometryFactor =
       0.75 + 0.25 * Math.min(1, this.holdContactCount / 3)
-    return maxHoldForce * config.padFriction * contactGeometryFactor
+    return maxHoldForce * config.padFriction * contactGeometryFactor * this.holdRetentionFactor
   }
 
   private holdRequiredForce(): { readonly required: number; readonly torque: number } {
@@ -2051,12 +2195,12 @@ export class N6PhysicsAdapter {
     return typeof data?.[key] === 'string' ? data[key] : 'missing'
   }
 
-  private visualEnvelopeOverlaps(claw: Vec3, prize: Vec3): boolean {
+  private visualEnvelopeOverlaps(claw: Vec3, prize: Vec3, radius: number = this.config.prizeRadius): boolean {
     const extents = this.config.visualEnvelopeHalfExtents
     return (
-      Math.abs(claw[0] - prize[0]) <= extents.x + this.config.prizeRadius &&
-      Math.abs(claw[1] - prize[1]) <= extents.y + this.config.prizeRadius &&
-      Math.abs(claw[2] - prize[2]) <= extents.z + this.config.prizeRadius
+      Math.abs(claw[0] - prize[0]) <= extents.x + radius &&
+      Math.abs(claw[1] - prize[1]) <= extents.y + radius &&
+      Math.abs(claw[2] - prize[2]) <= extents.z + radius
     )
   }
 }

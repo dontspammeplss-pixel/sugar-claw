@@ -7,6 +7,7 @@
       "position": [0, 1.2, 0],
       "orientation": { "quaternion": [0, 0, 0, 1] },
       "spawnLayout": { "density": 1, "angle": 0, "preset": "default-triad" },
+      "mass": 1.019367991,
       "weight": 10,
       "centerOfMass": [0, 0, 0],
       "geometry": "sphere"
@@ -16,6 +17,7 @@
       "position": [-0.72, 1.2, 0.08],
       "orientation": { "quaternion": [0, 0.13, 0, 0.991] },
       "spawnLayout": { "density": 1, "angle": -0.2, "preset": "default-triad" },
+      "mass": 0.815494393,
       "weight": 8,
       "centerOfMass": [0.02, 0.01, 0],
       "geometry": "tag"
@@ -25,6 +27,7 @@
       "position": [0.72, 1.2, 0.08],
       "orientation": { "quaternion": [0, -0.1, 0, 0.995] },
       "spawnLayout": { "density": 1, "angle": 0.2, "preset": "default-triad" },
+      "mass": 1.22324159,
       "weight": 12,
       "centerOfMass": [-0.02, 0, 0.01],
       "geometry": "soft-pouch"

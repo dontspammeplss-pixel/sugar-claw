@@ -141,6 +141,8 @@
           "colliderHandle": 0,
           "otherColliderHandle": 3e-323,
           "otherColliderRole": "prize",
+          "otherColliderRegion": "body",
+          "otherColliderPrimitiveId": "body",
           "normal": [
             8.546285892264281e-18,
             -0.999003889577506,
@@ -398,6 +400,8 @@
               "colliderHandle": 0,
               "otherColliderHandle": 3e-323,
               "otherColliderRole": "prize",
+              "otherColliderRegion": "body",
+              "otherColliderPrimitiveId": "body",
               "normal": [
                 4.459695770119963e-18,
                 -0.9997741602008463,
@@ -480,6 +484,8 @@
               "colliderHandle": 0,
               "otherColliderHandle": 3e-323,
               "otherColliderRole": "prize",
+              "otherColliderRegion": "body",
+              "otherColliderPrimitiveId": "body",
               "normal": [
                 6.769028663632645e-18,
                 -0.9994128978150866,
@@ -562,6 +568,8 @@
               "colliderHandle": 0,
               "otherColliderHandle": 3e-323,
               "otherColliderRole": "prize",
+              "otherColliderRegion": "body",
+              "otherColliderPrimitiveId": "body",
               "normal": [
                 8.546285892264281e-18,
                 -0.999003889577506,

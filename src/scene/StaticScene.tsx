@@ -393,31 +393,38 @@ function MachineRoot() {
 function PrizeRoot({
   id = 'prize',
   position = [0, 1.2, 0],
+  geometry = 'sphere',
 }: {
   readonly id?: string
   readonly position?: readonly [number, number, number]
+  readonly geometry?: (typeof DEFAULT_PRIZE_MANIFEST.prizes)[number]['geometry']
 }) {
+  const isPouch = geometry === 'soft-pouch'
+  const packaging = geometry === 'tag' || geometry === 'strap' || geometry === 'loop'
   return (
-    // N26: prize radius 0.22 keeps the ball able to enter the finger cage, so
-    // the fingers can physically close around it (rigid prize 0.31 could not
-    // fit the 0.28 ring without pass-through). Kept in sync with
-    // N6_PHYSICS_CONFIG.prizeRadius.
-    <group name={id === 'prize' ? 'PrizeRoot' : `PrizeRoot-${id}`} position={position}>
-      <mesh name="PrizeBody" castShadow>
-        <sphereGeometry args={[0.22, 24, 16]} />
-        <meshStandardMaterial
-          color={MATERIALS.prizeIvory}
-          roughness={0.3}
-          metalness={0.05}
-        />
-      </mesh>
-      <Box
-        name="PrizeBand"
-        size={[0.36, 0.06, 0.36]}
-        position={[0, 0, 0]}
-        color={MATERIALS.clawCyanAccent}
-        roughness={0.2}
-      />
+    <group name={id === 'prize' ? 'PrizeRoot' : `PrizeRoot-${id}`} position={position} userData={{ geometry }}>
+      {isPouch ? (
+        <Box name="PrizeBody" size={[0.42, 0.5, 0.28]} color={MATERIALS.prizeIvory} roughness={0.6} />
+      ) : (
+        <mesh name="PrizeBody" castShadow>
+          {geometry === 'box' ? <boxGeometry args={[0.44, 0.44, 0.44]} /> : <sphereGeometry args={[0.22, 24, 16]} />}
+          <meshStandardMaterial color={MATERIALS.prizeIvory} roughness={0.3} metalness={0.05} />
+        </mesh>
+      )}
+      {packaging ? (
+        <group name={`Prize${geometry[0].toUpperCase()}${geometry.slice(1)}`} position={[0, 0.24, 0]}>
+          {geometry === 'tag' ? (
+            <Box name="PrizeTag" size={[0.16, 0.12, 0.03]} color={MATERIALS.clawCyanAccent} roughness={0.2} />
+          ) : (
+            <mesh name="PrizeStrap" castShadow>
+              <torusGeometry args={[0.12, 0.025, 8, 20]} />
+              <meshStandardMaterial color={MATERIALS.clawCyanAccent} metalness={0.2} roughness={0.35} />
+            </mesh>
+          )}
+        </group>
+      ) : (
+        <Box name="PrizeBand" size={[0.36, 0.06, 0.36]} position={[0, 0, 0]} color={MATERIALS.clawCyanAccent} roughness={0.2} />
+      )}
     </group>
   )
 }
@@ -447,6 +454,7 @@ export function StaticScene() {
           key={prize.id}
           id={prize.id}
           position={prize.position}
+          geometry={prize.geometry}
         />
       ))}
       <PlayfieldRoot />

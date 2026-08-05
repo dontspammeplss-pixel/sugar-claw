@@ -27,6 +27,12 @@ function sample(
       solverContact: true,
       collisionGroupEligible: true,
     })),
+    contactRegions: PROFILE.requiredContacts.map(() => ({
+      prizeId: PROFILE.objectBodyId,
+      primitiveId: 'legacy-body',
+      region: 'body',
+      retentionFactor: 1,
+    })),
     ...overrides,
   }
 }

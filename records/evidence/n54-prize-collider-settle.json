@@ -1,0 +1,367 @@
+{
+  "node": "N54",
+  "status": "pass",
+  "deterministic": true,
+  "fixedStep": {
+    "revision": "fixed-step-rev3",
+    "dt": 0.016666666666666666,
+    "settleSteps": 400
+  },
+  "contract": {
+    "byGeometry": {
+      "sphere": [
+        {
+          "id": "body",
+          "region": "body",
+          "shape": "sphere",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "quaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "radius": 0.22,
+          "captureTarget": true,
+          "retentionFactor": 1
+        }
+      ],
+      "box": [
+        {
+          "id": "body",
+          "region": "body",
+          "shape": "box",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "quaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "halfExtents": [
+            0.22,
+            0.22,
+            0.22
+          ],
+          "captureTarget": true,
+          "retentionFactor": 1
+        }
+      ],
+      "soft-pouch": [
+        {
+          "id": "body",
+          "region": "body",
+          "shape": "box",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "quaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "halfExtents": [
+            0.21,
+            0.25,
+            0.14
+          ],
+          "captureTarget": true,
+          "retentionFactor": 1
+        }
+      ],
+      "tag": [
+        {
+          "id": "body",
+          "region": "body",
+          "shape": "sphere",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "quaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "radius": 0.22,
+          "captureTarget": false,
+          "retentionFactor": 1
+        },
+        {
+          "id": "tag",
+          "region": "tag",
+          "shape": "box",
+          "position": [
+            0,
+            0.24,
+            0
+          ],
+          "quaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "halfExtents": [
+            0.08,
+            0.06,
+            0.015
+          ],
+          "captureTarget": true,
+          "retentionFactor": 0.42
+        }
+      ],
+      "strap": [
+        {
+          "id": "body",
+          "region": "body",
+          "shape": "sphere",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "quaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "radius": 0.22,
+          "captureTarget": false,
+          "retentionFactor": 1
+        },
+        {
+          "id": "strap",
+          "region": "strap",
+          "shape": "capsule",
+          "position": [
+            0,
+            0.24,
+            0
+          ],
+          "quaternion": [
+            0,
+            0,
+            0.7071067811865476,
+            0.7071067811865476
+          ],
+          "radius": 0.025,
+          "halfHeight": 0.12,
+          "captureTarget": true,
+          "retentionFactor": 0.5
+        }
+      ],
+      "loop": [
+        {
+          "id": "body",
+          "region": "body",
+          "shape": "sphere",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "quaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "radius": 0.22,
+          "captureTarget": false,
+          "retentionFactor": 1
+        },
+        {
+          "id": "loop",
+          "region": "loop",
+          "shape": "capsule",
+          "position": [
+            0,
+            0.24,
+            0
+          ],
+          "quaternion": [
+            0,
+            0,
+            0.7071067811865476,
+            0.7071067811865476
+          ],
+          "radius": 0.025,
+          "halfHeight": 0.12,
+          "captureTarget": true,
+          "retentionFactor": 0.55
+        }
+      ]
+    },
+    "bodyShapesMatch": true,
+    "packagingMatches": true,
+    "captureTargetsAndRetention": true,
+    "bodyFirst": true,
+    "declaredPrimitiveCounts": {
+      "sphere": 1,
+      "box": 1,
+      "soft-pouch": 1,
+      "tag": 2,
+      "strap": 2,
+      "loop": 2
+    },
+    "expectedColliderCounts": {
+      "prize": 1,
+      "tag-prize": 2,
+      "pouch-prize": 1
+    },
+    "actualColliderCounts": {
+      "prize": 1,
+      "tag-prize": 2,
+      "pouch-prize": 1
+    },
+    "expectedColliderCount": 4,
+    "actualColliderCount": 4,
+    "colliderCountMatches": true
+  },
+  "settle": {
+    "manifestRevision": "n43-default-playfield-rev1",
+    "floorTop": 0.89,
+    "floorTolerance": 0.005,
+    "chamberInnerBounds": {
+      "x": 1.65,
+      "z": 0.83
+    },
+    "prizes": [
+      {
+        "id": "prize",
+        "geometry": "sphere",
+        "position": [
+          0.3094834089279175,
+          1.1087226867675781,
+          -0.24630123376846313
+        ],
+        "visualOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "visualEnvelopeHalfExtents": [
+          0.22,
+          0.22,
+          0.22
+        ],
+        "visualBottom": 0.8887226867675782,
+        "floorClear": true,
+        "wallClearance": {
+          "x": 1.1205165910720825,
+          "z": 0.36369876623153685
+        },
+        "wallClear": true,
+        "expectedHeight": {
+          "target": 1.109,
+          "tolerance": 0.01
+        },
+        "settleHeightClear": true
+      },
+      {
+        "id": "tag-prize",
+        "geometry": "tag",
+        "position": [
+          -0.20212095975875854,
+          1.1086945533752441,
+          -0.3898507356643677
+        ],
+        "visualOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "visualEnvelopeHalfExtents": [
+          0.22,
+          0.3,
+          0.22
+        ],
+        "visualBottom": 0.8886945533752442,
+        "floorClear": true,
+        "wallClearance": {
+          "x": 1.2278790402412414,
+          "z": 0.2201492643356323
+        },
+        "wallClear": true,
+        "expectedHeight": {
+          "minimum": 1.1
+        },
+        "settleHeightClear": true
+      },
+      {
+        "id": "pouch-prize",
+        "geometry": "soft-pouch",
+        "position": [
+          0.7205255031585693,
+          1.1361806392669678,
+          0.08069920539855957
+        ],
+        "visualOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "visualEnvelopeHalfExtents": [
+          0.21,
+          0.25,
+          0.18
+        ],
+        "visualBottom": 0.8861806392669678,
+        "floorClear": true,
+        "wallClearance": {
+          "x": 0.7194744968414306,
+          "z": 0.5693007946014403
+        },
+        "wallClear": true,
+        "expectedHeight": {
+          "minimum": 1.13
+        },
+        "settleHeightClear": true
+      }
+    ],
+    "floorAndWallClear": true
+  },
+  "repeatability": {
+    "runs": 2,
+    "deltas": [
+      {
+        "id": "prize",
+        "delta": 0
+      },
+      {
+        "id": "tag-prize",
+        "delta": 0
+      },
+      {
+        "id": "pouch-prize",
+        "delta": 0
+      }
+    ],
+    "withinTolerance": true
+  },
+  "failureResults": [],
+  "verificationCommands": [
+    "npm run typecheck",
+    "npm run lint",
+    "npm test",
+    "npm run build"
+  ]
+}

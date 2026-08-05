@@ -538,7 +538,7 @@ describe('N7 integrated effect coordinator', () => {
             z,
           ]),
         ).toBe(true)
-        coordinator.physics.step()
+        coordinator.physics.stepMany(3)
         const drop = coordinator.dispatch({ type: 'confirmDrop' })
         expect(drop.accepted, label).toBe(true)
         expect(drop.snapshot.state, label).toBe('lowering')
@@ -560,11 +560,28 @@ describe('N7 integrated effect coordinator', () => {
         expect(loweringTarget![2]).toBeLessThanOrEqual(
           N6_PHYSICS_CONFIG.travelBounds.max.z,
         )
-        const before = coordinator.physics.transform('claw').position[1]
-        coordinator.tick(1000 / 60)
-        expect(coordinator.physics.transform('claw').position[1]).toBeLessThan(
-          before,
-        )
+        const loweringY: number[] = []
+        let loweringTicks = 0
+        for (let tick = 0; tick < 180; tick += 1) {
+          const wasLowering = coordinator.snapshot.state === 'lowering'
+          coordinator.tick(1000 / 60)
+          const y = coordinator.physics.transform('claw').position[1]
+          if (wasLowering) {
+            loweringTicks += 1
+            loweringY.push(y)
+          }
+          if (tick < 2) {
+            expect(y, label).toBeGreaterThan(
+              N6_PHYSICS_CONFIG.clawClearance.baseInteractionY +
+                N6_PHYSICS_CONFIG.clawClearance.tolerance,
+            )
+          }
+          if (coordinator.snapshot.state === 'result') break
+        }
+        expect(coordinator.snapshot.state, label).toBe('result')
+        expect(coordinator.snapshot.errorKind, label).toBeNull()
+        expect(loweringTicks, label).toBeGreaterThanOrEqual(10)
+        expect(loweringY.length, label).toBeGreaterThan(10)
       } finally {
         coordinator.dispose()
       }

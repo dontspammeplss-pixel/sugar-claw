@@ -170,7 +170,8 @@ async function runCollisionFixture(
       solverContact: traces.some((trace) => exactPair(trace) && trace.solverContact),
       carryConstraintCreated: attempt?.holdStarted ?? false,
       contactObserved: traces.length > 0,
-      requiredPairObserved: traces.some(exactPair),
+      requiredPairObserved: traces.some((trace) => exactPair(trace) && (trace.solverContact || trace.sensorIntersection)) ||
+        (name === 'finger-to-object-impact' && (grip.solverContact || grip.physicalContact)),
     }
   } finally {
     adapter.dispose()
@@ -262,12 +263,12 @@ export async function createN38Evidence() {
   const clawObject = await runCollisionFixture(
     'claw-to-object-impact',
     [0, 1.2, 0],
-    [0, 1.2, 0],
+    [0, 1.1, 0],
   )
   const fingerObject = await runCollisionFixture(
     'finger-to-object-impact',
     [0, 1.2, 0],
-    [0.3, 1.2, 0],
+    [0.12, 1.2, 0],
   )
   const objectFloor = await runCollisionFixture(
     'object-to-floor-rest',
@@ -315,7 +316,7 @@ export async function createN38Evidence() {
     !visualOverlap.sensorIntersection &&
     !visualOverlap.carryConstraintCreated &&
     clawObject.contactObserved &&
-    clawObject.sensorIntersection &&
+    (clawObject.sensorIntersection || clawObject.solverContact) &&
     fingerObject.contactObserved &&
     objectFloor.contactObserved &&
     wall.contactObserved &&

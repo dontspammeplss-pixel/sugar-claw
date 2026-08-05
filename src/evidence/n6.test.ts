@@ -60,8 +60,16 @@ describe('N6 minimal Rapier physics scenario', () => {
     const { min, max } = N6_PHYSICS_CONFIG.travelBounds
     expect(adapter.moveClaw([min.x, min.y, min.z])).toBe(true)
     expect(adapter.moveClaw([max.x, max.y, max.z])).toBe(true)
-    expect(adapter.moveClaw([min.x - 0.01, min.y, min.z])).toBe(false)
-    expect(adapter.moveClaw([max.x + 0.01, max.y, max.z])).toBe(false)
+
+    expect(adapter.moveClaw([0, 2.8, max.z + 1e-7])).toBe(true)
+    adapter.step()
+    expect(adapter.transform('claw').position[2]).toBeCloseTo(max.z, 6)
+    expect(adapter.moveClaw([0, 2.8, max.z + 0.01])).toBe(false)
+
+    expect(adapter.moveClaw([min.x - 1e-7, 2.8, 0])).toBe(true)
+    adapter.step()
+    expect(adapter.transform('claw').position[0]).toBeCloseTo(min.x, 6)
+    expect(adapter.moveClaw([min.x - 0.01, 2.8, 0])).toBe(false)
     adapter.dispose()
   })
 

@@ -1,5 +1,26 @@
 export type GripContactRegionId = 'finger-right' | 'finger-left' | 'finger-back'
 export type GripApproachDirection = 'right' | 'left' | 'back'
+export type GripCaughtRegion = 'body' | 'corner' | 'tag' | 'strap' | 'loop'
+
+export interface GripContactRegionObservation {
+  readonly prizeId: string
+  readonly primitiveId: string
+  readonly region: GripCaughtRegion
+  readonly retentionFactor: number
+}
+
+export interface GripContactRegionResult {
+  readonly prizeId: string
+  readonly primitiveIds: readonly string[]
+  readonly regions: readonly GripCaughtRegion[]
+  readonly retentionFactor: number
+}
+
+export interface GripQuality {
+  readonly caughtRegion: GripCaughtRegion | null
+  readonly retentionFactor: number
+  readonly contactGeometry: 'body-cage' | 'packaging-catch' | 'none'
+}
 
 export type GripFailureReason =
   | 'grip-outside-envelope'
@@ -10,6 +31,11 @@ export type GripFailureReason =
   | 'grip-stale-observation'
   | 'grip-collider-ambiguous'
   | 'collision-group-ineligible'
+  | 'geometry-undefined'
+  | 'strap-vs-body-ambiguous'
+  | 'pseudo-capture'
+
+export type GripEvaluationReason = 'approved' | GripFailureReason
 
 export interface GripProfile {
   readonly revision: string
@@ -32,6 +58,7 @@ export interface GripSolverContact {
   readonly approachDirection: GripApproachDirection
   readonly solverContact: boolean
   readonly collisionGroupEligible: boolean
+  readonly primitiveId?: string
 }
 
 export interface GripCandidateObservation {
@@ -47,6 +74,8 @@ export interface GripCandidateObservation {
   /** Adapter-proven collider/profile mapping; false means no safe approval. */
   readonly colliderMappingValid: boolean
   readonly solverContacts: readonly GripSolverContact[]
+  /** Adapter-proven sub-geometry identity; absent preserves pre-N44 fixtures. */
+  readonly contactRegions?: readonly GripContactRegionObservation[]
 }
 
 export interface GripEvaluationDiagnostics {
@@ -58,6 +87,7 @@ export interface GripEvaluationDiagnostics {
   } | null
   readonly objectReferencePoint: readonly [number, number, number] | null
   readonly contactRegionIds: readonly GripContactRegionId[]
+  readonly caughtGeometry: GripContactRegionResult | null
   readonly sensorIntersection: boolean
   readonly sensorObjectBodyId: string | null
   readonly solverContacts: readonly GripSolverContact[]
@@ -72,14 +102,71 @@ export interface GripEvaluation {
   readonly approved: boolean
   readonly reason: 'approved' | GripFailureReason
   readonly diagnostics: GripEvaluationDiagnostics
+  readonly quality: GripQuality
 }
 
 const EMPTY_CONTACTS: readonly GripSolverContact[] = []
 const EMPTY_STEPS: readonly number[] = []
 
 type SampleResult = {
-  readonly reason: 'approved' | GripFailureReason
+  readonly reason: GripEvaluationReason
   readonly contacts: readonly GripSolverContact[]
+  readonly caughtGeometry: GripContactRegionResult | null
+}
+
+const EMPTY_QUALITY: GripQuality = {
+  caughtRegion: null,
+  retentionFactor: 0,
+  contactGeometry: 'none',
+}
+
+function caughtGeometry(
+  observation: GripCandidateObservation,
+  contacts: readonly GripSolverContact[],
+): GripContactRegionResult | null {
+  if (observation.contactRegions === undefined) {
+    return {
+      prizeId: observation.objectBodyId ?? 'unknown',
+      primitiveIds: ['legacy-body'],
+      regions: ['body'],
+      retentionFactor: 1,
+    }
+  }
+  if (observation.contactRegions.length === 0 || contacts.length === 0) return null
+  if (contacts.every((contact) => !contact.primitiveId) && observation.contactRegions.every((region) => region.region === 'body')) {
+    return {
+      prizeId: observation.contactRegions[0].prizeId,
+      primitiveIds: observation.contactRegions.map((region) => region.primitiveId),
+      regions: ['body'],
+      retentionFactor: 1,
+    }
+  }
+  const byId = new Map(
+    observation.contactRegions.map((region) => [region.primitiveId, region]),
+  )
+  const matched = contacts
+    .map((contact) => (contact.primitiveId ? byId.get(contact.primitiveId) : undefined))
+    .filter((region): region is GripContactRegionObservation => region !== undefined)
+  if (matched.length !== contacts.length) return null
+  const regions = [...new Set(matched.map((region) => region.region))]
+  const primitiveIds = [...new Set(matched.map((region) => region.primitiveId))]
+  if (regions.length !== 1 || primitiveIds.length === 0) return null
+  return {
+    prizeId: matched[0].prizeId,
+    primitiveIds,
+    regions,
+    retentionFactor: matched.reduce((minimum, region) => Math.min(minimum, region.retentionFactor), 1),
+  }
+}
+
+function qualityFor(caught: GripContactRegionResult | null): GripQuality {
+  if (!caught) return EMPTY_QUALITY
+  const region = caught.regions[0]
+  return {
+    caughtRegion: region,
+    retentionFactor: caught.retentionFactor,
+    contactGeometry: region === 'body' ? 'body-cage' : 'packaging-catch',
+  }
 }
 
 function validProfile(profile: GripProfile | null): profile is GripProfile {
@@ -125,6 +212,7 @@ function diagnostics(
   contacts: readonly GripSolverContact[] = EMPTY_CONTACTS,
   fixedStepWindow = 0,
   fixedSteps: readonly number[] = EMPTY_STEPS,
+  caught: GripContactRegionResult | null = null,
 ): GripEvaluationDiagnostics {
   return {
     profileRevision: profile?.revision ?? null,
@@ -139,6 +227,7 @@ function diagnostics(
     objectReferencePoint:
       observation && profile ? referencePoint(profile, observation) : null,
     contactRegionIds: contacts.map((contact) => contact.contactRegionId),
+    caughtGeometry: caught,
     sensorIntersection: observation?.sensorIntersection ?? false,
     sensorObjectBodyId: observation?.sensorObjectBodyId ?? null,
     solverContacts: contacts,
@@ -199,52 +288,62 @@ function evaluateSample(
     !Number.isInteger(observation.fixedStep) ||
     observation.fixedStep < 0
   ) {
-    return { reason: 'grip-stale-observation', contacts: EMPTY_CONTACTS }
+    return { reason: 'grip-stale-observation', contacts: EMPTY_CONTACTS, caughtGeometry: null }
   }
   if (!observation.colliderMappingValid) {
-    return { reason: 'grip-collider-ambiguous', contacts: EMPTY_CONTACTS }
+    return { reason: 'grip-collider-ambiguous', contacts: EMPTY_CONTACTS, caughtGeometry: null }
   }
   if (!observation.collisionGroupEligible) {
-    return { reason: 'collision-group-ineligible', contacts: EMPTY_CONTACTS }
+    return { reason: 'collision-group-ineligible', contacts: EMPTY_CONTACTS, caughtGeometry: null }
   }
   if (observation.objectBodyId !== profile.objectBodyId) {
-    return { reason: 'grip-wrong-body', contacts: EMPTY_CONTACTS }
+    return { reason: 'grip-wrong-body', contacts: EMPTY_CONTACTS, caughtGeometry: null }
   }
   if (
     observation.sensorIntersection &&
     observation.sensorObjectBodyId !== profile.objectBodyId
   ) {
-    return { reason: 'grip-wrong-body', contacts: EMPTY_CONTACTS }
+    return { reason: 'grip-wrong-body', contacts: EMPTY_CONTACTS, caughtGeometry: null }
   }
   if (
     observation.solverContacts.some(
       (contact) => contact.objectBodyId !== profile.objectBodyId,
     )
   ) {
-    return { reason: 'grip-wrong-body', contacts: EMPTY_CONTACTS }
+    return { reason: 'grip-wrong-body', contacts: EMPTY_CONTACTS, caughtGeometry: null }
   }
   if (
     observation.solverContacts.some(
       (contact) => !contact.collisionGroupEligible,
     )
   ) {
-    return { reason: 'collision-group-ineligible', contacts: EMPTY_CONTACTS }
+    return { reason: 'collision-group-ineligible', contacts: EMPTY_CONTACTS, caughtGeometry: null }
   }
   if (outsideEnvelope(profile, observation)) {
-    return { reason: 'grip-outside-envelope', contacts: EMPTY_CONTACTS }
+    return { reason: 'grip-outside-envelope', contacts: EMPTY_CONTACTS, caughtGeometry: null }
   }
 
   const contacts = validContacts(profile, observation)
   if (!observation.sensorIntersection) {
-    return { reason: 'grip-incomplete-contact', contacts }
+    return { reason: 'grip-incomplete-contact', contacts, caughtGeometry: null }
   }
   if (contacts.length === 0) {
-    return { reason: 'grip-sensor-only', contacts }
+    return { reason: 'grip-sensor-only', contacts, caughtGeometry: null }
   }
   if (contacts.length !== profile.requiredContacts.length) {
-    return { reason: 'grip-incomplete-contact', contacts }
+    return { reason: 'grip-incomplete-contact', contacts, caughtGeometry: null }
+  }  const caught = caughtGeometry(observation, contacts)
+  if (!caught) {
+    return {
+      reason: observation.contactRegions !== undefined && observation.contactRegions.length === 0
+        ? 'pseudo-capture'
+        : 'strap-vs-body-ambiguous',
+      contacts,
+      caughtGeometry: null,
+    }
   }
-  return { reason: 'approved', contacts }
+  return { reason: 'approved', contacts, caughtGeometry: caught }
+
 }
 
 /** Pure N37 predicate; Rapier and fixed-step sampling remain adapter-owned. */
@@ -262,7 +361,9 @@ export function evaluateGrip(
         EMPTY_CONTACTS,
         observations.length,
         observations.map((observation) => observation.fixedStep),
+        null,
       ),
+      quality: EMPTY_QUALITY,
     }
   }
 
@@ -291,7 +392,9 @@ export function evaluateGrip(
         lastSample.contacts,
         observations.length,
         fixedSteps,
+        lastSample.caughtGeometry,
       ),
+      quality: qualityFor(lastSample.caughtGeometry),
     }
   }
   const stepsAreConsecutive = fixedSteps.every(
@@ -307,7 +410,9 @@ export function evaluateGrip(
         lastSample.contacts,
         observations.length,
         fixedSteps,
+        lastSample.caughtGeometry,
       ),
+      quality: qualityFor(lastSample.caughtGeometry),
     }
   }
   if (observations.length < profile.settlingSteps || !stepsAreConsecutive) {
@@ -320,7 +425,9 @@ export function evaluateGrip(
         lastSample.contacts,
         observations.length,
         fixedSteps,
+        lastSample.caughtGeometry,
       ),
+      quality: qualityFor(lastSample.caughtGeometry),
     }
   }
   return {
@@ -332,6 +439,8 @@ export function evaluateGrip(
       lastSample.contacts,
       observations.length,
       fixedSteps,
+      lastSample.caughtGeometry,
     ),
+    quality: qualityFor(lastSample.caughtGeometry),
   }
 }

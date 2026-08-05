@@ -36,7 +36,7 @@ describe('N43 multi-prize manifest and persistent playfield', () => {
       noWonPrizesOnFreshRevision: true,
     })
     expect(evidence.collision).toMatchObject({
-      prizeColliderCount: 3,
+      prizeColliderCount: 4,
       distinctFromClaw: true,
       prizeVsPrizeEligible: true,
       prizeVsClawEligible: true,

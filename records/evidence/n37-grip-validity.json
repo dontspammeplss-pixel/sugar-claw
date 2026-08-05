@@ -77,6 +77,18 @@
             "finger-left",
             "finger-back"
           ],
+          "caughtGeometry": {
+            "prizeId": "prize",
+            "primitiveIds": [
+              "legacy-body",
+              "legacy-body",
+              "legacy-body"
+            ],
+            "regions": [
+              "body"
+            ],
+            "retentionFactor": 1
+          },
           "sensorIntersection": true,
           "sensorObjectBodyId": "prize",
           "solverContacts": [
@@ -111,6 +123,11 @@
             11,
             12
           ]
+        },
+        "quality": {
+          "caughtRegion": "body",
+          "retentionFactor": 1,
+          "contactGeometry": "body-cage"
         }
       },
       "carryConstraintCreated": false
@@ -141,6 +158,7 @@
             0
           ],
           "contactRegionIds": [],
+          "caughtGeometry": null,
           "sensorIntersection": true,
           "sensorObjectBodyId": "prize",
           "solverContacts": [],
@@ -153,6 +171,11 @@
             11,
             12
           ]
+        },
+        "quality": {
+          "caughtRegion": null,
+          "retentionFactor": 0,
+          "contactGeometry": "none"
         }
       },
       "carryConstraintCreated": false
@@ -183,6 +206,7 @@
             0
           ],
           "contactRegionIds": [],
+          "caughtGeometry": null,
           "sensorIntersection": false,
           "sensorObjectBodyId": "prize",
           "solverContacts": [],
@@ -195,6 +219,11 @@
             11,
             12
           ]
+        },
+        "quality": {
+          "caughtRegion": null,
+          "retentionFactor": 0,
+          "contactGeometry": "none"
         }
       },
       "carryConstraintCreated": false
@@ -225,6 +254,7 @@
             0
           ],
           "contactRegionIds": [],
+          "caughtGeometry": null,
           "sensorIntersection": true,
           "sensorObjectBodyId": "prize",
           "solverContacts": [],
@@ -237,6 +267,11 @@
             11,
             12
           ]
+        },
+        "quality": {
+          "caughtRegion": null,
+          "retentionFactor": 0,
+          "contactGeometry": "none"
         }
       },
       "carryConstraintCreated": false
@@ -269,6 +304,7 @@
           "contactRegionIds": [
             "finger-right"
           ],
+          "caughtGeometry": null,
           "sensorIntersection": true,
           "sensorObjectBodyId": "prize",
           "solverContacts": [
@@ -289,6 +325,11 @@
             11,
             12
           ]
+        },
+        "quality": {
+          "caughtRegion": null,
+          "retentionFactor": 0,
+          "contactGeometry": "none"
         }
       },
       "carryConstraintCreated": false
@@ -321,6 +362,7 @@
           "contactRegionIds": [
             "finger-right"
           ],
+          "caughtGeometry": null,
           "sensorIntersection": true,
           "sensorObjectBodyId": "prize",
           "solverContacts": [
@@ -341,6 +383,11 @@
             11,
             12
           ]
+        },
+        "quality": {
+          "caughtRegion": null,
+          "retentionFactor": 0,
+          "contactGeometry": "none"
         }
       },
       "carryConstraintCreated": false
@@ -371,6 +418,7 @@
             0
           ],
           "contactRegionIds": [],
+          "caughtGeometry": null,
           "sensorIntersection": true,
           "sensorObjectBodyId": "prize",
           "solverContacts": [],
@@ -383,6 +431,11 @@
             11,
             12
           ]
+        },
+        "quality": {
+          "caughtRegion": null,
+          "retentionFactor": 0,
+          "contactGeometry": "none"
         }
       },
       "carryConstraintCreated": false
@@ -413,6 +466,7 @@
             0
           ],
           "contactRegionIds": [],
+          "caughtGeometry": null,
           "sensorIntersection": true,
           "sensorObjectBodyId": "prize",
           "solverContacts": [],
@@ -425,6 +479,11 @@
             11,
             12
           ]
+        },
+        "quality": {
+          "caughtRegion": null,
+          "retentionFactor": 0,
+          "contactGeometry": "none"
         }
       },
       "carryConstraintCreated": false
@@ -459,6 +518,18 @@
             "finger-left",
             "finger-back"
           ],
+          "caughtGeometry": {
+            "prizeId": "prize",
+            "primitiveIds": [
+              "legacy-body",
+              "legacy-body",
+              "legacy-body"
+            ],
+            "regions": [
+              "body"
+            ],
+            "retentionFactor": 1
+          },
           "sensorIntersection": true,
           "sensorObjectBodyId": "prize",
           "solverContacts": [
@@ -492,6 +563,11 @@
             10,
             11
           ]
+        },
+        "quality": {
+          "caughtRegion": "body",
+          "retentionFactor": 1,
+          "contactGeometry": "body-cage"
         }
       },
       "carryConstraintCreated": false
@@ -522,6 +598,7 @@
             0
           ],
           "contactRegionIds": [],
+          "caughtGeometry": null,
           "sensorIntersection": true,
           "sensorObjectBodyId": "prize",
           "solverContacts": [],
@@ -534,6 +611,11 @@
             11,
             12
           ]
+        },
+        "quality": {
+          "caughtRegion": null,
+          "retentionFactor": 0,
+          "contactGeometry": "none"
         }
       },
       "carryConstraintCreated": false
@@ -568,6 +650,18 @@
             "finger-left",
             "finger-back"
           ],
+          "caughtGeometry": {
+            "prizeId": "prize",
+            "primitiveIds": [
+              "legacy-body",
+              "legacy-body",
+              "legacy-body"
+            ],
+            "regions": [
+              "body"
+            ],
+            "retentionFactor": 1
+          },
           "sensorIntersection": true,
           "sensorObjectBodyId": "prize",
           "solverContacts": [
@@ -602,6 +696,11 @@
             12,
             13
           ]
+        },
+        "quality": {
+          "caughtRegion": "body",
+          "retentionFactor": 1,
+          "contactGeometry": "body-cage"
         }
       },
       "carryConstraintCreated": false
@@ -636,6 +735,18 @@
             "finger-left",
             "finger-back"
           ],
+          "caughtGeometry": {
+            "prizeId": "prize",
+            "primitiveIds": [
+              "legacy-body",
+              "legacy-body",
+              "legacy-body"
+            ],
+            "regions": [
+              "body"
+            ],
+            "retentionFactor": 1
+          },
           "sensorIntersection": true,
           "sensorObjectBodyId": "prize",
           "solverContacts": [
@@ -670,6 +781,11 @@
             11,
             12
           ]
+        },
+        "quality": {
+          "caughtRegion": "body",
+          "retentionFactor": 1,
+          "contactGeometry": "body-cage"
         }
       },
       "carryConstraintCreated": false
@@ -684,6 +800,7 @@
           "captureEnvelope": null,
           "objectReferencePoint": null,
           "contactRegionIds": [],
+          "caughtGeometry": null,
           "sensorIntersection": true,
           "sensorObjectBodyId": "prize",
           "solverContacts": [],
@@ -696,6 +813,11 @@
             11,
             12
           ]
+        },
+        "quality": {
+          "caughtRegion": null,
+          "retentionFactor": 0,
+          "contactGeometry": "none"
         }
       },
       "carryConstraintCreated": false
