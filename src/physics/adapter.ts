@@ -21,8 +21,12 @@ import {
   N38_COLLISION_MATRIX,
   n38CollisionGroups,
   n38SolverGroups,
+  swingAccelerationToLinearAcceleration,
+  travelAccelerationToLinearAcceleration,
   type N38CollisionRole,
   type N38PairExpectation,
+  type SwingTransferConfig,
+  type TravelTransferConfig,
   type Vec3,
 } from './config'
 import {
@@ -199,6 +203,10 @@ export interface RetentionState {
   readonly centerOfMass: Vec3
   readonly gripPoint: Vec3
   readonly contactCount: number
+  /** N47: measured pendulum swing term (linear m/s²) feeding the balance. */
+  readonly swingAcceleration: number
+  /** N48: measured carriage travel term (linear m/s²) feeding the balance. */
+  readonly travelAcceleration: number
   readonly releasedAt: number | null
 }
 
@@ -290,6 +298,7 @@ interface BodyBaseline {
 }
 
 const ZERO = { x: 0, y: 0, z: 0 }
+
 
 function vector([x, y, z]: Vec3): { x: number; y: number; z: number } {
   return { x, y, z }
@@ -455,7 +464,9 @@ export class N6PhysicsAdapter {
   private readonly baseline: Readonly<Record<PhysicsBodyId, BodyBaseline>>
   private readonly stepRecords: PhysicsStepRecord[] = []
   private readonly retentionConfig: N6PhysicsAdapterOptions['retention'] & {
-    readonly gripVoltage: number
+    // N51 (F-11): gripVoltage is the single live-tunable retention knob
+    // (ops panel writes through coordinator.setGripVoltage with clamping).
+    gripVoltage: number
     readonly padFriction: number
     readonly maxHoldForceAtMinVoltage: number
     readonly maxHoldForceAtMaxVoltage: number
@@ -467,11 +478,26 @@ export class N6PhysicsAdapter {
     readonly pendulumSwingAcceleration: number
     readonly travelAcceleration: number
     readonly packingForce: number
+    readonly swingTransfer: SwingTransferConfig
+    readonly travelTransfer: TravelTransferConfig
   }
   private holdActive = false
   private holdOffset: Vec3 = [0, 0, 0]
   private holdContactCount = 0
   private holdRetentionFactor = 1
+  /** N47 (F-07): measured pendulum swing term (linear m/s²) feeding the balance. */
+  private sampledSwingAcceleration: number =
+    this.config.retention.pendulumSwingAcceleration
+  /** N47: rolling window of |head angular acceleration| samples (rad/s²). */
+  private swingAccelSamples: number[] = []
+  private previousHeadAngVel: Vec3 | null = null
+  /** N48 (F-08): measured carriage travel term (linear m/s²) feeding the balance. */
+  private sampledTravelAcceleration: number =
+    this.config.retention.travelAcceleration
+  /** N48: rolling window of |carriage acceleration| samples (m/s²). */
+  private travelAccelSamples: number[] = []
+  private previousClawPosition: Vec3 | null = null
+  private previousClawSpeed: number | null = null
   private retentionState: RetentionState
   private retentionReleaseEvent: RetentionReleaseEvent | null = null
   private deliveryObservation: DeliveryObservation | null = null
@@ -884,6 +910,22 @@ export class N6PhysicsAdapter {
     return this.retentionReleaseEvent ? { ...this.retentionReleaseEvent } : null
   }
 
+  /**
+   * N51 (F-11): live operator tuning of grip voltage (12–36V, default 24V).
+   * Clamps to the approved retention range; deterministic — the next balance
+   * evaluation reads the applied value. Returns the applied (clamped) value.
+   * Motion scheduling only: no state transition, no fixed-step change (C-02).
+   */
+  setGripVoltage(value: number): number {
+    if (!Number.isFinite(value)) {
+      throw new Error('N51 ops: grip voltage must be finite')
+    }
+    const { minGripVoltage, maxGripVoltage } = this.config.retention
+    const clamped = Math.min(maxGripVoltage, Math.max(minGripVoltage, value))
+    this.retentionConfig.gripVoltage = clamped
+    return clamped
+  }
+
   get delivery(): DeliveryObservation | null {
     return this.deliveryObservation
       ? {
@@ -1264,6 +1306,10 @@ export class N6PhysicsAdapter {
     if (this.holdActive) this.applyHoldImpulse()
     this.world.step()
     this.stepNumber += 1
+    // N47: sample the real pendulum swing before the hold balance is evaluated.
+    this.sampleSwingAcceleration()
+    // N48: sample the carriage's travel acceleration into the same balance.
+    this.sampleTravelAcceleration()
     // Release/drop paths are allowed to carry a composed prize down to the
     // chute; retain the same fixed-step sensor authority for delivery.
     this.observeDelivery()
@@ -1824,6 +1870,18 @@ export class N6PhysicsAdapter {
     this.retentionState = this.createRetentionState('idle', null)
     this.holdContactCount = 0
     this.holdRetentionFactor = 1
+    // N47: the new run starts with a calm head; clear the swing window so no
+    // pre-reset Δω leaks into the fresh run.
+    this.sampledSwingAcceleration =
+      this.config.retention.pendulumSwingAcceleration
+    this.swingAccelSamples = []
+    this.previousHeadAngVel = null
+    // N48: the new run starts from a calm carriage; clear the travel window so
+    // no pre-reset motion leaks into the fresh run.
+    this.sampledTravelAcceleration = this.config.retention.travelAcceleration
+    this.travelAccelSamples = []
+    this.previousClawPosition = null
+    this.previousClawSpeed = null
     this.restoreBaselinePose()
     this.stepNumber = 0
     this.runId += 1
@@ -1961,6 +2019,79 @@ export class N6PhysicsAdapter {
     return maxHoldForce * config.padFriction * contactGeometryFactor * this.holdRetentionFactor
   }
 
+  /**
+   * N47 (F-07): samples the dynamic head's angular acceleration in the fixed
+   * step and maps it through the versioned swing transfer. Read-only with
+   * respect to the head — no torque, no per-frame angular corrections (N26
+   * lesson). The first sample only records a baseline; Δω is measured from the
+   * following step.
+   */
+  private sampleSwingAcceleration(): void {
+    const angVel = tuple(this.headBody.angvel())
+    const previous = this.previousHeadAngVel
+    this.previousHeadAngVel = [...angVel] as Vec3
+    if (previous === null) return
+    const deltaMagnitude = Math.hypot(
+      angVel[0] - previous[0],
+      angVel[1] - previous[1],
+      angVel[2] - previous[2],
+    )
+    const windowSteps = this.retentionConfig.swingTransfer.windowSteps
+    this.swingAccelSamples.push(deltaMagnitude / this.config.dt)
+    if (this.swingAccelSamples.length > windowSteps) {
+      this.swingAccelSamples.shift()
+    }
+    const mean =
+      this.swingAccelSamples.reduce((sum, value) => sum + value, 0) /
+      this.swingAccelSamples.length
+    this.sampledSwingAcceleration = swingAccelerationToLinearAcceleration(
+      mean,
+      this.retentionConfig.swingTransfer,
+    )
+  }
+
+  /**
+   * N48 (F-08): samples the carriage's travel acceleration in the fixed step
+   * and maps it through the versioned travel transfer into RequiredHoldForce.
+   * Only consecutive in-motion steps count (previous AND current step speed
+   * above the idle threshold), so a single moveClaw jump — a reset or a
+   * fixture park — never registers as travel acceleration. Read-only with
+   * respect to the bodies; bounded and monotone like the swing term. The first
+   * sample only records a baseline; Δv is measured from the following step.
+   */
+  private sampleTravelAcceleration(): void {
+    const position = this.transform('claw').position
+    const previousPosition = this.previousClawPosition
+    this.previousClawPosition = [...position] as Vec3
+    if (previousPosition === null) return
+    const speed =
+      Math.hypot(
+        position[0] - previousPosition[0],
+        position[1] - previousPosition[1],
+        position[2] - previousPosition[2],
+      ) / this.config.dt
+    const previousSpeed = this.previousClawSpeed
+    this.previousClawSpeed = speed
+    if (previousSpeed === null) return
+    const idle = this.config.tolerances.idleVelocity
+    const sample =
+      speed > idle && previousSpeed > idle
+        ? Math.abs(speed - previousSpeed) / this.config.dt
+        : 0
+    const windowSteps = this.retentionConfig.travelTransfer.windowSteps
+    this.travelAccelSamples.push(sample)
+    if (this.travelAccelSamples.length > windowSteps) {
+      this.travelAccelSamples.shift()
+    }
+    const mean =
+      this.travelAccelSamples.reduce((sum, value) => sum + value, 0) /
+      this.travelAccelSamples.length
+    this.sampledTravelAcceleration = travelAccelerationToLinearAcceleration(
+      mean,
+      this.retentionConfig.travelTransfer,
+    )
+  }
+
   private holdRequiredForce(): { readonly required: number; readonly torque: number } {
     const config = this.retentionConfig
     const prizeWeight = this.activePrizeWeight()
@@ -1969,9 +2100,13 @@ export class N6PhysicsAdapter {
     const offset = new Vector3(...centerOfMass).sub(new Vector3(...config.gripPoint))
     const distance = offset.length()
     const torque = mass * Math.abs(this.config.gravity.y) * distance
+    // N47 (F-07) + N48 (F-08): the pendulum and travel terms are measured per
+    // fixed step (both were reserved zero slots); packing stays reserved until
+    // F-06. Slower travel ⇒ smaller term ⇒ lower required force — the physical
+    // speed/success tradeoff.
     const accelerationForce =
       prizeWeight *
-      (config.pendulumSwingAcceleration + config.travelAcceleration) /
+      (this.sampledSwingAcceleration + this.sampledTravelAcceleration) /
       Math.abs(this.config.gravity.y)
     return {
       torque,
@@ -1999,6 +2134,8 @@ export class N6PhysicsAdapter {
       centerOfMass: this.activePrizeCenterOfMass(),
       gripPoint: [...this.retentionConfig.gripPoint] as Vec3,
       contactCount: this.holdContactCount,
+      swingAcceleration: this.sampledSwingAcceleration,
+      travelAcceleration: this.sampledTravelAcceleration,
       releasedAt,
     }
   }

@@ -22,6 +22,7 @@ Each category of runtime truth has one authoritative writer. Adapters may report
 | Completion normalization                                    | Effect coordinator                                                                                                   | State controller, verification, debug     | Raw adapter callbacks, UI, GSAP, Rapier        |
 | Camera and presentation framing                             | Camera/presentation layer                                                                                            | Scene snapshot, review tools              | Physics/state authority                        |
 | Verification and promotion                                  | Human plus deterministic checks                                                                                      | All reports                               | Runtime systems                                |
+| Operator/dev rigging settings (F-11/C-10 grip voltage)        | Operator/dev role via the ops store (`claw-app:ops:v1`), applied to retention through the coordinator → adapter clamped path | Ops panel, retention adapter | Player save data, player-facing UI, runtime systems |
 
 ## Event direction
 

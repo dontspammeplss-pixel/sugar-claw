@@ -317,8 +317,8 @@
     "thresholdReference": "p95 frame <= 20ms; average physics step <= 2ms; sustained >= 50fps",
     "measured": {
       "steps": 120,
-      "elapsedMs": 153.85425499999974,
-      "averagePhysicsStepMs": 1.2821187916666645,
+      "elapsedMs": 138.16048200000023,
+      "averagePhysicsStepMs": 1.151337350000002,
       "thresholdMs": 2,
       "withinPhysicsStepBudget": true
     },

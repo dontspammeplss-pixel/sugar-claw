@@ -271,8 +271,9 @@ async function runIntegratedCycle() {
     dispatchDeflection(coordinator, harness.terminal('pointer-up'))
     const drop = coordinator.dispatch({ type: 'confirmDrop' })
     for (
+      // N48 speed profile: gentler descent/lift adds steps; keep a wide budget.
       let frame = 0;
-      frame < 180 && coordinator.snapshot.state !== 'result';
+      frame < 320 && coordinator.snapshot.state !== 'result';
       frame += 1
     ) {
       coordinator.tick(FRAME_MS)

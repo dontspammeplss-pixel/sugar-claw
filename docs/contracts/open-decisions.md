@@ -197,3 +197,26 @@ The contract packet is `records/task-packets/N36-N40-descent-grip-collision-cont
 ## Remaining before full Gate 1 promotion
 
 N1 (this contract set) is approved. **N1a — the deterministic gate-enforcement script — must still be built** to enforce gate evidence and protected-file boundaries before Gate 1 is fully promoted.
+
+## Revision 5 — Phase C: F-10 force-source scope (N50, 2026-08-05)
+
+**Status:** Decided 2026-08-05 by Eli.
+**Decision node:** N50 (packet `records/task-packets/todo/N47-N51-feel-rigging-pendulum-speed-ops.md` §4).
+**ADR:** `docs/contracts/ADR-F-10-force-source-model.md`.
+
+| ID | Decision | Contract outcome |
+|----|----------|------------------|
+| A-44 | F-10 force-source model scope | **Middle path: voltage-parameterized travel.** Single voltage (12–36V, default 24V) derives per-phase travel speed/accel with clamps; default 24V reproduces baseline `travelProfile`; F-09 braking is emergent → N49 is evidence-only (no braking code); N51 grip knob spans travel (one voltage meaning). Full drive-train sim out of scope this phase. C-06 → rev 4. |
+
+**Affected nodes:** N49 (evidence-only of emergent braking), N51 (ops grip
+voltage namespace, C-10), C-06 rev 4.
+
+## Revision 6 — Phase C: F-11 ops grip + voltage namespace (N51, 2026-08-05)
+
+**Status:** Decided 2026-08-05 by Eli.
+**Decision node:** N51 (packet `records/task-packets/todo/N47-N51-feel-rigging-pendulum-speed-ops.md` §8).
+**ADR:** `docs/contracts/ADR-C-10-ops-access-f11-grip-strength.md`.
+
+| ID | Decision | Contract outcome |
+|----|----------|------------------|
+| A-45 | F-11 ops access mechanism + shared voltage namespace | **Ops-only grip strength.** Env flag `VITE_OPS=1` + hidden toggle Ctrl+Shift+O gate the panel (tree-shaken from player builds); `gripVoltage` (12–36V, default 24V) live-tunable in ops builds only, feeding F-01 `GripCapacity` via coordinator → adapter clamped path; ops values persist in dev-only namespace `claw-app:ops:v1`, never player save. **A-44 OQ1 resolved: YES — one voltage in the F-11 ops namespace (default 24V)**; travel-side transfer (`n50-voltage-rev1`) stays OQ2. C-10 ADR; C-01 gains operator/dev authority row; N51 implemented + verified. |

@@ -2,7 +2,9 @@
 
 > Nodes N47–N51 in the Claw Machine 3D engineering graph (Phase C of the feature
 > roadmap; follows Phases A/B — N41–N46).
-> **Status:** contract-only / implementation not started (2026-08-04).
+> **Status:** N47 implemented + verified (2026-08-05); N48 implemented + verified
+> (2026-08-05); **N50 DECIDED (2026-08-05): F-10 middle path, A-44**;
+> **N49 evidence-only DONE (2026-08-05)**; **N51 ops grip DONE (2026-08-05, A-45)**.
 > This packet converts Phase C of `claw-app-feature-spec.md` (v0 draft) into
 > bounded implementation nodes. It deliberately changes **no source code, tests,
 > physics configuration, generated evidence, dependencies, or build artifacts**
@@ -91,6 +93,11 @@ vs **voltage-parameterized travel** (recommended middle path) vs **defer F-10
 entirely** and keep F-09 braking as standalone polish. N50 records the ADR in
 `docs/contracts/` (C-06 extension) — it changes no code.
 
+> **RESOLVED (2026-08-05):** Eli approved the **middle path**
+> (voltage-parameterized travel). ADR:
+> `docs/contracts/ADR-F-10-force-source-model.md`; ledger: A-44 (Revision 5).
+> N49 is now evidence-only; N51 is unblocked.
+
 ### The three options (spec §7 #1)
 
 | Option | What it does | Verdict (spec recommendation) |
@@ -127,6 +134,12 @@ risk plan.
 ---
 
 ## 5. N47 — Functional pendulum: swing shakes marginal grips loose [F-07 → C-06 ext]
+
+> **Status:** Implemented + verified (2026-08-05) on `main` (`f97da6f`).
+> Node: `records/task-packets/N-47-pendulum-swing-retention-coupling.md`;
+> contract: `docs/contracts/C-06-retention-physics.md` (rev 2); evidence:
+> `records/evidence/n47-swing-coupling.json`. Full gate green
+> (typecheck / lint / 94 tests / build); N33 head-feel trace unchanged.
 
 ### Job
 
@@ -183,6 +196,12 @@ spherical joint contract, or the fixed-step policy.
 
 ## 6. N48 — Speed-profile throttling + speed/success tradeoff [F-08 → C-06 ext]
 
+> **Status:** Implemented + verified (2026-08-05) — node
+> `records/task-packets/N-48-speed-profile-throttling.md`; contract
+> `docs/contracts/C-06-retention-physics.md` (rev 3, F-08); evidence
+> `records/evidence/n48-speed-trace.json`. Full gate green (typecheck / lint /
+> 95 tests / build); N23 glide/bounds tests intact.
+
 ### Job
 
 Per-phase speed profile: fastest during free positioning; slowest during
@@ -237,6 +256,15 @@ policy.
 
 ## 7. N49 — Per-phase braking profile [F-09 → C-06 ext]
 
+> **Status (2026-08-05):** N50 decided — F-10 middle path (A-44). Per contract
+> item 4, N49's deliverable is **evidence of emergent braking**, not new code.
+> Node artifact: `records/task-packets/N-49-per-phase-braking-profile.md`.
+> **Executed (2026-08-05):** emergent-braking trace GREEN, 6/6 gates —
+> `records/evidence/n49-braking-trace.json` (deceleration into target, no snap,
+> no overshoot, config-driven, fixed-step repeatable, glide intact); full gate
+> green (typecheck / lint / 21 files / 96 tests / build). No braking code —
+> emergent per A-44; voltage transfer `n50-voltage-rev1` pending (ADR OQ2).
+
 ### Job
 
 Motors accelerate/brake to avoid overshoot; easing decelerates into targets; no
@@ -288,6 +316,15 @@ changes the ownership boundary mid-implementation.
 ---
 
 ## 8. N51 — Adjustable grip strength (45–60 psi / 12–36V), dev/operator-only [F-11 → C-10]
+
+> **Status (2026-08-06):** A-45 decided — env flag `VITE_OPS=1` + hidden toggle
+> Ctrl+Shift+O; shared voltage namespace confirmed (A-44 OQ1: YES, ops
+> namespace, default 24V). **Implemented + verified** — ADR
+> `docs/contracts/ADR-C-10-ops-access-f11-grip-strength.md`; evidence
+> `records/evidence/n51-ops-gate.json` (live tuning 12/24/36V → capacity
+> 20/40/60N, out-of-band and non-finite inputs rejected/clamped, namespace
+> isolated, fresh player bundle marker absent, fresh ops bundle marker present);
+> full gate green (typecheck / lint / 22 files / 98 tests / build; `gate:ops` PASS).
 
 ### Job
 
@@ -352,10 +389,28 @@ machine; env-flag gating is build-scoped and reversible.
 
 ---
 
+## 8a. N51 Workstream completion (2026-08-06)
+
+- **Phase:** C — Feel & rigging.
+- **Files:** `src/ops/ops-store.ts`, `src/ui/OpsPanel.tsx`, `src/App.tsx`,
+  `src/physics/adapter.ts`, `src/effects/n7-coordinator.ts`,
+  `src/vite-env.d.ts`, `scripts/gate-ops.mjs`, `src/evidence/n51.test.ts`,
+  `src/evidence/n51-evidence.ts`, and `records/evidence/n51-ops-gate.json`.
+- **Definition of done:** `gripVoltage` is live-tunable only through the
+  build-gated Ctrl+Shift+O ops panel; values are finite and clamped to 12–36V;
+  the coordinator → adapter path changes live capacity/hold margin; ops data
+  uses `claw-app:ops:v1`; player saves remain clean; fresh player/ops bundle
+  marker checks pass; full typecheck/lint/test/build gates pass.
+- **Verification:** `npm run typecheck` PASS; `npm run lint` PASS; `npm test`
+  PASS (22 files, 98 tests); `npm run build -- --outDir /tmp/claw-n51-prod-2`
+  PASS (fresh player bundle, `claw-ops-v1` absent); `npm run gate:ops` PASS
+  (fresh `VITE_OPS=0` absence + `VITE_OPS=1` presence builds); focused
+  `src/evidence/n51.test.ts` PASS (2 tests).
+
 ## 9. Phase-C open decisions (from spec §7, pending Eli)
 
 1. **F-10 scope (§7 #1):** full drive-train sim vs **voltage-parameterized
-   travel (recommended)** vs defer. Blocks N49's shape.
+   travel (recommended)** vs defer. **RESOLVED (2026-08-05):** middle path (voltage-parameterized travel), A-44. N49 = evidence-only; full sim out of scope this phase.
 2. **F-11 access mechanism (§7 #2):** env flag + hidden toggle (recommended).
    Confirm flag name (`VITE_OPS`?) and keybind (Ctrl+Shift+O?).
 3. **F-08 feel aggressiveness (§7 #7):** how slow should the slow phases be?
@@ -379,6 +434,7 @@ Eli's live-app gates:
 ## 11. Recommendation
 
 **N50 (decide F-10) first** — every other node in this phase is shaped by it.
+**Done (2026-08-05): middle path, A-44.**
 Then N47/N48 in parallel, then N51, then N49 per the F-10 outcome. Draft the C-06
 extension (F-07/F-08/F-09/F-10) and C-10 (ops access ADR) in `docs/contracts/`
 via `/c-contract-first` before implementation, and record the F-11 access

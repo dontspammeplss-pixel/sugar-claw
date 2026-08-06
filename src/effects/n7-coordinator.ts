@@ -35,7 +35,11 @@ import {
   type N6PhysicsAdapterOptions,
   type PrizePlayfieldSnapshot,
 } from '../physics/adapter'
-import { N6_PHYSICS_CONFIG, type Vec3 } from '../physics/config'
+import {
+  N6_PHYSICS_CONFIG,
+  phaseTravelDurationMs,
+  type Vec3,
+} from '../physics/config'
 import { DEFAULT_PRIZE_MANIFEST } from '../playfield/prize-manifest'
 import { clearPrizePersistence } from '../playfield/prize-persistence'
 import {
@@ -246,6 +250,15 @@ export class N7EffectCoordinator {
 
   get snapshot(): StateSnapshot {
     return this.controller.snapshot()
+  }
+
+  /**
+   * N51 (F-11): ops-only live tuning of grip voltage (12–36V, clamped). The
+   * coordinator is the sanctioned write path for operator settings — the UI
+   * never touches the adapter directly (C-01 boundary rule).
+   */
+  setGripVoltage(value: number): number {
+    return this.physics.setGripVoltage(value)
   }
 
   get runtimeReport(): N7RuntimeReport {
@@ -473,9 +486,9 @@ export class N7EffectCoordinator {
     // Classic arcade: descend with fingers open.
     this.animator.start('open', 0)
     this.travel.start(
-      this.physics.transform('claw').position,
+      current,
       target,
-      TRAVEL_LOWERING_MS,
+      phaseTravelDurationMs('descent', distance(current, target)),
     )
   }
 
@@ -492,9 +505,9 @@ export class N7EffectCoordinator {
     }
     this.target = target
     this.travel.start(
-      this.physics.transform('claw').position,
+      current,
       target,
-      TRAVEL_LIFT_MS,
+      phaseTravelDurationMs('lift', distance(current, target)),
     )
   }
 
@@ -507,10 +520,11 @@ export class N7EffectCoordinator {
     this.returnLeg = 'traverse'
     // Classic arcade: keep fingers closed while carrying the prize home; the
     // open (release) pose happens in the releasing state, not during return.
+    const start = this.physics.transform('claw').position
     this.travel.start(
-      this.physics.transform('claw').position,
+      start,
       target,
-      TRAVEL_RETURN_TRAVERSE_MS,
+      phaseTravelDurationMs('returnTraverse', distance(start, target)),
     )
   }
 
@@ -622,10 +636,14 @@ export class N7EffectCoordinator {
               }
               this.target = descentTarget
               this.returnLeg = 'descent'
+              const descentStart = this.physics.transform('claw').position
               this.travel.start(
-                this.physics.transform('claw').position,
+                descentStart,
                 descentTarget,
-                TRAVEL_RETURN_DESCENT_MS,
+                phaseTravelDurationMs(
+                  'returnDescent',
+                  distance(descentStart, descentTarget),
+                ),
               )
             } else {
               // Failed grips still complete the cosmetic lift and traverse,
@@ -858,13 +876,13 @@ const DELIVERY_WAIT_STEPS = 30
 const PLAY_COUNTDOWN_STEPS = 1800
 const INITIAL_SIGNATURE = ''
 /** N23: full-deflection glide speeds (units/second) in aim space. */
-const GLIDE_SPEED_X = 1.8
-const GLIDE_SPEED_Z = 0.9
-const TRAVEL_LOWERING_MS = 800
-const TRAVEL_LIFT_MS = 700
-/** N42.1: preserve the 700ms return budget across top traverse + descent. */
-const TRAVEL_RETURN_TRAVERSE_MS = 450
-const TRAVEL_RETURN_DESCENT_MS = 250
+export const GLIDE_SPEED_X = 1.8
+export const GLIDE_SPEED_Z = 0.9
+
+/** Euclidean distance between two positions (units). */
+function distance(a: Vec3, b: Vec3): number {
+  return Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2])
+}
 
 export function reportSignature(report: N7RuntimeReport): string {
   return [
