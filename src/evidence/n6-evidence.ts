@@ -198,9 +198,14 @@ export async function createN6Evidence() {
   // deterministic; a teleport would whip the pendulum head over the prize.
   glideTo(overlapAdapter, N6_PHYSICS_CONFIG.overlapPosition)
   overlapAdapter.stepMany(15)
+  overlapAdapter.movePrize('prize', N6_PHYSICS_CONFIG.overlapPosition)
   const overlapObservation = overlapAdapter.observeGrip()
   const failedGrip = overlapAdapter.attemptGrip()
+  // Move the claw away before restoring the prize so the failed-lift trace
+  // starts from a clean, non-penetrating physical configuration.
   overlapAdapter.moveClaw(N6_PHYSICS_CONFIG.failedLiftPosition)
+  overlapAdapter.movePrize('prize', N6_PHYSICS_CONFIG.prizePosition)
+  overlapAdapter.step()
   const failedCarryRecords = overlapAdapter.stepMany(60)
   const failedCarryFinal = failedCarryRecords.at(-1)!.prize
   // Independent of the floor check: the prize must never track the claw's

@@ -21,6 +21,8 @@ import {
   type ClawTravelAnimator,
 } from '../animation/travel-animator'
 import { ClawPoseAdapter } from '../claw/pose-adapter'
+import { DEFAULT_CLAW_RIG, PIVOT_NAMES } from '../claw/rig'
+import { GripFlexController } from '../claw/grip-flex'
 import {
   N6PhysicsAdapter,
   positionsMatch,
@@ -172,6 +174,7 @@ export class N7EffectCoordinator {
   readonly physics: N6PhysicsAdapter
   readonly pose: ClawPoseAdapter
   readonly animator: ClawPoseAnimator
+  readonly gripFlex: GripFlexController
 
   private target: Vec3 | null = null
   private returnLeg: 'traverse' | 'descent' | null = null
@@ -213,11 +216,15 @@ export class N7EffectCoordinator {
     this.controller = controller
     this.pose = new ClawPoseAdapter(bindings.clawVisualRoot)
     this.animator = createClawPoseAnimator(this.pose)
+    this.gripFlex = new GripFlexController(bindings.clawVisualRoot)
+    this.gripFlex.setGripVoltage(this.physics.retention.voltage)
+    this.gripFlex.advance(0)
 
     this.pose.restoreBaseline()
     // Parked-open presentation (classic arcade rest pose) layered on the
     // restored baseline rig transforms.
     this.pose.applyPoseTarget('open')
+    this.syncGripPhysics()
     this.syncVisuals()
     const assetsReady = this.controller.dispatch({ type: 'assetsReady' })
     if (!assetsReady.accepted) {
@@ -405,6 +412,9 @@ export class N7EffectCoordinator {
         this.lastRetentionRelease = this.physics.retentionRelease
       }
       if (this.animator.state.active) this.animator.advance(fixedStepMs)
+      this.gripFlex.setGripVoltage(this.physics.retention.voltage)
+      this.gripFlex.advance(fixedStepMs)
+      this.syncGripPhysics()
       this.syncVisuals()
 
       try {
@@ -664,6 +674,11 @@ export class N7EffectCoordinator {
           this.animator.start('open', RELEASE_OPEN_MS)
         } else if (!this.releaseCompleted && !this.animator.state.active) {
           const removedAtRunId = this.physics.releaseGrip()
+          // Manual chute release freezes the authored finger pose as well as
+          // the physics carriage/head. Otherwise the live flex controller
+          // would keep rotating visible segments after the claw is supposed
+          // to be stationary.
+          this.gripFlex.freeze()
           this.releaseCompleted = true
           this.deliveryWaitSteps = 0
           const outcome: Outcome = {
@@ -750,9 +765,13 @@ export class N7EffectCoordinator {
     this.animator.cancel()
     clearPrizePersistence(this.physics.playfield.manifestRevision)
     this.physics.reset()
+    this.gripFlex.resume()
     this.pose.restoreBaseline()
+    this.gripFlex.setGripVoltage(this.physics.retention.voltage)
+    this.gripFlex.advance(0)
     // Parked-open presentation after every reset.
     this.pose.applyPoseTarget('open')
+    this.syncGripPhysics()
     this.target = null
     this.returnLeg = null
     this.glideVelocity = null
@@ -804,6 +823,23 @@ export class N7EffectCoordinator {
       error: errorMessage(error),
       runId: state.runId,
     })
+  }
+
+  private syncGripPhysics(): void {
+    const flex = this.gripFlex.snapshot
+    const pivot = this.pose.snapshot()[PIVOT_NAMES[0]]
+    const baseline = DEFAULT_CLAW_RIG.baseline[PIVOT_NAMES[0]]
+    const base = new Quaternion().fromArray([...baseline.quaternion]).invert()
+    const relative = base.multiply(new Quaternion().fromArray([...pivot.quaternion]))
+    const currentArticulation = 2 * Math.atan2(relative.z, relative.w)
+    const openArticulation = DEFAULT_CLAW_RIG.poses.open[PIVOT_NAMES[0]].quaternion
+    const openRelative = base.clone().multiply(new Quaternion().fromArray([...openArticulation]))
+    const pivotDelta = currentArticulation - 2 * Math.atan2(openRelative.z, openRelative.w)
+    this.physics.setFingerArticulation(
+      flex.bladeFlex,
+      flex.hookFlex,
+      pivotDelta + flex.pivotArticulation,
+    )
   }
 
   private syncVisuals(): void {

@@ -15,7 +15,8 @@ import {
 } from '../playfield/prize-persistence'
 import RAPIER from '@dimforge/rapier3d-compat'
 import {
-  FINGER_COLLIDERS,
+  FINGER_SEGMENT_COLLIDERS,
+  fingerSegmentTransform,
   N6_PHYSICS_CONFIG,
   N37_CANDIDATE_GRIP_PROFILE,
   N38_COLLISION_MATRIX,
@@ -92,6 +93,7 @@ export interface N38DiagnosticIdentity {
   readonly collisionGroup: number
   readonly filterMask: number
   readonly solverMask: number
+  readonly ccdEnabled: boolean
   readonly sourceRevision: string
   readonly profileRevision: string
   readonly colliderProfileId: string
@@ -453,7 +455,7 @@ export class N6PhysicsAdapter {
   private readonly headCollider: RAPIER.Collider
   private readonly fingerColliders: readonly RAPIER.Collider[]
   private readonly prizeCollider: RAPIER.Collider
-
+  private releaseFrozen = false
 
   private readonly sensorCollider: RAPIER.Collider
   private readonly chuteSensorCollider: RAPIER.Collider
@@ -609,9 +611,11 @@ export class N6PhysicsAdapter {
       derivationRevision: 'authored-profile-rev1',
     })
 
-    // N25: one physical capsule per finger at the open-pose pivot transform.
+    // N25/N55: one fitted solver capsule per visual finger segment. The
+    // dynamic head owns the segments, so its CCD setting covers every finger
+    // collider while preserving one collision identity per segment.
     this.fingerColliders = Object.freeze(
-      FINGER_COLLIDERS.map((finger) =>
+      FINGER_SEGMENT_COLLIDERS.map((finger) =>
         this.world.createCollider(
           RAPIER.ColliderDesc.capsule(finger.halfHeight, finger.radius)
             .setTranslation(...finger.position)
@@ -625,13 +629,16 @@ export class N6PhysicsAdapter {
           this.headBody,
         ),
       ).map((collider, index) => {
+        const finger = FINGER_SEGMENT_COLLIDERS[index]
         setColliderUserData(collider, {
           logicalBodyId: 'head',
-          colliderId: `claw-finger-${index}`,
+          colliderId: `claw-finger-${finger.fingerIndex}-${finger.segment}`,
           role: 'clawFinger',
+          segment: finger.segment,
+          fingerIndex: finger.fingerIndex,
           sourceRevision: this.config.revision,
-          profileRevision: 'n38-authored-finger-rev1',
-          colliderProfileId: `claw-finger-${index}`,
+          profileRevision: 'n55-authored-finger-segment-rev1',
+          colliderProfileId: `claw-finger-${finger.fingerIndex}-${finger.segment}`,
           derivationRevision: 'authored-profile-rev1',
         })
         return collider
@@ -1011,6 +1018,7 @@ export class N6PhysicsAdapter {
         collisionGroup: 0,
         filterMask: 0,
         solverMask: 0,
+        ccdEnabled: body.isCcdEnabled(),
         sourceRevision: this.stringData(data, 'sourceRevision'),
         profileRevision: this.stringData(data, 'profileRevision'),
         colliderProfileId: this.stringData(data, 'colliderProfileId'),
@@ -1056,6 +1064,7 @@ export class N6PhysicsAdapter {
         collisionGroup: collision.group,
         filterMask: collision.mask,
         solverMask: solver.mask,
+        ccdEnabled: parent?.isCcdEnabled() ?? false,
         sourceRevision: this.stringData(data, 'sourceRevision'),
         profileRevision: this.stringData(data, 'profileRevision'),
         colliderProfileId: this.stringData(data, 'colliderProfileId'),
@@ -1072,9 +1081,9 @@ export class N6PhysicsAdapter {
         logicalBodyId: 'head',
         requiredColliderIds: [
           'claw-head',
-          'claw-finger-0',
-          'claw-finger-1',
-          'claw-finger-2',
+          ...FINGER_SEGMENT_COLLIDERS.map(
+            (finger) => `claw-finger-${finger.fingerIndex}-${finger.segment}`,
+          ),
           'grip-sensor',
         ],
         registeredColliderIds: registeredColliderIds.filter(
@@ -1085,9 +1094,9 @@ export class N6PhysicsAdapter {
         ),
         missingColliderIds: [
           'claw-head',
-          'claw-finger-0',
-          'claw-finger-1',
-          'claw-finger-2',
+          ...FINGER_SEGMENT_COLLIDERS.map(
+            (finger) => `claw-finger-${finger.fingerIndex}-${finger.segment}`,
+          ),
           'grip-sensor',
         ].filter((id) => !registeredColliderIds.includes(id)),
       },
@@ -1263,6 +1272,36 @@ export class N6PhysicsAdapter {
     return true
   }
 
+  /** Updates the Rapier segment colliders to match the authored finger pose. */
+  setFingerArticulation(
+    blade: number,
+    hook: number,
+    pivotArticulation = 0,
+  ): void {
+    this.assertNotDisposed()
+    if (
+      !Number.isFinite(blade) ||
+      !Number.isFinite(hook) ||
+      !Number.isFinite(pivotArticulation)
+    ) {
+      throw new Error('N55 finger articulation must be finite')
+    }
+    this.fingerColliders.forEach((collider, index) => {
+      const segment = FINGER_SEGMENT_COLLIDERS[index]!
+      const articulation = segment.segment === 'blade' ? blade : hook
+      const transform = fingerSegmentTransform(
+        segment.fingerIndex,
+        segment.segment,
+        articulation,
+        pivotArticulation,
+        0,
+      )
+      collider.setTranslationWrtParent(vector(transform.position))
+      collider.setRotationWrtParent(rotation(transform.rotation))
+    })
+    this.world.propagateModifiedBodyPositionsToColliders()
+  }
+
   /** Adapter-owned nudge fixture/operator operation; persistence occurs on the next fixed step. */
   movePrize(id: string, position: Vec3, orientation?: PrizeState['orientation']): boolean {
     const body = this.prizeBodies.get(id)
@@ -1270,6 +1309,8 @@ export class N6PhysicsAdapter {
     if (!body || !state || state.removed) return false
     body.setTranslation(vector(position), true)
     if (orientation) body.setRotation(rotation(orientation.quaternion), true)
+    body.setLinvel(ZERO, true)
+    body.setAngvel(ZERO, true)
     body.wakeUp()
     return true
   }
@@ -1277,6 +1318,7 @@ export class N6PhysicsAdapter {
   /** Sets a kinematic target; all bounds and body writes remain adapter-owned. */
   moveClaw(position: Vec3): boolean {
     this.assertNotDisposed()
+    if (this.releaseFrozen) return false
     const { min, max } = this.config.travelBounds
     const epsilon = this.config.tolerances.travel
     const axes = ['x', 'y', 'z'] as const
@@ -1656,7 +1698,8 @@ export class N6PhysicsAdapter {
     const grip = this.observeGrip()
     const lowestClawPointY = this.lowestPhysicalPointY()
     const basePlaneDistance = lowestClawPointY - this.config.basePlane.y
-    const completionReason: DescentCompletionReason = grip.barrierContact
+    const completionReason: DescentCompletionReason =
+      grip.barrierContact || grip.floorContact
       ? 'barrier-contact'
       : basePlaneDistance <= this.config.clawClearance.tolerance
         ? 'base-clearance'
@@ -1693,21 +1736,19 @@ export class N6PhysicsAdapter {
       Math.abs(headAxes[0].y) * headExtents[0] -
       Math.abs(headAxes[1].y) * headExtents[1] -
       Math.abs(headAxes[2].y) * headExtents[2]
-    const fingerBottoms = this.fingerColliders.map((collider) => {
+    const fingerBottoms = this.fingerColliders.map((collider, index) => {
+      const segment = FINGER_SEGMENT_COLLIDERS[index]!
       const position = collider.translation()
       const colliderRotation = collider.rotation()
-      const quaternion = new Quaternion(
-        colliderRotation.x,
-        colliderRotation.y,
-        colliderRotation.z,
-        colliderRotation.w,
+      const axis = new Vector3(0, 1, 0).applyQuaternion(
+        new Quaternion(
+          colliderRotation.x,
+          colliderRotation.y,
+          colliderRotation.z,
+          colliderRotation.w,
+        ),
       )
-      const axis = new Vector3(0, 1, 0).applyQuaternion(quaternion)
-      return (
-        position.y -
-        this.config.fingerCapsuleHalfHeight * Math.abs(axis.y) -
-        this.config.fingerCapsuleRadius
-      )
+      return position.y - segment.halfHeight * Math.abs(axis.y) - segment.radius
     })
     return Math.min(headBottom, ...fingerBottoms)
   }
@@ -1782,6 +1823,9 @@ export class N6PhysicsAdapter {
     const releasedAtRunId = this.holdActive ? this.runId : null
     if (this.holdActive) {
       this.holdActive = false
+      this.releaseFrozen = true
+      this.freezeClawForRelease()
+      this.resetReleasedPrizeMotion()
       this.logicalState = 'released'
       this.retentionState = this.createRetentionState('released', this.stepNumber)
     }
@@ -1841,6 +1885,7 @@ export class N6PhysicsAdapter {
   reset(): void {
     this.assertNotDisposed()
     this.holdActive = false
+    this.releaseFrozen = false
     this.retentionReleaseEvent = null
     this.deliveryObservation = null
     this.payoutHookEventValue = null
@@ -1883,6 +1928,7 @@ export class N6PhysicsAdapter {
     this.previousClawPosition = null
     this.previousClawSpeed = null
     this.restoreBaselinePose()
+    this.setFingerArticulation(0, 0)
     this.stepNumber = 0
     this.runId += 1
     this.logicalState = 'ready'
@@ -1944,6 +1990,8 @@ export class N6PhysicsAdapter {
 
   /** Restores bodies and the kinematic claw pose from the recorded baseline. */
   private restoreBaselinePose(): void {
+    this.headBody.lockTranslations(false, true)
+    this.headBody.lockRotations(false, true)
     this.restoreBody(this.clawBody, this.baseline.claw)
     this.restoreBody(this.headBody, this.baseline.head)
     this.restoreBody(this.environmentBody, this.baseline.environment)
@@ -2172,7 +2220,11 @@ export class N6PhysicsAdapter {
   }
 
   private breakHold(margin: number): void {
+    // A balance-triggered weak-grip release happens during carry. The object
+    // detaches and drops, but the carriage must remain free to finish its
+    // return path; only the explicit chute release freezes the assembly.
     this.holdActive = false
+    this.resetReleasedPrizeMotion()
     this.logicalState = 'released'
     this.retentionState = this.createRetentionState('released', this.stepNumber)
     this.retentionReleaseEvent = {
@@ -2182,13 +2234,43 @@ export class N6PhysicsAdapter {
       margin,
       reason: 'hold-margin-negative',
     }
-    const torque = this.retentionState.torque
-    if (torque > 0) {
-      this.prizeBodies.get(this.selectedPrizeId)?.applyTorqueImpulse(
-        { x: 0, y: 0, z: torque * this.config.dt },
-        true,
-      )
-    }
+  }
+
+  /**
+   * Release is a mechanical stop: freeze the carriage/head at their current
+   * transforms so opening the fingers cannot make the claw tumble with the
+   * prize. The next reset explicitly unlocks the dynamic head again.
+   */
+  private freezeClawForRelease(): void {
+    const claw = this.clawBody.translation()
+    const clawRotation = this.clawBody.rotation()
+    this.clawBody.setNextKinematicTranslation(claw)
+    this.clawBody.setNextKinematicRotation(clawRotation)
+    this.headBody.lockTranslations(true, true)
+    this.headBody.lockRotations(true, true)
+    // Keep the locked head's current pose authoritative for the next solver
+    // step; lock calls alone do not remove the spherical joint's positional
+    // correction from an already-displaced dynamic body.
+    this.headBody.setTranslation(this.headBody.translation(), true)
+    this.headBody.setRotation(this.headBody.rotation(), true)
+    this.headBody.setLinvel(ZERO, true)
+    this.headBody.setAngvel(ZERO, true)
+    this.headBody.resetForces(true)
+    this.headBody.resetTorques(true)
+  }
+
+  /**
+   * Detachment never copies claw motion into the prize. Clearing both velocity
+   * channels and accumulated impulses leaves gravity as the only immediate
+   * post-release acceleration (plus the prize's own contacts).
+   */
+  private resetReleasedPrizeMotion(): void {
+    const prize = this.prizeBodies.get(this.selectedPrizeId)
+    if (!prize) return
+    prize.setLinvel(ZERO, true)
+    prize.setAngvel(ZERO, true)
+    prize.resetForces(true)
+    prize.resetTorques(true)
   }
 
   private assertNotDisposed(): void {
