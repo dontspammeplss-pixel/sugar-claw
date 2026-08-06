@@ -39,21 +39,138 @@ export interface ClawRigDefinition {
   readonly poses: Readonly<Record<ClawPoseName, ClawPose>>
 }
 
-/** Radius of the finger-pivot ring around the claw axis (head-relative). */
-export const FINGER_RING_RADIUS = 0.28
+export type FingerSegmentName = 'blade' | 'hook'
 
 /**
- * Authoritative finger layout (N24): Right · Left · Back, viewed from the
+ * Canonical finger geometry shared by the scene and Rapier adapter. Keeping
+ * the visual envelope and solver approximation together makes any deliberate
+ * approximation explicit instead of scattering dimensions across systems.
+ */
+export const FINGER_RIG = Object.freeze({
+  ringRadius: 0.28,
+  pivotY: -0.05,
+  angles: [0, Math.PI, (3 * Math.PI) / 2] as const,
+  hingeAxis: [0, 0, 1] as Vec3,
+  openArticulation: 0.14,
+  blade: Object.freeze({
+    visualCenter: [0, -0.25, 0] as Vec3,
+    colliderCenter: [0, -0.15, 0] as Vec3,
+    rotation: [0, 0, 0] as const,
+    visual: {
+      shape: 'box' as const,
+      size: [0.1, 0.5, 0.12] as const,
+    },
+    collider: Object.freeze({ halfHeight: 0.15, radius: 0.04 }),
+  }),
+  hook: Object.freeze({
+    visualCenter: [-0.05, -0.5, 0] as Vec3,
+    colliderCenter: [-0.05, -0.5, 0] as Vec3,
+    rotation: [0, 0, Math.PI / 2] as const,
+    visual: {
+      shape: 'cylinder' as const,
+      radius: 0.05,
+      height: 0.1,
+    },
+    collider: Object.freeze({ halfHeight: 0.05, radius: 0.05 }),
+  }),
+})
+
+// Keep the exported rig safe to share between the scene and physics setup.
+Object.freeze(FINGER_RIG.angles)
+Object.freeze(FINGER_RIG.hingeAxis)
+Object.freeze(FINGER_RIG.blade.visualCenter)
+Object.freeze(FINGER_RIG.blade.colliderCenter)
+Object.freeze(FINGER_RIG.blade.rotation)
+Object.freeze(FINGER_RIG.blade.visual.size)
+Object.freeze(FINGER_RIG.blade.visual)
+Object.freeze(FINGER_RIG.blade)
+Object.freeze(FINGER_RIG.hook.visualCenter)
+Object.freeze(FINGER_RIG.hook.colliderCenter)
+Object.freeze(FINGER_RIG.hook.rotation)
+Object.freeze(FINGER_RIG.hook.visual)
+Object.freeze(FINGER_RIG.hook)
+
+function segmentDefinition(name: FingerSegmentName) {
+  return name === 'blade' ? FINGER_RIG.blade : FINGER_RIG.hook
+}
+
+function axisRotation(angle: number): Quaternion {
+  return new Quaternion().setFromAxisAngle(
+    new Vector3(...FINGER_RIG.hingeAxis),
+    angle,
+  )
+}
+
+/**
+ * Computes a segment collider transform from the authored finger rig.
+ * `pivotArticulation` is the delta from the authored open pivot; `articulation`
+ * is the segment-local flex.
+ */
+export function fingerSegmentTransform(
+  index: number,
+  segment: FingerSegmentName,
+  articulation = 0,
+  pivotArticulation = 0,
+): { position: Vec3; rotation: Quat } {
+  if (!Number.isInteger(index) || index < 0 || index >= FINGER_RIG.angles.length) {
+    throw new Error(`fingerSegmentTransform: invalid finger index ${index}`)
+  }
+  const pivotAngle = FINGER_RIG.angles[index]
+  const pivotPosition = new Vector3(
+    Math.cos(pivotAngle) * FINGER_RIG.ringRadius,
+    FINGER_RIG.pivotY,
+    Math.sin(pivotAngle) * FINGER_RIG.ringRadius,
+  )
+  const pivotQuaternion = new Quaternion()
+    .setFromEuler(new Euler(0, -pivotAngle, 0, 'XYZ'))
+    .multiply(axisRotation(FINGER_RIG.openArticulation))
+  pivotQuaternion.premultiply(axisRotation(pivotArticulation))
+
+  const definition = segmentDefinition(segment)
+  const segmentRotation = axisRotation(articulation)
+  const localRotation = new Quaternion().setFromEuler(
+    new Euler(...definition.rotation),
+  )
+  const center = new Vector3(...definition.colliderCenter)
+    .applyQuaternion(segmentRotation)
+    .applyQuaternion(pivotQuaternion)
+    .add(pivotPosition)
+  const rotation = pivotQuaternion
+    .clone()
+    .multiply(segmentRotation)
+    .multiply(localRotation)
+
+  return {
+    position: [center.x, center.y, center.z],
+    rotation: rotation.toArray() as Quat,
+  }
+}
+
+export const FINGER_SEGMENT_COLLIDERS =
+  Object.freeze(
+    FINGER_RIG.angles.flatMap((_, fingerIndex) =>
+      (['blade', 'hook'] as const).map((segment) => {
+        const definition = segmentDefinition(segment)
+        const transform = fingerSegmentTransform(fingerIndex, segment)
+        return Object.freeze({
+          fingerIndex,
+          segment,
+          position: Object.freeze(transform.position),
+          rotation: Object.freeze(transform.rotation),
+          halfHeight: definition.collider.halfHeight,
+          radius: definition.collider.radius,
+        })
+      }),
+    ),
+  )
+
+/**
+ * Authoritative finger layout (N13): Right · Left · Back, viewed from the
  * front (camera side, +Z toward the glass). Index 0 is the right finger
  * (0 rad), index 1 the left (π rad), index 2 the back (3π/2 rad — pointing
  * toward −Z). The open mouth faces the camera. This is the single source of
  * truth consumed by the scene hierarchy and the physics finger colliders.
  */
-export const FINGER_ANGLES: readonly [number, number, number] = [
-  0,
-  Math.PI,
-  (3 * Math.PI) / 2,
-]
 
 /**
  * Articulation is local to each named pivot; it never changes HeadRoot.
@@ -72,7 +189,7 @@ export const POSE_ARTICULATION_RADIANS: Readonly<
   lowered: 0,
   // N24: open widened ~40% (0.10 -> 0.14 rad) so the resting mouth reads as
   // clearly open and gives the prize room to enter the cage before the close.
-  open: 0.14,
+  open: FINGER_RIG.openArticulation,
   closed: -0.05,
   reset: 0,
 })
@@ -97,16 +214,15 @@ function freezePose(pose: Record<PivotName, ClawTransformTarget>): ClawPose {
 }
 
 function baselineTarget(index: number): ClawTransformTarget {
-  // N24: explicit Right · Left · Back layout instead of even 120° spacing.
-  const angle = FINGER_ANGLES[index]
+  const angle = FINGER_RIG.angles[index]
   const quaternion = new Quaternion().setFromEuler(
     new Euler(0, -angle, 0, 'XYZ'),
   )
   return {
     position: [
-      Math.cos(angle) * FINGER_RING_RADIUS,
-      -0.05,
-      Math.sin(angle) * FINGER_RING_RADIUS,
+      Math.cos(angle) * FINGER_RIG.ringRadius,
+      FINGER_RIG.pivotY,
+      Math.sin(angle) * FINGER_RIG.ringRadius,
     ],
     quaternion: quaternion.toArray() as Quat,
   }
@@ -125,10 +241,7 @@ function poseTarget(
   // hinge for a hanging claw finger is the tangential axis: the blade then
   // swings in the radial plane, flaring outward on open and converging on the
   // claw axis on closed.
-  const localArticulation = new Quaternion().setFromAxisAngle(
-    new Vector3(0, 0, 1),
-    articulation,
-  )
+  const localArticulation = axisRotation(articulation)
   return {
     position: baseline.position,
     quaternion: base.multiply(localArticulation).toArray() as Quat,

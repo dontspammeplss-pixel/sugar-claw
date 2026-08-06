@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { fingerSegmentTransform } from '../claw/rig'
 import { N6PhysicsAdapter } from '../physics/adapter'
 import { N6_PHYSICS_CONFIG } from '../physics/config'
 import { DEFAULT_PRIZE_MANIFEST, type PrizeManifest } from '../playfield/prize-manifest'
@@ -51,6 +52,28 @@ describe('N55 segmented finger collision protection', () => {
       'claw-finger-2-hook',
     ])
     expect(fingerIdentities.every((identity) => identity.ccdEnabled)).toBe(true)
+    for (const identity of fingerIdentities) {
+      const match = identity.colliderId.match(/^claw-finger-(\d+)-(blade|hook)$/)
+      expect(match).not.toBeNull()
+      const [, index, segment] = match!
+      const expected = fingerSegmentTransform(
+        Number(index),
+        segment as 'blade' | 'hook',
+        0,
+        0,
+      )
+      const head = inventory.identities.find(
+        (entry) => entry.entity === 'body' && entry.logicalBodyId === 'head',
+      )!
+      expect(identity.transform.position).toEqual(
+        expected.position.map((value, axis) =>
+          expect.closeTo(value + head.transform.position[axis], 5),
+        ) as unknown as readonly [number, number, number],
+      )
+      expect(identity.transform.quaternion).toEqual(
+        expected.rotation.map((value) => expect.closeTo(value, 5)) as unknown as readonly [number, number, number, number],
+      )
+    }
     const prizeBody = inventory.identities.find(
       (identity) => identity.entity === 'body' && identity.logicalBodyId === 'prize',
     )

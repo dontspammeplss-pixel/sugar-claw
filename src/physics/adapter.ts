@@ -15,8 +15,6 @@ import {
 } from '../playfield/prize-persistence'
 import RAPIER from '@dimforge/rapier3d-compat'
 import {
-  FINGER_SEGMENT_COLLIDERS,
-  fingerSegmentTransform,
   N6_PHYSICS_CONFIG,
   N37_CANDIDATE_GRIP_PROFILE,
   N38_COLLISION_MATRIX,
@@ -30,6 +28,10 @@ import {
   type TravelTransferConfig,
   type Vec3,
 } from './config'
+import {
+  FINGER_SEGMENT_COLLIDERS,
+  fingerSegmentTransform,
+} from '../claw/rig'
 import {
   evaluateGrip,
   type GripCandidateObservation,
@@ -1294,7 +1296,6 @@ export class N6PhysicsAdapter {
         segment.segment,
         articulation,
         pivotArticulation,
-        0,
       )
       collider.setTranslationWrtParent(vector(transform.position))
       collider.setRotationWrtParent(rotation(transform.rotation))
