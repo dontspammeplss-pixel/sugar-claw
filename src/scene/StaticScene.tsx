@@ -1,7 +1,7 @@
 import { useLayoutEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import type { PerspectiveCamera } from 'three'
-import { DEFAULT_CLAW_RIG, FINGER_RIG, PIVOT_NAMES } from '../claw/rig'
+import { DEFAULT_CLAW_RIG, FINGER_RIG } from '../claw/rig'
 import { DEFAULT_PRIZE_MANIFEST } from '../playfield/prize-manifest'
 import { CLAW, LIGHTS, MACHINE, MATERIALS, REVIEW_CAMERA } from './config'
 
@@ -259,8 +259,9 @@ function MachineVisuals() {
 }
 
 function ClawFinger({ index }: { index: number }) {
-  const angle = FINGER_RIG.angles[index]
-  const pivotName = PIVOT_NAMES[index]
+  const finger = FINGER_RIG.fingers[index]
+  const angle = finger.angle
+  const pivotName = finger.pivotName
   const pivotPosition = DEFAULT_CLAW_RIG.baseline[pivotName].position
   return (
     <group
@@ -365,7 +366,7 @@ function ClawSystem() {
             </mesh>
           </group>
           <group name="FingerRig">
-            {FINGER_RIG.angles.map((_, index) => (
+            {FINGER_RIG.fingers.map((_, index) => (
               <ClawFinger key={index} index={index} />
             ))}
           </group>

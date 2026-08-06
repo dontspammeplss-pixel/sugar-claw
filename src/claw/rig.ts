@@ -40,6 +40,19 @@ export interface ClawRigDefinition {
 }
 
 export type FingerSegmentName = 'blade' | 'hook'
+export type FingerId = 'right' | 'left' | 'back'
+
+export interface FingerDefinition {
+  readonly id: FingerId
+  readonly pivotName: PivotName
+  readonly angle: number
+}
+
+export const FINGER_DEFINITIONS = Object.freeze([
+  Object.freeze({ id: 'right', pivotName: PIVOT_NAMES[0], angle: 0 }),
+  Object.freeze({ id: 'left', pivotName: PIVOT_NAMES[1], angle: Math.PI }),
+  Object.freeze({ id: 'back', pivotName: PIVOT_NAMES[2], angle: (3 * Math.PI) / 2 }),
+] as const satisfies readonly FingerDefinition[])
 
 /**
  * Canonical finger geometry shared by the scene and Rapier adapter. Keeping
@@ -49,7 +62,7 @@ export type FingerSegmentName = 'blade' | 'hook'
 export const FINGER_RIG = Object.freeze({
   ringRadius: 0.28,
   pivotY: -0.05,
-  angles: [0, Math.PI, (3 * Math.PI) / 2] as const,
+  fingers: FINGER_DEFINITIONS,
   hingeAxis: [0, 0, 1] as Vec3,
   openArticulation: 0.14,
   blade: Object.freeze({
@@ -76,7 +89,7 @@ export const FINGER_RIG = Object.freeze({
 })
 
 // Keep the exported rig safe to share between the scene and physics setup.
-Object.freeze(FINGER_RIG.angles)
+Object.freeze(FINGER_RIG.fingers)
 Object.freeze(FINGER_RIG.hingeAxis)
 Object.freeze(FINGER_RIG.blade.visualCenter)
 Object.freeze(FINGER_RIG.blade.colliderCenter)
@@ -92,6 +105,26 @@ Object.freeze(FINGER_RIG.hook)
 
 function segmentDefinition(name: FingerSegmentName) {
   return name === 'blade' ? FINGER_RIG.blade : FINGER_RIG.hook
+}
+
+function pivotTransform(
+  index: number,
+  pivotArticulation: number,
+): { position: Vector3; quaternion: Quaternion } {
+  if (!Number.isInteger(index) || index < 0 || index >= FINGER_RIG.fingers.length) {
+    throw new Error(`fingerSegmentTransform: invalid finger index ${index}`)
+  }
+  const finger = FINGER_RIG.fingers[index]
+  const position = new Vector3(
+    Math.cos(finger.angle) * FINGER_RIG.ringRadius,
+    FINGER_RIG.pivotY,
+    Math.sin(finger.angle) * FINGER_RIG.ringRadius,
+  )
+  const quaternion = new Quaternion()
+    .setFromEuler(new Euler(0, -finger.angle, 0, 'XYZ'))
+    .multiply(axisRotation(FINGER_RIG.openArticulation))
+  quaternion.premultiply(axisRotation(pivotArticulation))
+  return { position, quaternion }
 }
 
 function axisRotation(angle: number): Quaternion {
@@ -112,20 +145,8 @@ export function fingerSegmentTransform(
   articulation = 0,
   pivotArticulation = 0,
 ): { position: Vec3; rotation: Quat } {
-  if (!Number.isInteger(index) || index < 0 || index >= FINGER_RIG.angles.length) {
-    throw new Error(`fingerSegmentTransform: invalid finger index ${index}`)
-  }
-  const pivotAngle = FINGER_RIG.angles[index]
-  const pivotPosition = new Vector3(
-    Math.cos(pivotAngle) * FINGER_RIG.ringRadius,
-    FINGER_RIG.pivotY,
-    Math.sin(pivotAngle) * FINGER_RIG.ringRadius,
-  )
-  const pivotQuaternion = new Quaternion()
-    .setFromEuler(new Euler(0, -pivotAngle, 0, 'XYZ'))
-    .multiply(axisRotation(FINGER_RIG.openArticulation))
-  pivotQuaternion.premultiply(axisRotation(pivotArticulation))
-
+  const { position: pivotPosition, quaternion: pivotQuaternion } =
+    pivotTransform(index, pivotArticulation)
   const definition = segmentDefinition(segment)
   const segmentRotation = axisRotation(articulation)
   const localRotation = new Quaternion().setFromEuler(
@@ -148,7 +169,7 @@ export function fingerSegmentTransform(
 
 export const FINGER_SEGMENT_COLLIDERS =
   Object.freeze(
-    FINGER_RIG.angles.flatMap((_, fingerIndex) =>
+    FINGER_RIG.fingers.flatMap((_, fingerIndex) =>
       (['blade', 'hook'] as const).map((segment) => {
         const definition = segmentDefinition(segment)
         const transform = fingerSegmentTransform(fingerIndex, segment)
@@ -214,15 +235,15 @@ function freezePose(pose: Record<PivotName, ClawTransformTarget>): ClawPose {
 }
 
 function baselineTarget(index: number): ClawTransformTarget {
-  const angle = FINGER_RIG.angles[index]
+  const finger = FINGER_RIG.fingers[index]
   const quaternion = new Quaternion().setFromEuler(
-    new Euler(0, -angle, 0, 'XYZ'),
+    new Euler(0, -finger.angle, 0, 'XYZ'),
   )
   return {
     position: [
-      Math.cos(angle) * FINGER_RIG.ringRadius,
+      Math.cos(finger.angle) * FINGER_RIG.ringRadius,
       FINGER_RIG.pivotY,
-      Math.sin(angle) * FINGER_RIG.ringRadius,
+      Math.sin(finger.angle) * FINGER_RIG.ringRadius,
     ],
     quaternion: quaternion.toArray() as Quat,
   }

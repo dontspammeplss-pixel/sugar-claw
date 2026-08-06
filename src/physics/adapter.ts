@@ -39,6 +39,15 @@ import {
   type GripEvaluation,
   type GripProfile,
 } from './grip-evaluator'
+import {
+  buildRetentionState,
+  calculateHoldCapacity,
+} from './retention'
+import type {
+  RetentionReleaseEvent,
+  RetentionState,
+  RetentionStatus,
+} from './retention-types'
 
 export type PhysicsBodyId = 'claw' | 'head' | 'prize' | 'environment'
 export type PhysicsRunState = 'ready' | 'carrying' | 'released' | 'failed'
@@ -192,34 +201,6 @@ export interface GripObservation {
   readonly caughtRegion: PrizeSubGeometry['region'] | null
   readonly caughtPrimitiveIds: readonly string[]
   readonly retentionFactor: number
-}
-
-export type RetentionStatus = 'idle' | 'holding' | 'released'
-
-export interface RetentionState {
-  readonly status: RetentionStatus
-  readonly voltage: number
-  readonly capacity: number
-  readonly required: number
-  readonly margin: number
-  readonly torque: number
-  readonly weight: number
-  readonly centerOfMass: Vec3
-  readonly gripPoint: Vec3
-  readonly contactCount: number
-  /** N47: measured pendulum swing term (linear m/s²) feeding the balance. */
-  readonly swingAcceleration: number
-  /** N48: measured carriage travel term (linear m/s²) feeding the balance. */
-  readonly travelAcceleration: number
-  readonly releasedAt: number | null
-}
-
-export interface RetentionReleaseEvent {
-  readonly state: 'released'
-  readonly step: number
-  readonly runId: number
-  readonly margin: number
-  readonly reason: 'hold-margin-negative'
 }
 
 export interface DeliveryObservation {
@@ -2054,19 +2035,6 @@ export class N6PhysicsAdapter {
       : ([...this.retentionConfig.centerOfMass] as Vec3)
   }
 
-  private holdCapacity(): number {
-    const config = this.retentionConfig
-    const voltageRange = this.config.retention.maxGripVoltage - this.config.retention.minGripVoltage
-    const voltageRatio =
-      (config.gripVoltage - this.config.retention.minGripVoltage) / voltageRange
-    const maxHoldForce =
-      config.maxHoldForceAtMinVoltage +
-      voltageRatio *
-        (config.maxHoldForceAtMaxVoltage - config.maxHoldForceAtMinVoltage)
-    const contactGeometryFactor =
-      0.75 + 0.25 * Math.min(1, this.holdContactCount / 3)
-    return maxHoldForce * config.padFriction * contactGeometryFactor * this.holdRetentionFactor
-  }
 
   /**
    * N47 (F-07): samples the dynamic head's angular acceleration in the fixed
@@ -2141,52 +2109,37 @@ export class N6PhysicsAdapter {
     )
   }
 
-  private holdRequiredForce(): { readonly required: number; readonly torque: number } {
-    const config = this.retentionConfig
-    const prizeWeight = this.activePrizeWeight()
-    const centerOfMass = this.activePrizeCenterOfMass()
-    const mass = prizeWeight / Math.abs(this.config.gravity.y)
-    const offset = new Vector3(...centerOfMass).sub(new Vector3(...config.gripPoint))
-    const distance = offset.length()
-    const torque = mass * Math.abs(this.config.gravity.y) * distance
-    // N47 (F-07) + N48 (F-08): the pendulum and travel terms are measured per
-    // fixed step (both were reserved zero slots); packing stays reserved until
-    // F-06. Slower travel ⇒ smaller term ⇒ lower required force — the physical
-    // speed/success tradeoff.
-    const accelerationForce =
-      prizeWeight *
-      (this.sampledSwingAcceleration + this.sampledTravelAcceleration) /
-      Math.abs(this.config.gravity.y)
-    return {
-      torque,
-      required:
-        prizeWeight +
-        accelerationForce +
-        config.packingForce +
-        Math.abs(torque) / config.gripLeverArm,
-    }
-  }
+
 
   private createRetentionState(
     status: RetentionStatus,
     releasedAt: number | null,
   ): RetentionState {
-    const { required, torque } = this.holdRequiredForce()
-    return {
+    const capacity = calculateHoldCapacity(
+      {
+        ...this.retentionConfig,
+        minGripVoltage: this.config.retention.minGripVoltage,
+        maxGripVoltage: this.config.retention.maxGripVoltage,
+      },
+      this.holdContactCount,
+      this.holdRetentionFactor,
+    )
+    return buildRetentionState({
       status,
+      releasedAt,
       voltage: this.retentionConfig.gripVoltage,
-      capacity: this.holdCapacity(),
-      required,
-      margin: this.holdCapacity() - required,
-      torque,
-      weight: this.activePrizeWeight(),
+      capacity,
+      prizeWeight: this.activePrizeWeight(),
       centerOfMass: this.activePrizeCenterOfMass(),
-      gripPoint: [...this.retentionConfig.gripPoint] as Vec3,
-      contactCount: this.holdContactCount,
+      gripPoint: this.retentionConfig.gripPoint,
+      gripLeverArm: this.retentionConfig.gripLeverArm,
+      gravityY: this.config.gravity.y,
       swingAcceleration: this.sampledSwingAcceleration,
       travelAcceleration: this.sampledTravelAcceleration,
-      releasedAt,
-    }
+      packingForce: this.retentionConfig.packingForce,
+      contactCount: this.holdContactCount,
+      gripRetentionFactor: this.holdRetentionFactor,
+    })
   }
 
   private cloneRetentionState(state: RetentionState): RetentionState {
