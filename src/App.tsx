@@ -8,6 +8,8 @@ import {
   type N7RuntimeReport,
 } from './effects/n7-coordinator'
 import { Joystick } from './ui/Joystick'
+import { OPS_ENABLED } from './ops/ops-store'
+import { OpsPanel } from './ui/OpsPanel'
 import { ZERO_DEFLECTION } from './ui/joystick-math'
 import type { Deflection } from './ui/joystick-math'
 
@@ -70,6 +72,7 @@ export default function App() {
   const [deflection, setDeflection] = useState<Deflection>(ZERO_DEFLECTION)
   const [cameraView, setCameraView] = useState<CameraViewName>('orbit')
   const [toastVisible, setToastVisible] = useState(false)
+  const [opsVisible, setOpsVisible] = useState(false)
   const lastResultRunId = useRef<number | null>(null)
 
   const runtimeStatus = runtimeReport
@@ -154,6 +157,26 @@ export default function App() {
       setDeflection(ZERO_DEFLECTION)
     }
   }, [joystickEnabled])
+
+  // N51 (F-11): ops panel visibility — hidden shortcuts, ops builds only.
+  // Ctrl+Shift+O is the contract shortcut, while Ctrl+Alt+O is a browser-safe
+  // fallback because Chrome reserves Ctrl+Shift+O for Bookmarks Manager.
+  // The panel component itself is tree-shaken from player builds (VITE_OPS=1).
+  useEffect(() => {
+    if (!OPS_ENABLED) return
+    const onKeyDown = (event: KeyboardEvent): void => {
+      const isOpsShortcut =
+        event.key.toLowerCase() === 'o' &&
+        ((event.ctrlKey && event.shiftKey) ||
+          (event.ctrlKey && event.altKey))
+      if (isOpsShortcut) {
+        event.preventDefault()
+        setOpsVisible((visible) => !visible)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
 
   return (
     <main
@@ -278,6 +301,12 @@ export default function App() {
           </output>
         </div>
       </section>
+      {OPS_ENABLED && opsVisible && (
+        <OpsPanel
+          coordinator={coordinator}
+          margin={n7Report?.retention.margin ?? null}
+        />
+      )}
     </main>
   )
 }

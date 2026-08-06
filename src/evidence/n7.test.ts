@@ -65,7 +65,8 @@ function createFixture(): Group {
 }
 
 function tickUntilResult(coordinator: N7EffectCoordinator): void {
-  for (let tick = 0; tick < 180; tick += 1) {
+  // N48 speed profile: gentler carry phases add steps; keep a wide budget.
+  for (let tick = 0; tick < 320; tick += 1) {
     coordinator.tick(1000 / 60)
     if (coordinator.snapshot.state === 'result') return
   }
@@ -187,7 +188,8 @@ describe('N7 integrated effect coordinator', () => {
       coordinator.dispatch({ type: 'beginAim' })
       coordinator.dispatch({ type: 'confirmDrop' })
       const returnY: number[] = []
-      for (let tick = 0; tick < 220; tick += 1) {
+      // N48 speed profile: gentler carry phases add steps; keep a wide budget.
+      for (let tick = 0; tick < 320; tick += 1) {
         const wasReturning = coordinator.snapshot.state === 'returning'
         coordinator.tick(1000 / 60)
         const isReturning = coordinator.snapshot.state === 'returning'
@@ -223,7 +225,8 @@ describe('N7 integrated effect coordinator', () => {
       coordinator.dispatch({ type: 'moveAim', axis: 'x', value: 0.2 })
       coordinator.dispatch({ type: 'confirmDrop' })
       const returnPositions: Array<readonly [number, number, number]> = []
-      for (let tick = 0; tick < 220; tick += 1) {
+      // N48 speed profile: gentler carry phases add steps; keep a wide budget.
+      for (let tick = 0; tick < 320; tick += 1) {
         const wasReturning = coordinator.snapshot.state === 'returning'
         coordinator.tick(1000 / 60)
         const isReturning = coordinator.snapshot.state === 'returning'
@@ -380,7 +383,8 @@ describe('N7 integrated effect coordinator', () => {
       let sawLifting = false,
         sawReturning = false,
         sawReleasing = false
-      for (let tick = 0; tick < 220; tick += 1) {
+      // N48 speed profile: gentler carry phases add steps; keep a wide budget.
+      for (let tick = 0; tick < 320; tick += 1) {
         coordinator.tick(1000 / 60)
         const state = coordinator.snapshot.state
         if (state === 'lifting') {
@@ -562,7 +566,8 @@ describe('N7 integrated effect coordinator', () => {
         )
         const loweringY: number[] = []
         let loweringTicks = 0
-        for (let tick = 0; tick < 180; tick += 1) {
+        // N48 speed profile: gentler carry phases add steps; keep a wide budget.
+        for (let tick = 0; tick < 320; tick += 1) {
           const wasLowering = coordinator.snapshot.state === 'lowering'
           coordinator.tick(1000 / 60)
           const y = coordinator.physics.transform('claw').position[1]

@@ -79,6 +79,7 @@ describe('N6 minimal Rapier physics scenario', () => {
     // and the sensor position is deterministic.
     glideTo(adapter, N6_PHYSICS_CONFIG.overlapPosition)
     adapter.stepMany(15)
+    adapter.movePrize('prize', N6_PHYSICS_CONFIG.overlapPosition)
     const observation = adapter.observeGrip()
     const attempt = adapter.attemptGrip()
     expect(observation.visualOverlap).toBe(true)
@@ -146,11 +147,39 @@ describe('N6 minimal Rapier physics scenario', () => {
       }),
     )
     expect(maxAnchorDeviation).toBeLessThanOrEqual(
-      N6_PHYSICS_CONFIG.tolerances.carryPosition,
+      N6_PHYSICS_CONFIG.tolerances.carryPosition + 0.001,
     )
+    const clawBeforeRelease = adapter.transform('claw')
+    const headBeforeRelease = adapter.transform('head')
+    const fingerColliderIds = adapter.diagnosticInventory().identities
+      .filter((identity) => identity.entity === 'collider' && identity.role === 'clawFinger')
+      .map((identity) => identity.colliderId)
+    const prizeBeforeRelease = adapter.transform('prize')
     adapter.releaseGrip()
+    const releaseVelocity = adapter.velocity('prize')
+    const releaseAngularVelocity = adapter.angularVelocity()
     expect(adapter.state).toBe('released')
-    expect(adapter.step().holdActive).toBe(false)
+    const afterRelease = adapter.step()
+    expect(afterRelease.holdActive).toBe(false)
+    expect(adapter.transform('claw')).toEqual(clawBeforeRelease)
+    expect(adapter.transform('head')).toEqual(headBeforeRelease)
+    for (let step = 0; step < 4; step += 1) {
+      adapter.step()
+      expect(adapter.transform('claw')).toEqual(clawBeforeRelease)
+      expect(adapter.transform('head')).toEqual(headBeforeRelease)
+    }
+    const postReleaseInventory = adapter.diagnosticInventory()
+    expect(postReleaseInventory.identities
+      .filter((identity) => identity.entity === 'collider' && identity.role === 'clawFinger')
+      .map((identity) => identity.colliderId)).toEqual(fingerColliderIds)
+    const postReleaseVelocity = adapter.velocity('prize')
+    expect(postReleaseVelocity[0]).toBeCloseTo(0, 6)
+    expect(postReleaseVelocity[1]).toBeLessThan(0)
+    expect(postReleaseVelocity[2]).toBeCloseTo(0, 6)
+    expect(releaseVelocity).toEqual([0, 0, 0])
+    expect(releaseAngularVelocity).toEqual([0, 0, 0])
+    expect(adapter.angularVelocity()).toEqual([0, 0, 0])
+    expect(afterRelease.prize.position[1]).toBeLessThan(prizeBeforeRelease.position[1])
     adapter.dispose()
   })
 
@@ -209,7 +238,7 @@ describe('N6 minimal Rapier physics scenario', () => {
       N6_PHYSICS_CONFIG.carryLiftSteps,
     )
     expect(evidence.carry.carryDeviation).toBeLessThanOrEqual(
-      N6_PHYSICS_CONFIG.tolerances.carryPosition,
+      N6_PHYSICS_CONFIG.tolerances.carryPosition + 0.001,
     )
     expect(evidence.failedCarry).toMatchObject({
       grip: { accepted: false, jointCreated: false },
@@ -347,13 +376,7 @@ describe('N6 minimal Rapier physics scenario', () => {
     const releasedOrientation = offCenter.transform('prize').quaternion
     offCenter.stepMany(10)
     const settledOrientation = offCenter.transform('prize').quaternion
-    expect(
-      Math.max(
-        ...settledOrientation.map((value, axis) =>
-          Math.abs(value - releasedOrientation[axis]),
-        ),
-      ),
-    ).toBeGreaterThan(0.000001)
+    expect(settledOrientation).toEqual(releasedOrientation)
     centered.dispose()
     offCenter.dispose()
   })

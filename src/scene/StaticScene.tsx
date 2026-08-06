@@ -272,26 +272,30 @@ function ClawFinger({ index, angle }: { index: number; angle: number }) {
           tangentially (the pinwheel look). Blades now hang straight and the
           rig's tangential-axis articulation (N17) sweeps them radially. */}
       <group name={`FingerMesh_${index}`}>
-        <Box
-          name={`FingerBlade_${index}`}
-          size={[0.1, CLAW.fingerLength, 0.12]}
-          position={[0, -CLAW.fingerLength / 2, 0]}
-          color={MATERIALS.clawSteel}
-          metalness={0.92}
-          roughness={0.24}
-        />
+        <group name={`FingerBladeJoint_${index}`}>
+          <Box
+            name={`FingerBlade_${index}`}
+            size={[0.1, CLAW.fingerLength, 0.12]}
+            position={[0, -CLAW.fingerLength / 2, 0]}
+            color={MATERIALS.clawSteel}
+            metalness={0.92}
+            roughness={0.24}
+          />
+        </group>
         {/* Hook cylinder axis runs radially (local X) so the tip curls
             inward toward the prize, matching the approved design. */}
-        <Cylinder
-          name={`FingerHook_${index}`}
-          radius={CLAW.hookRadius}
-          height={CLAW.hookLength}
-          position={[CLAW.hookInset, -CLAW.fingerLength, 0]}
-          rotation={[0, 0, Math.PI / 2]}
-          color={MATERIALS.clawSteel}
-          metalness={0.92}
-          roughness={0.24}
-        />
+        <group name={`FingerHookJoint_${index}`}>
+          <Cylinder
+            name={`FingerHook_${index}`}
+            radius={CLAW.hookRadius}
+            height={CLAW.hookLength}
+            position={[CLAW.hookInset, -CLAW.fingerLength, 0]}
+            rotation={[0, 0, Math.PI / 2]}
+            color={MATERIALS.clawSteel}
+            metalness={0.92}
+            roughness={0.24}
+          />
+        </group>
       </group>
     </group>
   )

@@ -15,14 +15,19 @@ import {
 } from '../playfield/prize-persistence'
 import RAPIER from '@dimforge/rapier3d-compat'
 import {
-  FINGER_COLLIDERS,
+  FINGER_SEGMENT_COLLIDERS,
+  fingerSegmentTransform,
   N6_PHYSICS_CONFIG,
   N37_CANDIDATE_GRIP_PROFILE,
   N38_COLLISION_MATRIX,
   n38CollisionGroups,
   n38SolverGroups,
+  swingAccelerationToLinearAcceleration,
+  travelAccelerationToLinearAcceleration,
   type N38CollisionRole,
   type N38PairExpectation,
+  type SwingTransferConfig,
+  type TravelTransferConfig,
   type Vec3,
 } from './config'
 import {
@@ -88,6 +93,7 @@ export interface N38DiagnosticIdentity {
   readonly collisionGroup: number
   readonly filterMask: number
   readonly solverMask: number
+  readonly ccdEnabled: boolean
   readonly sourceRevision: string
   readonly profileRevision: string
   readonly colliderProfileId: string
@@ -199,6 +205,10 @@ export interface RetentionState {
   readonly centerOfMass: Vec3
   readonly gripPoint: Vec3
   readonly contactCount: number
+  /** N47: measured pendulum swing term (linear m/s²) feeding the balance. */
+  readonly swingAcceleration: number
+  /** N48: measured carriage travel term (linear m/s²) feeding the balance. */
+  readonly travelAcceleration: number
   readonly releasedAt: number | null
 }
 
@@ -290,6 +300,7 @@ interface BodyBaseline {
 }
 
 const ZERO = { x: 0, y: 0, z: 0 }
+
 
 function vector([x, y, z]: Vec3): { x: number; y: number; z: number } {
   return { x, y, z }
@@ -444,7 +455,7 @@ export class N6PhysicsAdapter {
   private readonly headCollider: RAPIER.Collider
   private readonly fingerColliders: readonly RAPIER.Collider[]
   private readonly prizeCollider: RAPIER.Collider
-
+  private releaseFrozen = false
 
   private readonly sensorCollider: RAPIER.Collider
   private readonly chuteSensorCollider: RAPIER.Collider
@@ -455,7 +466,9 @@ export class N6PhysicsAdapter {
   private readonly baseline: Readonly<Record<PhysicsBodyId, BodyBaseline>>
   private readonly stepRecords: PhysicsStepRecord[] = []
   private readonly retentionConfig: N6PhysicsAdapterOptions['retention'] & {
-    readonly gripVoltage: number
+    // N51 (F-11): gripVoltage is the single live-tunable retention knob
+    // (ops panel writes through coordinator.setGripVoltage with clamping).
+    gripVoltage: number
     readonly padFriction: number
     readonly maxHoldForceAtMinVoltage: number
     readonly maxHoldForceAtMaxVoltage: number
@@ -467,11 +480,26 @@ export class N6PhysicsAdapter {
     readonly pendulumSwingAcceleration: number
     readonly travelAcceleration: number
     readonly packingForce: number
+    readonly swingTransfer: SwingTransferConfig
+    readonly travelTransfer: TravelTransferConfig
   }
   private holdActive = false
   private holdOffset: Vec3 = [0, 0, 0]
   private holdContactCount = 0
   private holdRetentionFactor = 1
+  /** N47 (F-07): measured pendulum swing term (linear m/s²) feeding the balance. */
+  private sampledSwingAcceleration: number =
+    this.config.retention.pendulumSwingAcceleration
+  /** N47: rolling window of |head angular acceleration| samples (rad/s²). */
+  private swingAccelSamples: number[] = []
+  private previousHeadAngVel: Vec3 | null = null
+  /** N48 (F-08): measured carriage travel term (linear m/s²) feeding the balance. */
+  private sampledTravelAcceleration: number =
+    this.config.retention.travelAcceleration
+  /** N48: rolling window of |carriage acceleration| samples (m/s²). */
+  private travelAccelSamples: number[] = []
+  private previousClawPosition: Vec3 | null = null
+  private previousClawSpeed: number | null = null
   private retentionState: RetentionState
   private retentionReleaseEvent: RetentionReleaseEvent | null = null
   private deliveryObservation: DeliveryObservation | null = null
@@ -583,9 +611,11 @@ export class N6PhysicsAdapter {
       derivationRevision: 'authored-profile-rev1',
     })
 
-    // N25: one physical capsule per finger at the open-pose pivot transform.
+    // N25/N55: one fitted solver capsule per visual finger segment. The
+    // dynamic head owns the segments, so its CCD setting covers every finger
+    // collider while preserving one collision identity per segment.
     this.fingerColliders = Object.freeze(
-      FINGER_COLLIDERS.map((finger) =>
+      FINGER_SEGMENT_COLLIDERS.map((finger) =>
         this.world.createCollider(
           RAPIER.ColliderDesc.capsule(finger.halfHeight, finger.radius)
             .setTranslation(...finger.position)
@@ -599,13 +629,16 @@ export class N6PhysicsAdapter {
           this.headBody,
         ),
       ).map((collider, index) => {
+        const finger = FINGER_SEGMENT_COLLIDERS[index]
         setColliderUserData(collider, {
           logicalBodyId: 'head',
-          colliderId: `claw-finger-${index}`,
+          colliderId: `claw-finger-${finger.fingerIndex}-${finger.segment}`,
           role: 'clawFinger',
+          segment: finger.segment,
+          fingerIndex: finger.fingerIndex,
           sourceRevision: this.config.revision,
-          profileRevision: 'n38-authored-finger-rev1',
-          colliderProfileId: `claw-finger-${index}`,
+          profileRevision: 'n55-authored-finger-segment-rev1',
+          colliderProfileId: `claw-finger-${finger.fingerIndex}-${finger.segment}`,
           derivationRevision: 'authored-profile-rev1',
         })
         return collider
@@ -884,6 +917,22 @@ export class N6PhysicsAdapter {
     return this.retentionReleaseEvent ? { ...this.retentionReleaseEvent } : null
   }
 
+  /**
+   * N51 (F-11): live operator tuning of grip voltage (12–36V, default 24V).
+   * Clamps to the approved retention range; deterministic — the next balance
+   * evaluation reads the applied value. Returns the applied (clamped) value.
+   * Motion scheduling only: no state transition, no fixed-step change (C-02).
+   */
+  setGripVoltage(value: number): number {
+    if (!Number.isFinite(value)) {
+      throw new Error('N51 ops: grip voltage must be finite')
+    }
+    const { minGripVoltage, maxGripVoltage } = this.config.retention
+    const clamped = Math.min(maxGripVoltage, Math.max(minGripVoltage, value))
+    this.retentionConfig.gripVoltage = clamped
+    return clamped
+  }
+
   get delivery(): DeliveryObservation | null {
     return this.deliveryObservation
       ? {
@@ -969,6 +1018,7 @@ export class N6PhysicsAdapter {
         collisionGroup: 0,
         filterMask: 0,
         solverMask: 0,
+        ccdEnabled: body.isCcdEnabled(),
         sourceRevision: this.stringData(data, 'sourceRevision'),
         profileRevision: this.stringData(data, 'profileRevision'),
         colliderProfileId: this.stringData(data, 'colliderProfileId'),
@@ -1014,6 +1064,7 @@ export class N6PhysicsAdapter {
         collisionGroup: collision.group,
         filterMask: collision.mask,
         solverMask: solver.mask,
+        ccdEnabled: parent?.isCcdEnabled() ?? false,
         sourceRevision: this.stringData(data, 'sourceRevision'),
         profileRevision: this.stringData(data, 'profileRevision'),
         colliderProfileId: this.stringData(data, 'colliderProfileId'),
@@ -1030,9 +1081,9 @@ export class N6PhysicsAdapter {
         logicalBodyId: 'head',
         requiredColliderIds: [
           'claw-head',
-          'claw-finger-0',
-          'claw-finger-1',
-          'claw-finger-2',
+          ...FINGER_SEGMENT_COLLIDERS.map(
+            (finger) => `claw-finger-${finger.fingerIndex}-${finger.segment}`,
+          ),
           'grip-sensor',
         ],
         registeredColliderIds: registeredColliderIds.filter(
@@ -1043,9 +1094,9 @@ export class N6PhysicsAdapter {
         ),
         missingColliderIds: [
           'claw-head',
-          'claw-finger-0',
-          'claw-finger-1',
-          'claw-finger-2',
+          ...FINGER_SEGMENT_COLLIDERS.map(
+            (finger) => `claw-finger-${finger.fingerIndex}-${finger.segment}`,
+          ),
           'grip-sensor',
         ].filter((id) => !registeredColliderIds.includes(id)),
       },
@@ -1221,6 +1272,36 @@ export class N6PhysicsAdapter {
     return true
   }
 
+  /** Updates the Rapier segment colliders to match the authored finger pose. */
+  setFingerArticulation(
+    blade: number,
+    hook: number,
+    pivotArticulation = 0,
+  ): void {
+    this.assertNotDisposed()
+    if (
+      !Number.isFinite(blade) ||
+      !Number.isFinite(hook) ||
+      !Number.isFinite(pivotArticulation)
+    ) {
+      throw new Error('N55 finger articulation must be finite')
+    }
+    this.fingerColliders.forEach((collider, index) => {
+      const segment = FINGER_SEGMENT_COLLIDERS[index]!
+      const articulation = segment.segment === 'blade' ? blade : hook
+      const transform = fingerSegmentTransform(
+        segment.fingerIndex,
+        segment.segment,
+        articulation,
+        pivotArticulation,
+        0,
+      )
+      collider.setTranslationWrtParent(vector(transform.position))
+      collider.setRotationWrtParent(rotation(transform.rotation))
+    })
+    this.world.propagateModifiedBodyPositionsToColliders()
+  }
+
   /** Adapter-owned nudge fixture/operator operation; persistence occurs on the next fixed step. */
   movePrize(id: string, position: Vec3, orientation?: PrizeState['orientation']): boolean {
     const body = this.prizeBodies.get(id)
@@ -1228,6 +1309,8 @@ export class N6PhysicsAdapter {
     if (!body || !state || state.removed) return false
     body.setTranslation(vector(position), true)
     if (orientation) body.setRotation(rotation(orientation.quaternion), true)
+    body.setLinvel(ZERO, true)
+    body.setAngvel(ZERO, true)
     body.wakeUp()
     return true
   }
@@ -1235,6 +1318,7 @@ export class N6PhysicsAdapter {
   /** Sets a kinematic target; all bounds and body writes remain adapter-owned. */
   moveClaw(position: Vec3): boolean {
     this.assertNotDisposed()
+    if (this.releaseFrozen) return false
     const { min, max } = this.config.travelBounds
     const epsilon = this.config.tolerances.travel
     const axes = ['x', 'y', 'z'] as const
@@ -1264,6 +1348,10 @@ export class N6PhysicsAdapter {
     if (this.holdActive) this.applyHoldImpulse()
     this.world.step()
     this.stepNumber += 1
+    // N47: sample the real pendulum swing before the hold balance is evaluated.
+    this.sampleSwingAcceleration()
+    // N48: sample the carriage's travel acceleration into the same balance.
+    this.sampleTravelAcceleration()
     // Release/drop paths are allowed to carry a composed prize down to the
     // chute; retain the same fixed-step sensor authority for delivery.
     this.observeDelivery()
@@ -1610,7 +1698,8 @@ export class N6PhysicsAdapter {
     const grip = this.observeGrip()
     const lowestClawPointY = this.lowestPhysicalPointY()
     const basePlaneDistance = lowestClawPointY - this.config.basePlane.y
-    const completionReason: DescentCompletionReason = grip.barrierContact
+    const completionReason: DescentCompletionReason =
+      grip.barrierContact || grip.floorContact
       ? 'barrier-contact'
       : basePlaneDistance <= this.config.clawClearance.tolerance
         ? 'base-clearance'
@@ -1647,21 +1736,19 @@ export class N6PhysicsAdapter {
       Math.abs(headAxes[0].y) * headExtents[0] -
       Math.abs(headAxes[1].y) * headExtents[1] -
       Math.abs(headAxes[2].y) * headExtents[2]
-    const fingerBottoms = this.fingerColliders.map((collider) => {
+    const fingerBottoms = this.fingerColliders.map((collider, index) => {
+      const segment = FINGER_SEGMENT_COLLIDERS[index]!
       const position = collider.translation()
       const colliderRotation = collider.rotation()
-      const quaternion = new Quaternion(
-        colliderRotation.x,
-        colliderRotation.y,
-        colliderRotation.z,
-        colliderRotation.w,
+      const axis = new Vector3(0, 1, 0).applyQuaternion(
+        new Quaternion(
+          colliderRotation.x,
+          colliderRotation.y,
+          colliderRotation.z,
+          colliderRotation.w,
+        ),
       )
-      const axis = new Vector3(0, 1, 0).applyQuaternion(quaternion)
-      return (
-        position.y -
-        this.config.fingerCapsuleHalfHeight * Math.abs(axis.y) -
-        this.config.fingerCapsuleRadius
-      )
+      return position.y - segment.halfHeight * Math.abs(axis.y) - segment.radius
     })
     return Math.min(headBottom, ...fingerBottoms)
   }
@@ -1736,6 +1823,9 @@ export class N6PhysicsAdapter {
     const releasedAtRunId = this.holdActive ? this.runId : null
     if (this.holdActive) {
       this.holdActive = false
+      this.releaseFrozen = true
+      this.freezeClawForRelease()
+      this.resetReleasedPrizeMotion()
       this.logicalState = 'released'
       this.retentionState = this.createRetentionState('released', this.stepNumber)
     }
@@ -1795,6 +1885,7 @@ export class N6PhysicsAdapter {
   reset(): void {
     this.assertNotDisposed()
     this.holdActive = false
+    this.releaseFrozen = false
     this.retentionReleaseEvent = null
     this.deliveryObservation = null
     this.payoutHookEventValue = null
@@ -1824,7 +1915,20 @@ export class N6PhysicsAdapter {
     this.retentionState = this.createRetentionState('idle', null)
     this.holdContactCount = 0
     this.holdRetentionFactor = 1
+    // N47: the new run starts with a calm head; clear the swing window so no
+    // pre-reset Δω leaks into the fresh run.
+    this.sampledSwingAcceleration =
+      this.config.retention.pendulumSwingAcceleration
+    this.swingAccelSamples = []
+    this.previousHeadAngVel = null
+    // N48: the new run starts from a calm carriage; clear the travel window so
+    // no pre-reset motion leaks into the fresh run.
+    this.sampledTravelAcceleration = this.config.retention.travelAcceleration
+    this.travelAccelSamples = []
+    this.previousClawPosition = null
+    this.previousClawSpeed = null
     this.restoreBaselinePose()
+    this.setFingerArticulation(0, 0)
     this.stepNumber = 0
     this.runId += 1
     this.logicalState = 'ready'
@@ -1886,6 +1990,8 @@ export class N6PhysicsAdapter {
 
   /** Restores bodies and the kinematic claw pose from the recorded baseline. */
   private restoreBaselinePose(): void {
+    this.headBody.lockTranslations(false, true)
+    this.headBody.lockRotations(false, true)
     this.restoreBody(this.clawBody, this.baseline.claw)
     this.restoreBody(this.headBody, this.baseline.head)
     this.restoreBody(this.environmentBody, this.baseline.environment)
@@ -1961,6 +2067,79 @@ export class N6PhysicsAdapter {
     return maxHoldForce * config.padFriction * contactGeometryFactor * this.holdRetentionFactor
   }
 
+  /**
+   * N47 (F-07): samples the dynamic head's angular acceleration in the fixed
+   * step and maps it through the versioned swing transfer. Read-only with
+   * respect to the head — no torque, no per-frame angular corrections (N26
+   * lesson). The first sample only records a baseline; Δω is measured from the
+   * following step.
+   */
+  private sampleSwingAcceleration(): void {
+    const angVel = tuple(this.headBody.angvel())
+    const previous = this.previousHeadAngVel
+    this.previousHeadAngVel = [...angVel] as Vec3
+    if (previous === null) return
+    const deltaMagnitude = Math.hypot(
+      angVel[0] - previous[0],
+      angVel[1] - previous[1],
+      angVel[2] - previous[2],
+    )
+    const windowSteps = this.retentionConfig.swingTransfer.windowSteps
+    this.swingAccelSamples.push(deltaMagnitude / this.config.dt)
+    if (this.swingAccelSamples.length > windowSteps) {
+      this.swingAccelSamples.shift()
+    }
+    const mean =
+      this.swingAccelSamples.reduce((sum, value) => sum + value, 0) /
+      this.swingAccelSamples.length
+    this.sampledSwingAcceleration = swingAccelerationToLinearAcceleration(
+      mean,
+      this.retentionConfig.swingTransfer,
+    )
+  }
+
+  /**
+   * N48 (F-08): samples the carriage's travel acceleration in the fixed step
+   * and maps it through the versioned travel transfer into RequiredHoldForce.
+   * Only consecutive in-motion steps count (previous AND current step speed
+   * above the idle threshold), so a single moveClaw jump — a reset or a
+   * fixture park — never registers as travel acceleration. Read-only with
+   * respect to the bodies; bounded and monotone like the swing term. The first
+   * sample only records a baseline; Δv is measured from the following step.
+   */
+  private sampleTravelAcceleration(): void {
+    const position = this.transform('claw').position
+    const previousPosition = this.previousClawPosition
+    this.previousClawPosition = [...position] as Vec3
+    if (previousPosition === null) return
+    const speed =
+      Math.hypot(
+        position[0] - previousPosition[0],
+        position[1] - previousPosition[1],
+        position[2] - previousPosition[2],
+      ) / this.config.dt
+    const previousSpeed = this.previousClawSpeed
+    this.previousClawSpeed = speed
+    if (previousSpeed === null) return
+    const idle = this.config.tolerances.idleVelocity
+    const sample =
+      speed > idle && previousSpeed > idle
+        ? Math.abs(speed - previousSpeed) / this.config.dt
+        : 0
+    const windowSteps = this.retentionConfig.travelTransfer.windowSteps
+    this.travelAccelSamples.push(sample)
+    if (this.travelAccelSamples.length > windowSteps) {
+      this.travelAccelSamples.shift()
+    }
+    const mean =
+      this.travelAccelSamples.reduce((sum, value) => sum + value, 0) /
+      this.travelAccelSamples.length
+    this.sampledTravelAcceleration = travelAccelerationToLinearAcceleration(
+      mean,
+      this.retentionConfig.travelTransfer,
+    )
+  }
+
   private holdRequiredForce(): { readonly required: number; readonly torque: number } {
     const config = this.retentionConfig
     const prizeWeight = this.activePrizeWeight()
@@ -1969,9 +2148,13 @@ export class N6PhysicsAdapter {
     const offset = new Vector3(...centerOfMass).sub(new Vector3(...config.gripPoint))
     const distance = offset.length()
     const torque = mass * Math.abs(this.config.gravity.y) * distance
+    // N47 (F-07) + N48 (F-08): the pendulum and travel terms are measured per
+    // fixed step (both were reserved zero slots); packing stays reserved until
+    // F-06. Slower travel ⇒ smaller term ⇒ lower required force — the physical
+    // speed/success tradeoff.
     const accelerationForce =
       prizeWeight *
-      (config.pendulumSwingAcceleration + config.travelAcceleration) /
+      (this.sampledSwingAcceleration + this.sampledTravelAcceleration) /
       Math.abs(this.config.gravity.y)
     return {
       torque,
@@ -1999,6 +2182,8 @@ export class N6PhysicsAdapter {
       centerOfMass: this.activePrizeCenterOfMass(),
       gripPoint: [...this.retentionConfig.gripPoint] as Vec3,
       contactCount: this.holdContactCount,
+      swingAcceleration: this.sampledSwingAcceleration,
+      travelAcceleration: this.sampledTravelAcceleration,
       releasedAt,
     }
   }
@@ -2035,7 +2220,11 @@ export class N6PhysicsAdapter {
   }
 
   private breakHold(margin: number): void {
+    // A balance-triggered weak-grip release happens during carry. The object
+    // detaches and drops, but the carriage must remain free to finish its
+    // return path; only the explicit chute release freezes the assembly.
     this.holdActive = false
+    this.resetReleasedPrizeMotion()
     this.logicalState = 'released'
     this.retentionState = this.createRetentionState('released', this.stepNumber)
     this.retentionReleaseEvent = {
@@ -2045,13 +2234,43 @@ export class N6PhysicsAdapter {
       margin,
       reason: 'hold-margin-negative',
     }
-    const torque = this.retentionState.torque
-    if (torque > 0) {
-      this.prizeBodies.get(this.selectedPrizeId)?.applyTorqueImpulse(
-        { x: 0, y: 0, z: torque * this.config.dt },
-        true,
-      )
-    }
+  }
+
+  /**
+   * Release is a mechanical stop: freeze the carriage/head at their current
+   * transforms so opening the fingers cannot make the claw tumble with the
+   * prize. The next reset explicitly unlocks the dynamic head again.
+   */
+  private freezeClawForRelease(): void {
+    const claw = this.clawBody.translation()
+    const clawRotation = this.clawBody.rotation()
+    this.clawBody.setNextKinematicTranslation(claw)
+    this.clawBody.setNextKinematicRotation(clawRotation)
+    this.headBody.lockTranslations(true, true)
+    this.headBody.lockRotations(true, true)
+    // Keep the locked head's current pose authoritative for the next solver
+    // step; lock calls alone do not remove the spherical joint's positional
+    // correction from an already-displaced dynamic body.
+    this.headBody.setTranslation(this.headBody.translation(), true)
+    this.headBody.setRotation(this.headBody.rotation(), true)
+    this.headBody.setLinvel(ZERO, true)
+    this.headBody.setAngvel(ZERO, true)
+    this.headBody.resetForces(true)
+    this.headBody.resetTorques(true)
+  }
+
+  /**
+   * Detachment never copies claw motion into the prize. Clearing both velocity
+   * channels and accumulated impulses leaves gravity as the only immediate
+   * post-release acceleration (plus the prize's own contacts).
+   */
+  private resetReleasedPrizeMotion(): void {
+    const prize = this.prizeBodies.get(this.selectedPrizeId)
+    if (!prize) return
+    prize.setLinvel(ZERO, true)
+    prize.setAngvel(ZERO, true)
+    prize.resetForces(true)
+    prize.resetTorques(true)
   }
 
   private assertNotDisposed(): void {

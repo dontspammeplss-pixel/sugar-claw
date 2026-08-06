@@ -44,7 +44,8 @@ function createFixture(): Group {
 function tickUntil(
   coordinator: N7EffectCoordinator,
   predicate: () => boolean,
-  maxTicks = 180,
+  // N48 speed profile: gentler carry phases add steps; keep a wide budget.
+  maxTicks = 320,
 ): number {
   for (let tick = 1; tick <= maxTicks; tick += 1) {
     coordinator.tick(1000 / 60)

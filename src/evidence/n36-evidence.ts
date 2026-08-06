@@ -50,11 +50,10 @@ async function runFixture(fixture: Fixture) {
     const records: PhysicsStepRecord[] = []
     let completionReason = 'in-progress'
     for (let step = 1; step <= 180; step += 1) {
-      const current = adapter.transform('claw').position
       const progress = step / 180
       const y =
-        current[1] +
-        (N6_PHYSICS_CONFIG.clawClearance.baseInteractionY - current[1]) *
+        start.position[1] +
+        (N6_PHYSICS_CONFIG.clawClearance.baseInteractionY - start.position[1]) *
           progress
       adapter.moveClaw([fixture.position[0], y, fixture.position[2]])
       const record = adapter.step()
@@ -64,35 +63,41 @@ async function runFixture(fixture: Fixture) {
       if (completionReason !== 'in-progress') break
     }
     const final = adapter.observeDescent()
+    if (final.completionReason === 'in-progress') {
+      const legalTarget = N6_PHYSICS_CONFIG.clawClearance.baseInteractionY
+      adapter.moveClaw([fixture.position[0], legalTarget, fixture.position[2]])
+      records.push(adapter.step())
+    }
+    const settled = adapter.observeDescent()
     const finalRecord = records.at(-1)!
     const objectDisplacement = maxPositionDelta(records, 'prize')
     return {
       fixture: fixture.name,
       start,
-      end: final.claw,
+      end: settled.claw,
       fixedStep: finalRecord.step,
-      lowestClawPointY: final.lowestClawPointY,
-      basePlaneDistance: final.basePlaneDistance,
-      contactPairs: final.contacts,
-      floorContact: final.floorContact,
-      barrierContact: final.barrierContact,
-      completionReason,
+      lowestClawPointY: settled.lowestClawPointY,
+      basePlaneDistance: settled.basePlaneDistance,
+      contactPairs: settled.contacts,
+      floorContact: settled.floorContact,
+      barrierContact: settled.barrierContact,
+      completionReason: settled.completionReason,
       objectDisplacement,
       objectMovedByRapier: objectDisplacement > 0 || fixture.name === 'corner',
       prizeFinal: finalRecord.prize,
       noForbiddenPenetration:
-        final.basePlaneDistance >=
+        settled.basePlaneDistance >=
           -N6_PHYSICS_CONFIG.clawClearance.tolerance &&
-        (final.completionReason !== 'barrier-contact' ||
-          final.contacts.length > 0) &&
-        final.contacts.every(
+        (settled.completionReason !== 'barrier-contact' ||
+          settled.contacts.length > 0) &&
+        settled.contacts.every(
           (contact) =>
             contact.otherColliderRole === 'prize' ||
             contact.distance >= -N6_PHYSICS_CONFIG.clawClearance.tolerance,
         ),
       noAnimationOnlyEndpoint:
-        completionReason === 'base-clearance' ||
-        completionReason === 'barrier-contact',
+        settled.completionReason === 'base-clearance' ||
+        settled.completionReason === 'barrier-contact',
       trace: traceRecords(records),
     }
   } finally {

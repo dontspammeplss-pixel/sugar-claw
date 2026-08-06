@@ -16,7 +16,8 @@
     "gate:n1a": "node scripts/gate.mjs n1a",
     "scenario:n1a": "vitest run src/bootstrap.test.ts",
     "scenario:n21": "vitest run src/bootstrap.test.ts",
-    "gate:n21": "node scripts/gate.mjs n21"
+    "gate:n21": "node scripts/gate.mjs n21",
+    "gate:ops": "node scripts/gate-ops.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "8.17.10",

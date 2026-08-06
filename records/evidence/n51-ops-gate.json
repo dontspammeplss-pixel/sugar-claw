@@ -1,0 +1,86 @@
+{
+  "node": "N51",
+  "result": "pass",
+  "deterministic": true,
+  "ops": {
+    "enabled": false,
+    "marker": "claw-ops-v1",
+    "storageKey": "claw-app:ops:v1",
+    "playerNamespace": "claw-app:player:prizes:",
+    "defaults": {
+      "revision": "n51-ops-rev1",
+      "gripVoltage": 24
+    },
+    "clamp": {
+      "min": 12,
+      "max": 36
+    }
+  },
+  "liveTuning": {
+    "points": [
+      {
+        "commanded": 24,
+        "applied": 24,
+        "voltage": 24,
+        "capacity": 40,
+        "margin": 29.97085686602177
+      },
+      {
+        "commanded": 12,
+        "applied": 12,
+        "voltage": 12,
+        "capacity": 20,
+        "margin": 9.96997434816776
+      },
+      {
+        "commanded": 36,
+        "applied": 36,
+        "voltage": 36,
+        "capacity": 60,
+        "margin": 49.96926134811082
+      }
+    ],
+    "outOfBand": [
+      {
+        "commanded": 5,
+        "applied": 12
+      },
+      {
+        "commanded": 50,
+        "applied": 36
+      }
+    ],
+    "nonFiniteRejected": true,
+    "percentAt24": 50,
+    "psiAt24": 52.5
+  },
+  "namespace": {
+    "keysAfterOpsSave": [
+      "claw-app:ops:v1"
+    ],
+    "keysAfterOpsAndPlayerSave": [
+      "claw-app:ops:v1",
+      "claw-app:player:prizes:n51-fixture"
+    ],
+    "roundTripVoltage": 30,
+    "disjoint": true,
+    "opsSaveIsolated": true,
+    "playerSaveClean": true
+  },
+  "buildGate": {
+    "opsEnabledByDefault": true,
+    "prodBundleChecked": true,
+    "prodBundleClean": true
+  },
+  "gates": {
+    "voltageClamped": true,
+    "liveTuningCapacityMonotone": true,
+    "outOfBandClamped": true,
+    "nonFiniteRejected": true,
+    "readoutsInRange": true,
+    "namespaceDisjoint": true,
+    "opsSaveIsolated": true,
+    "playerSaveClean": true,
+    "opsEnabledByDefault": true
+  }
+}

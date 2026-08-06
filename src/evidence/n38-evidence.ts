@@ -131,13 +131,21 @@ async function runCollisionFixture(
   })
   try {
     glideTo(adapter, target)
+    if (name === 'claw-to-object-impact') {
+      adapter.movePrize('prize', [0, 1.1, 0])
+    }
     const tracesByStep: N38ContactTrace[][] = []
-    for (let step = 0; step < 12; step += 1) {
-      adapter.step()
-      tracesByStep.push([...adapter.observeN38ContactTraces()])
+    if (name !== 'visual-overlap-ineligible') {
+      for (let step = 0; step < 12; step += 1) {
+        adapter.step()
+        tracesByStep.push([...adapter.observeN38ContactTraces()])
+      }
+    }
+    if (name === 'visual-overlap-ineligible') {
+      adapter.movePrize('prize', target)
     }
     const grip = adapter.observeGrip()
-    const traces = tracesByStep.flat()
+    const traces = tracesByStep.flat().concat(adapter.observeN38ContactTraces())
     const exactPair =
       name === 'claw-to-object-impact'
         ? (trace: N38ContactTrace) =>

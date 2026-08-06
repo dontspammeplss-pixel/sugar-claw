@@ -21,6 +21,8 @@ import {
   type ClawTravelAnimator,
 } from '../animation/travel-animator'
 import { ClawPoseAdapter } from '../claw/pose-adapter'
+import { DEFAULT_CLAW_RIG, PIVOT_NAMES } from '../claw/rig'
+import { GripFlexController } from '../claw/grip-flex'
 import {
   N6PhysicsAdapter,
   positionsMatch,
@@ -35,7 +37,11 @@ import {
   type N6PhysicsAdapterOptions,
   type PrizePlayfieldSnapshot,
 } from '../physics/adapter'
-import { N6_PHYSICS_CONFIG, type Vec3 } from '../physics/config'
+import {
+  N6_PHYSICS_CONFIG,
+  phaseTravelDurationMs,
+  type Vec3,
+} from '../physics/config'
 import { DEFAULT_PRIZE_MANIFEST } from '../playfield/prize-manifest'
 import { clearPrizePersistence } from '../playfield/prize-persistence'
 import {
@@ -168,6 +174,7 @@ export class N7EffectCoordinator {
   readonly physics: N6PhysicsAdapter
   readonly pose: ClawPoseAdapter
   readonly animator: ClawPoseAnimator
+  readonly gripFlex: GripFlexController
 
   private target: Vec3 | null = null
   private returnLeg: 'traverse' | 'descent' | null = null
@@ -209,11 +216,15 @@ export class N7EffectCoordinator {
     this.controller = controller
     this.pose = new ClawPoseAdapter(bindings.clawVisualRoot)
     this.animator = createClawPoseAnimator(this.pose)
+    this.gripFlex = new GripFlexController(bindings.clawVisualRoot)
+    this.gripFlex.setGripVoltage(this.physics.retention.voltage)
+    this.gripFlex.advance(0)
 
     this.pose.restoreBaseline()
     // Parked-open presentation (classic arcade rest pose) layered on the
     // restored baseline rig transforms.
     this.pose.applyPoseTarget('open')
+    this.syncGripPhysics()
     this.syncVisuals()
     const assetsReady = this.controller.dispatch({ type: 'assetsReady' })
     if (!assetsReady.accepted) {
@@ -246,6 +257,15 @@ export class N7EffectCoordinator {
 
   get snapshot(): StateSnapshot {
     return this.controller.snapshot()
+  }
+
+  /**
+   * N51 (F-11): ops-only live tuning of grip voltage (12–36V, clamped). The
+   * coordinator is the sanctioned write path for operator settings — the UI
+   * never touches the adapter directly (C-01 boundary rule).
+   */
+  setGripVoltage(value: number): number {
+    return this.physics.setGripVoltage(value)
   }
 
   get runtimeReport(): N7RuntimeReport {
@@ -392,6 +412,9 @@ export class N7EffectCoordinator {
         this.lastRetentionRelease = this.physics.retentionRelease
       }
       if (this.animator.state.active) this.animator.advance(fixedStepMs)
+      this.gripFlex.setGripVoltage(this.physics.retention.voltage)
+      this.gripFlex.advance(fixedStepMs)
+      this.syncGripPhysics()
       this.syncVisuals()
 
       try {
@@ -473,9 +496,9 @@ export class N7EffectCoordinator {
     // Classic arcade: descend with fingers open.
     this.animator.start('open', 0)
     this.travel.start(
-      this.physics.transform('claw').position,
+      current,
       target,
-      TRAVEL_LOWERING_MS,
+      phaseTravelDurationMs('descent', distance(current, target)),
     )
   }
 
@@ -492,9 +515,9 @@ export class N7EffectCoordinator {
     }
     this.target = target
     this.travel.start(
-      this.physics.transform('claw').position,
+      current,
       target,
-      TRAVEL_LIFT_MS,
+      phaseTravelDurationMs('lift', distance(current, target)),
     )
   }
 
@@ -507,10 +530,11 @@ export class N7EffectCoordinator {
     this.returnLeg = 'traverse'
     // Classic arcade: keep fingers closed while carrying the prize home; the
     // open (release) pose happens in the releasing state, not during return.
+    const start = this.physics.transform('claw').position
     this.travel.start(
-      this.physics.transform('claw').position,
+      start,
       target,
-      TRAVEL_RETURN_TRAVERSE_MS,
+      phaseTravelDurationMs('returnTraverse', distance(start, target)),
     )
   }
 
@@ -622,10 +646,14 @@ export class N7EffectCoordinator {
               }
               this.target = descentTarget
               this.returnLeg = 'descent'
+              const descentStart = this.physics.transform('claw').position
               this.travel.start(
-                this.physics.transform('claw').position,
+                descentStart,
                 descentTarget,
-                TRAVEL_RETURN_DESCENT_MS,
+                phaseTravelDurationMs(
+                  'returnDescent',
+                  distance(descentStart, descentTarget),
+                ),
               )
             } else {
               // Failed grips still complete the cosmetic lift and traverse,
@@ -646,6 +674,11 @@ export class N7EffectCoordinator {
           this.animator.start('open', RELEASE_OPEN_MS)
         } else if (!this.releaseCompleted && !this.animator.state.active) {
           const removedAtRunId = this.physics.releaseGrip()
+          // Manual chute release freezes the authored finger pose as well as
+          // the physics carriage/head. Otherwise the live flex controller
+          // would keep rotating visible segments after the claw is supposed
+          // to be stationary.
+          this.gripFlex.freeze()
           this.releaseCompleted = true
           this.deliveryWaitSteps = 0
           const outcome: Outcome = {
@@ -732,9 +765,13 @@ export class N7EffectCoordinator {
     this.animator.cancel()
     clearPrizePersistence(this.physics.playfield.manifestRevision)
     this.physics.reset()
+    this.gripFlex.resume()
     this.pose.restoreBaseline()
+    this.gripFlex.setGripVoltage(this.physics.retention.voltage)
+    this.gripFlex.advance(0)
     // Parked-open presentation after every reset.
     this.pose.applyPoseTarget('open')
+    this.syncGripPhysics()
     this.target = null
     this.returnLeg = null
     this.glideVelocity = null
@@ -786,6 +823,23 @@ export class N7EffectCoordinator {
       error: errorMessage(error),
       runId: state.runId,
     })
+  }
+
+  private syncGripPhysics(): void {
+    const flex = this.gripFlex.snapshot
+    const pivot = this.pose.snapshot()[PIVOT_NAMES[0]]
+    const baseline = DEFAULT_CLAW_RIG.baseline[PIVOT_NAMES[0]]
+    const base = new Quaternion().fromArray([...baseline.quaternion]).invert()
+    const relative = base.multiply(new Quaternion().fromArray([...pivot.quaternion]))
+    const currentArticulation = 2 * Math.atan2(relative.z, relative.w)
+    const openArticulation = DEFAULT_CLAW_RIG.poses.open[PIVOT_NAMES[0]].quaternion
+    const openRelative = base.clone().multiply(new Quaternion().fromArray([...openArticulation]))
+    const pivotDelta = currentArticulation - 2 * Math.atan2(openRelative.z, openRelative.w)
+    this.physics.setFingerArticulation(
+      flex.bladeFlex,
+      flex.hookFlex,
+      pivotDelta + flex.pivotArticulation,
+    )
   }
 
   private syncVisuals(): void {
@@ -858,13 +912,13 @@ const DELIVERY_WAIT_STEPS = 30
 const PLAY_COUNTDOWN_STEPS = 1800
 const INITIAL_SIGNATURE = ''
 /** N23: full-deflection glide speeds (units/second) in aim space. */
-const GLIDE_SPEED_X = 1.8
-const GLIDE_SPEED_Z = 0.9
-const TRAVEL_LOWERING_MS = 800
-const TRAVEL_LIFT_MS = 700
-/** N42.1: preserve the 700ms return budget across top traverse + descent. */
-const TRAVEL_RETURN_TRAVERSE_MS = 450
-const TRAVEL_RETURN_DESCENT_MS = 250
+export const GLIDE_SPEED_X = 1.8
+export const GLIDE_SPEED_Z = 0.9
+
+/** Euclidean distance between two positions (units). */
+function distance(a: Vec3, b: Vec3): number {
+  return Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2])
+}
 
 export function reportSignature(report: N7RuntimeReport): string {
   return [

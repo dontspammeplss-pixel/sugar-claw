@@ -1,0 +1,86 @@
+{
+  "node": "N47",
+  "result": "pass",
+  "deterministic": true,
+  "physics": {
+    "revision": "fixed-step-rev3",
+    "retentionRevision": "n48-speed-rev1",
+    "dt": 0.016666666666666666,
+    "swingTransfer": {
+      "revision": "n47-swing-transfer-rev1",
+      "referenceAngularAcceleration": 40,
+      "maxLinearAcceleration": 12,
+      "windowSteps": 4
+    }
+  },
+  "fixture": {
+    "parkPosition": [
+      0,
+      1.97,
+      0
+    ],
+    "swingImpulse": [
+      0,
+      0,
+      0.2
+    ],
+    "postImpulseSteps": 8
+  },
+  "weakGrip": {
+    "voltage": 12,
+    "marginBefore": 9.971919274384822,
+    "released": true,
+    "releaseStep": 7,
+    "releaseReason": "hold-margin-negative",
+    "peakSwingAcceleration": 12,
+    "peakRequired": 22.232415902140673,
+    "finalMargin": -2.232415902140673
+  },
+  "strongGrip": {
+    "voltage": 36,
+    "marginBefore": 49.971919274384824,
+    "released": false,
+    "releaseStep": null,
+    "releaseReason": null,
+    "peakSwingAcceleration": 12,
+    "peakRequired": 22.232415902140673,
+    "finalMargin": 46.261427161283436
+  },
+  "sweep": [
+    {
+      "impulse": 0.05,
+      "peakRequired": 14.324469192813337,
+      "peakSwingAcceleration": 4.242304278149884
+    },
+    {
+      "impulse": 0.1,
+      "peakRequired": 18.64837851519346,
+      "peakSwingAcceleration": 8.484059323404786
+    },
+    {
+      "impulse": 0.2,
+      "peakRequired": 22.232415902140673,
+      "peakSwingAcceleration": 12
+    },
+    {
+      "impulse": 0.4,
+      "peakRequired": 22.232415902140673,
+      "peakSwingAcceleration": 12
+    }
+  ],
+  "atRest": {
+    "voltage": 24,
+    "swingAcceleration": 0.028589414432644844,
+    "requiredDelta": 0.02914313397823065,
+    "repeatable": true
+  },
+  "gates": {
+    "swingFeedsBalance": true,
+    "weakReleasesOnSwing": true,
+    "strongHoldsThroughSwing": true,
+    "couplingMonotone": true,
+    "couplingBounded": true,
+    "atRestPreserved": true,
+    "fixedStepRepeatable": true
+  }
+}

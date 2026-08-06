@@ -27,8 +27,12 @@ export const N37_CANDIDATE_GRIP_PROFILE: GripProfile = Object.freeze({
 })
 
 const AUTHORED_FLOOR_TOP_Y = 0.89
-const APPROVED_CLAW_LOWEST_POINT_OFFSET_Y = -0.4
-const APPROVED_BASE_CLEARANCE = 0.02
+// The clearance target is intentionally a gameplay-safe descent floor, not a
+// static geometric minimum: dynamic head tilt and prize contact can move the
+// fitted segment envelope during the final fixed steps. Keep a small margin
+// above the authored floor while the runtime observes every solver segment.
+const APPROVED_CLAW_LOWEST_POINT_OFFSET_Y = -0.325
+const APPROVED_BASE_CLEARANCE = 0.01
 const APPROVED_BASE_DESCENT_Y =
   AUTHORED_FLOOR_TOP_Y -
   APPROVED_CLAW_LOWEST_POINT_OFFSET_Y +
@@ -44,9 +48,9 @@ const APPROVED_BASE_DESCENT_Y =
 export const N6_PHYSICS_CONFIG = Object.freeze({
   revision: 'fixed-step-rev3',
   dt: 1 / 60,
-  /** N41: deterministic voltage/friction retention candidates. */
+  /** N41/N47: deterministic voltage/friction retention candidates. */
   retention: Object.freeze({
-    revision: 'n41-retention-rev1',
+    revision: 'n48-speed-rev1',
     minGripVoltage: 12,
     maxGripVoltage: 36,
     gripVoltage: 24,
@@ -58,9 +62,41 @@ export const N6_PHYSICS_CONFIG = Object.freeze({
     prizeWeight: 10,
     centerOfMass: Object.freeze([0, 0, 0]) as Vec3,
     gripPoint: Object.freeze([0, 0, 0]) as Vec3,
+    // F-07 declared swing term; the adapter replaces this reserved constant
+    // with the measured head swing each fixed step (N47). Zero = uncoupled.
     pendulumSwingAcceleration: 0,
+    // F-08 declared travel term; the adapter feeds the measured carriage
+    // acceleration each fixed step (N48). Zero baseline = uncoupled.
     travelAcceleration: 0,
     packingForce: 0,
+    /** N47 (F-07): versioned swing-accel → required-hold-force transfer. */
+    swingTransfer: Object.freeze({
+      revision: 'n47-swing-transfer-rev1',
+      referenceAngularAcceleration: 40,
+      maxLinearAcceleration: 12,
+      windowSteps: 4,
+    }),
+    /** N48 (F-08): versioned travel-accel → required-hold-force transfer. */
+    travelTransfer: Object.freeze({
+      revision: 'n48-travel-transfer-rev1',
+      referenceAcceleration: 8,
+      maxLinearAcceleration: 12,
+      windowSteps: 4,
+    }),
+  }),
+  /**
+   * N48 (F-08): per-phase speed/acceleration profile for scheduled travel.
+   * Free positioning fastest; descent/close/lift slowest; conservative,
+   * config-tunable defaults (spec §7 #7) so the game never feels sluggish.
+   * The N23 velocity glide is NOT profile-governed — it keeps its own speeds.
+   */
+  travelProfile: Object.freeze({
+    revision: 'n48-speed-profile-rev1',
+    freePositioning: Object.freeze({ maxSpeed: 3.8, maxAcceleration: 60 }),
+    descent: Object.freeze({ maxSpeed: 1.6, maxAcceleration: 20 }),
+    lift: Object.freeze({ maxSpeed: 1.6, maxAcceleration: 20 }),
+    returnTraverse: Object.freeze({ maxSpeed: 2.6, maxAcceleration: 80 }),
+    returnDescent: Object.freeze({ maxSpeed: 3.7, maxAcceleration: 180 }),
   }),
   gravity: Object.freeze({ x: 0, y: -9.81, z: 0 }),
   solverIterations: 8,
@@ -312,8 +348,11 @@ export function n38SolverGroups(role: N38CollisionRole): number {
   return interactionGroups(policy.group, policy.solverMask)
 }
 
-export interface FingerColliderGeometry {
-  readonly angle: number
+export type FingerSegmentName = 'blade' | 'hook'
+
+export interface FingerSegmentColliderGeometry {
+  readonly fingerIndex: number
+  readonly segment: FingerSegmentName
   readonly position: Vec3
   readonly rotation: readonly [number, number, number, number]
   readonly halfHeight: number
@@ -341,31 +380,179 @@ function openPoseTransform(angle: number): {
   return { position, quaternion }
 }
 
-function fingerColliderGeometry(index: number): FingerColliderGeometry {
-  const angle = FINGER_ANGLES[index]
-  const pivot = openPoseTransform(angle)
-  // Rapier capsules are aligned with the local Y axis; center the capsule on
-  // the blade's pivot-local (0, -0.15, 0) so its lowest point lands at roughly
-  // claw-local -0.40 — far enough above the carried prize top (-0.50) to keep
-  // the carry free of contact conflict, while still being the first thing to
-  // touch the resting prize on descent (park ~1.91, near the classic depth).
-  const center = pivot.position
+export function fingerSegmentTransform(
+  index: number,
+  segment: FingerSegmentName,
+  articulation = 0,
+  pivotArticulation = 0,
+  parentArticulation = 0,
+): { position: Vec3; rotation: readonly [number, number, number, number] } {
+  if (!Number.isInteger(index) || index < 0 || index >= FINGER_ANGLES.length) {
+    throw new Error(`fingerSegmentTransform: invalid finger index ${index}`)
+  }
+  const pivot = openPoseTransform(FINGER_ANGLES[index])
+  const pivotDelta = new Quaternion().setFromAxisAngle(
+    new Vector3(0, 0, 1),
+    pivotArticulation,
+  )
+  pivot.quaternion.premultiply(pivotDelta)
+  const localCenter = segment === 'blade'
+    ? new Vector3(0, -0.15, 0)
+    : new Vector3(-0.05, -0.5, 0)
+  const localRotation = segment === 'blade'
+    ? new Quaternion()
+    : new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), Math.PI / 2)
+  const parentRotation = new Quaternion().setFromAxisAngle(
+    new Vector3(0, 0, 1),
+    parentArticulation,
+  )
+  const jointRotation = new Quaternion().setFromAxisAngle(
+    new Vector3(0, 0, 1),
+    articulation,
+  )
+  const center = localCenter
+    .applyQuaternion(jointRotation)
+    .applyQuaternion(parentRotation)
+    .applyQuaternion(pivot.quaternion)
+    .add(pivot.position)
+  const rotation = pivot.quaternion
     .clone()
-    .add(new Vector3(0, -0.15, 0).applyQuaternion(pivot.quaternion))
+    .multiply(parentRotation)
+    .multiply(jointRotation)
+    .multiply(localRotation)
   return {
-    angle,
     position: [center.x, center.y, center.z],
-    rotation: [
-      pivot.quaternion.x,
-      pivot.quaternion.y,
-      pivot.quaternion.z,
-      pivot.quaternion.w,
-    ],
-    halfHeight: N6_PHYSICS_CONFIG.fingerCapsuleHalfHeight,
-    radius: N6_PHYSICS_CONFIG.fingerCapsuleRadius,
+    rotation: [rotation.x, rotation.y, rotation.z, rotation.w],
   }
 }
 
-/** N25: three physical finger capsules at the open-pose pivot transforms. */
-export const FINGER_COLLIDERS: readonly FingerColliderGeometry[] =
-  Object.freeze([0, 1, 2].map(fingerColliderGeometry))
+function fingerSegmentGeometry(
+  index: number,
+  segment: FingerSegmentName,
+): FingerSegmentColliderGeometry {
+  const transform = fingerSegmentTransform(index, segment)
+  return {
+    fingerIndex: index,
+    segment,
+    position: transform.position,
+    rotation: transform.rotation,
+    halfHeight: segment === 'blade' ? N6_PHYSICS_CONFIG.fingerCapsuleHalfHeight : 0.05,
+    radius: segment === 'blade' ? N6_PHYSICS_CONFIG.fingerCapsuleRadius : 0.05,
+  }
+}
+
+/** N25/N55: one fitted solver capsule per visual finger segment. */
+export const FINGER_SEGMENT_COLLIDERS: readonly FingerSegmentColliderGeometry[] =
+  Object.freeze(
+    FINGER_ANGLES.flatMap((_, index) =>
+      (['blade', 'hook'] as const).map((segment) =>
+        fingerSegmentGeometry(index, segment),
+      ),
+    ),
+  )
+
+/** N47 (F-07): versioned transfer parameters for the pendulum coupling. */
+export interface SwingTransferConfig {
+  readonly revision: string
+  /** Smoothed |head angular acceleration| at which the term saturates (rad/s²). */
+  readonly referenceAngularAcceleration: number
+  /** Hard upper bound on the linear-equivalent swing contribution (m/s²). */
+  readonly maxLinearAcceleration: number
+  /** Fixed-step smoothing window for angular-acceleration samples. */
+  readonly windowSteps: number
+}
+
+/**
+ * N47 (F-07): swing-accel → required-hold-force transfer. Monotone
+ * non-decreasing in the smoothed head angular acceleration magnitude and
+ * bounded by `maxLinearAcceleration` (clamped), so the coupling can never
+ * destabilize the balance. Pure and feed-forward — no torque feedback.
+ */
+export function swingAccelerationToLinearAcceleration(
+  angularAcceleration: number,
+  transfer: SwingTransferConfig = N6_PHYSICS_CONFIG.retention.swingTransfer,
+): number {
+  if (!Number.isFinite(angularAcceleration) || angularAcceleration <= 0) {
+    return 0
+  }
+  const ratio = Math.min(
+    1,
+    angularAcceleration / transfer.referenceAngularAcceleration,
+  )
+  return transfer.maxLinearAcceleration * ratio
+}
+
+/** N48 (F-08): versioned transfer parameters for the travel coupling. */
+export interface TravelTransferConfig {
+  readonly revision: string
+  /** Carriage acceleration (m/s²) at which the term saturates. */
+  readonly referenceAcceleration: number
+  /** Hard upper bound on the linear-equivalent travel contribution (m/s²). */
+  readonly maxLinearAcceleration: number
+  /** Fixed-step smoothing window for carriage-acceleration samples. */
+  readonly windowSteps: number
+}
+
+export type TravelPhase =
+  | 'freePositioning'
+  | 'descent'
+  | 'lift'
+  | 'returnTraverse'
+  | 'returnDescent'
+
+export interface PhaseSpeedCap {
+  readonly maxSpeed: number
+  readonly maxAcceleration: number
+}
+
+export interface TravelProfileConfig {
+  readonly revision: string
+  readonly freePositioning: PhaseSpeedCap
+  readonly descent: PhaseSpeedCap
+  readonly lift: PhaseSpeedCap
+  readonly returnTraverse: PhaseSpeedCap
+  readonly returnDescent: PhaseSpeedCap
+}
+
+/**
+ * N48 (F-08): travel-accel → required-hold-force transfer. Monotone
+ * non-decreasing in the smoothed carriage acceleration magnitude and bounded
+ * by `maxLinearAcceleration` (clamped) — the same shape as the swing transfer.
+ * Pure and feed-forward — no torque feedback.
+ */
+export function travelAccelerationToLinearAcceleration(
+  acceleration: number,
+  transfer: TravelTransferConfig = N6_PHYSICS_CONFIG.retention.travelTransfer,
+): number {
+  if (!Number.isFinite(acceleration) || acceleration <= 0) {
+    return 0
+  }
+  const ratio = Math.min(1, acceleration / transfer.referenceAcceleration)
+  return transfer.maxLinearAcceleration * ratio
+}
+
+const MIN_TRAVEL_DURATION_MS = 100
+
+/**
+ * N48 (F-08): scheduled phase duration that obeys the phase's maxSpeed and
+ * maxAcceleration caps. easeInOutCubic's peak acceleration is 12·D/T², so the
+ * duration is the larger of the speed-bound and acceleration-bound estimates.
+ * Position-based completion (A-40) makes durations safe to change.
+ */
+export function phaseTravelDurationMs(
+  phase: Exclude<TravelPhase, 'freePositioning'>,
+  distance: number,
+  profile: TravelProfileConfig = N6_PHYSICS_CONFIG.travelProfile,
+): number {
+  if (!Number.isFinite(distance) || distance <= 0) {
+    return MIN_TRAVEL_DURATION_MS
+  }
+  const cap = profile[phase]
+  const bySpeed = (distance / cap.maxSpeed) * 1000
+  const byAcceleration =
+    Math.sqrt((12 * distance) / cap.maxAcceleration) * 1000
+  return Math.max(
+    MIN_TRAVEL_DURATION_MS,
+    Math.ceil(Math.max(bySpeed, byAcceleration)),
+  )
+}

@@ -629,3 +629,105 @@ body {
     top: 5rem;
   }
 }
+
+/* N51 (F-11): dev/operator-only ops panel. */
+.ops-panel {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 40;
+  width: 264px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(16, 20, 28, 0.88);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  color: #f8fafc;
+  font-size: 13px;
+}
+.ops-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.ops-panel-header strong {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: #fbbf24;
+}
+.ops-panel-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+.ops-panel-row {
+  display: block;
+  margin-bottom: 10px;
+}
+.ops-panel-row > span {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.ops-panel-row em {
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  color: #fbbf24;
+}
+.ops-panel-slider {
+  width: 100%;
+  accent-color: #fbbf24;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.ops-panel-slider:hover {
+  opacity: 0.85;
+}
+.ops-panel-readouts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ops-panel-readout {
+  display: inline-flex;
+  flex-direction: column;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  line-height: 1.3;
+  font-size: 11px;
+  color: #94a3b8;
+}
+.ops-panel-readout b {
+  color: #f8fafc;
+  font-size: 13px;
+}
+.ops-margin-chip {
+  margin-left: auto;
+  align-self: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.ops-margin-chip.is-ok {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+.ops-margin-chip.is-risk {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+.ops-panel-footer {
+  margin-top: 10px;
+  font-size: 10px;
+  color: #64748b;
+}
