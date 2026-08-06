@@ -30,8 +30,6 @@ import {
   type GripAttempt,
   type PhysicsTransform,
   type DescentObservation,
-  type RetentionState,
-  type RetentionReleaseEvent,
   type DeliveryObservation,
   type PayoutHookEvent,
   type N6PhysicsAdapterOptions,
@@ -42,6 +40,10 @@ import {
   phaseTravelDurationMs,
   type Vec3,
 } from '../physics/config'
+import type {
+  RetentionReleaseEvent,
+  RetentionState,
+} from '../physics/retention-types'
 import { DEFAULT_PRIZE_MANIFEST } from '../playfield/prize-manifest'
 import { clearPrizePersistence } from '../playfield/prize-persistence'
 import {
