@@ -958,10 +958,21 @@ export function N7Runtime({ onReady, onSnapshot }: N7RuntimeProps) {
         }
         pending = coordinator
         coordinatorRef.current = coordinator
-        callbacks.current.onReady?.(coordinator)
-        publishN7RuntimeReport(coordinator.runtimeReport)
-        lastSignatureRef.current = reportSignature(coordinator.runtimeReport)
-        callbacks.current.onSnapshot?.(coordinator.runtimeReport)
+        try {
+          const report = coordinator.runtimeReport
+          publishN7RuntimeReport(report)
+          lastSignatureRef.current = reportSignature(report)
+          callbacks.current.onSnapshot?.(report)
+          callbacks.current.onReady?.(coordinator)
+        } catch (error) {
+          try {
+            coordinator.dispose()
+          } finally {
+            pending = null
+            coordinatorRef.current = null
+          }
+          throw error
+        }
       })
       .catch((error: unknown) => {
         publishN7RuntimeError(error)
@@ -969,9 +980,12 @@ export function N7Runtime({ onReady, onSnapshot }: N7RuntimeProps) {
 
     return () => {
       cancelled = true
-      pending?.dispose()
-      pending = null
-      coordinatorRef.current = null
+      try {
+        pending?.dispose()
+      } finally {
+        pending = null
+        coordinatorRef.current = null
+      }
     }
   }, [scene])
 
