@@ -1,4 +1,3 @@
-import { FINGER_RING_RADIUS } from '../claw/rig'
 import { N6_PHYSICS_CONFIG } from '../physics/config'
 
 export type Vec3 = readonly [number, number, number]
@@ -125,17 +124,10 @@ export const CLAW = {
   // blades lengthened (0.44 -> 0.50) so closed fingers wrap the prize instead
   // of sinking into it. Head widened to cover the new ring; hooks point
   // radially inward per the approved design ("soft inward hook").
-  // The ring radius is owned by the rig (single source of truth) so the
-  // authored hierarchy can never desync from the pose adapter's writes.
-  fingerPivotRadius: FINGER_RING_RADIUS,
-  fingerLength: 0.5,
+  // Finger dimensions and transforms are owned by FINGER_RIG; this object
+  // contains only the head and claw-mount presentation values.
   headRadius: 0.3,
   headAccentRadius: 0.26,
-  hookRadius: 0.05,
-  hookLength: 0.1,
-  // Inward offset of the hook center from the blade centerline (negative =
-  // toward the claw axis); the hook cylinder's axis runs radially.
-  hookInset: -0.05,
 } as const
 
 export const LIGHTS = {

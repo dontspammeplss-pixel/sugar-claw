@@ -1,9 +1,3 @@
-import { Euler, Quaternion, Vector3 } from 'three'
-import {
-  FINGER_ANGLES,
-  FINGER_RING_RADIUS,
-  POSE_ARTICULATION_RADIANS,
-} from '../claw/rig'
 import type { GripProfile } from './grip-evaluator'
 import type { Vec3 } from '../types/geometry'
 export type { Vec3 } from '../types/geometry'
@@ -194,8 +188,6 @@ export const N6_PHYSICS_CONFIG = Object.freeze({
    * kinematic descent parks on first contact instead of dragging the rigid
    * fingers into the prize volume (the N22 soft-wrap geometry cannot host
    * non-penetrating colliders). */
-  fingerCapsuleHalfHeight: 0.15,
-  fingerCapsuleRadius: 0.04,
   floorHalfExtents: Object.freeze([3, 0.1, 2]) as Vec3,
   floorPosition: Object.freeze([0, 0.79, 0]) as Vec3,
   /** N28: chamber wall colliders (front glass plane + back + sides), sized to
@@ -347,109 +339,6 @@ export function n38SolverGroups(role: N38CollisionRole): number {
   const policy = N38_COLLISION_POLICY[role]
   return interactionGroups(policy.group, policy.solverMask)
 }
-
-export type FingerSegmentName = 'blade' | 'hook'
-
-export interface FingerSegmentColliderGeometry {
-  readonly fingerIndex: number
-  readonly segment: FingerSegmentName
-  readonly position: Vec3
-  readonly rotation: readonly [number, number, number, number]
-  readonly halfHeight: number
-  readonly radius: number
-}
-
-/** Mirrors rig.ts poseTarget for the open pose so colliders match the visuals. */
-function openPoseTransform(angle: number): {
-  position: Vector3
-  quaternion: Quaternion
-} {
-  const position = new Vector3(
-    Math.cos(angle) * FINGER_RING_RADIUS,
-    -0.05,
-    Math.sin(angle) * FINGER_RING_RADIUS,
-  )
-  const quaternion = new Quaternion()
-    .setFromEuler(new Euler(0, -angle, 0, 'XYZ'))
-    .multiply(
-      new Quaternion().setFromAxisAngle(
-        new Vector3(0, 0, 1),
-        POSE_ARTICULATION_RADIANS.open,
-      ),
-    )
-  return { position, quaternion }
-}
-
-export function fingerSegmentTransform(
-  index: number,
-  segment: FingerSegmentName,
-  articulation = 0,
-  pivotArticulation = 0,
-  parentArticulation = 0,
-): { position: Vec3; rotation: readonly [number, number, number, number] } {
-  if (!Number.isInteger(index) || index < 0 || index >= FINGER_ANGLES.length) {
-    throw new Error(`fingerSegmentTransform: invalid finger index ${index}`)
-  }
-  const pivot = openPoseTransform(FINGER_ANGLES[index])
-  const pivotDelta = new Quaternion().setFromAxisAngle(
-    new Vector3(0, 0, 1),
-    pivotArticulation,
-  )
-  pivot.quaternion.premultiply(pivotDelta)
-  const localCenter = segment === 'blade'
-    ? new Vector3(0, -0.15, 0)
-    : new Vector3(-0.05, -0.5, 0)
-  const localRotation = segment === 'blade'
-    ? new Quaternion()
-    : new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), Math.PI / 2)
-  const parentRotation = new Quaternion().setFromAxisAngle(
-    new Vector3(0, 0, 1),
-    parentArticulation,
-  )
-  const jointRotation = new Quaternion().setFromAxisAngle(
-    new Vector3(0, 0, 1),
-    articulation,
-  )
-  const center = localCenter
-    .applyQuaternion(jointRotation)
-    .applyQuaternion(parentRotation)
-    .applyQuaternion(pivot.quaternion)
-    .add(pivot.position)
-  const rotation = pivot.quaternion
-    .clone()
-    .multiply(parentRotation)
-    .multiply(jointRotation)
-    .multiply(localRotation)
-  return {
-    position: [center.x, center.y, center.z],
-    rotation: [rotation.x, rotation.y, rotation.z, rotation.w],
-  }
-}
-
-function fingerSegmentGeometry(
-  index: number,
-  segment: FingerSegmentName,
-): FingerSegmentColliderGeometry {
-  const transform = fingerSegmentTransform(index, segment)
-  return {
-    fingerIndex: index,
-    segment,
-    position: transform.position,
-    rotation: transform.rotation,
-    halfHeight: segment === 'blade' ? N6_PHYSICS_CONFIG.fingerCapsuleHalfHeight : 0.05,
-    radius: segment === 'blade' ? N6_PHYSICS_CONFIG.fingerCapsuleRadius : 0.05,
-  }
-}
-
-/** N25/N55: one fitted solver capsule per visual finger segment. */
-export const FINGER_SEGMENT_COLLIDERS: readonly FingerSegmentColliderGeometry[] =
-  Object.freeze(
-    FINGER_ANGLES.flatMap((_, index) =>
-      (['blade', 'hook'] as const).map((segment) =>
-        fingerSegmentGeometry(index, segment),
-      ),
-    ),
-  )
 
 /** N47 (F-07): versioned transfer parameters for the pendulum coupling. */
 export interface SwingTransferConfig {

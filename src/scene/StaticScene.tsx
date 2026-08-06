@@ -1,7 +1,7 @@
 import { useLayoutEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import type { PerspectiveCamera } from 'three'
-import { FINGER_ANGLES } from '../claw/rig'
+import { DEFAULT_CLAW_RIG, FINGER_RIG, PIVOT_NAMES } from '../claw/rig'
 import { DEFAULT_PRIZE_MANIFEST } from '../playfield/prize-manifest'
 import { CLAW, LIGHTS, MACHINE, MATERIALS, REVIEW_CAMERA } from './config'
 
@@ -258,13 +258,14 @@ function MachineVisuals() {
   )
 }
 
-function ClawFinger({ index, angle }: { index: number; angle: number }) {
-  const x = Math.cos(angle) * CLAW.fingerPivotRadius
-  const z = Math.sin(angle) * CLAW.fingerPivotRadius
+function ClawFinger({ index }: { index: number }) {
+  const angle = FINGER_RIG.angles[index]
+  const pivotName = PIVOT_NAMES[index]
+  const pivotPosition = DEFAULT_CLAW_RIG.baseline[pivotName].position
   return (
     <group
       name={`FingerPivot_${index}`}
-      position={[x, -0.05, z]}
+      position={pivotPosition}
       rotation={[0, -angle, 0]}
       userData={{ baseline: 0, pose: 'home' }}
     >
@@ -275,8 +276,8 @@ function ClawFinger({ index, angle }: { index: number; angle: number }) {
         <group name={`FingerBladeJoint_${index}`}>
           <Box
             name={`FingerBlade_${index}`}
-            size={[0.1, CLAW.fingerLength, 0.12]}
-            position={[0, -CLAW.fingerLength / 2, 0]}
+            size={FINGER_RIG.blade.visual.size}
+            position={FINGER_RIG.blade.visualCenter}
             color={MATERIALS.clawSteel}
             metalness={0.92}
             roughness={0.24}
@@ -287,10 +288,10 @@ function ClawFinger({ index, angle }: { index: number; angle: number }) {
         <group name={`FingerHookJoint_${index}`}>
           <Cylinder
             name={`FingerHook_${index}`}
-            radius={CLAW.hookRadius}
-            height={CLAW.hookLength}
-            position={[CLAW.hookInset, -CLAW.fingerLength, 0]}
-            rotation={[0, 0, Math.PI / 2]}
+            radius={FINGER_RIG.hook.visual.radius}
+            height={FINGER_RIG.hook.visual.height}
+            position={FINGER_RIG.hook.visualCenter}
+            rotation={FINGER_RIG.hook.rotation}
             color={MATERIALS.clawSteel}
             metalness={0.92}
             roughness={0.24}
@@ -364,8 +365,8 @@ function ClawSystem() {
             </mesh>
           </group>
           <group name="FingerRig">
-            {FINGER_ANGLES.map((angle, index) => (
-              <ClawFinger key={index} index={index} angle={angle} />
+            {FINGER_RIG.angles.map((_, index) => (
+              <ClawFinger key={index} index={index} />
             ))}
           </group>
         </group>
